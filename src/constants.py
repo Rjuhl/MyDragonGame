@@ -1,0 +1,7 @@
+
+SCREEN_INIT_SIZE = (1280, 960)
+DISPLAY_SIZE = (1280, 960)
+
+TILE_SIZE = (32, 16)
+
+GAME_NAME = "My Game [Change Name Later]"
