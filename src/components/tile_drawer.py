@@ -19,5 +19,5 @@ class TileDrawer:
 
     def draw_tile(self, id, x, y, display=None):
         working_display = self.display if display is None else display
-        working_display.blit(self.imgs[id], x, y)
+        working_display.blit(self.imgs[id], (x, y))
     
