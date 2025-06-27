@@ -1,5 +1,5 @@
 import pygame
-from components.tile_drawer import TileDrawer
+from system.tile_drawer import TileDrawer
 
 class Renderer:
     def __init__(self, display, map):

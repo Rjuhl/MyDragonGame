@@ -1,7 +1,7 @@
 import time
 import pygame, sys
 import constants
-from system.map import Map
+from world.map import Map
 from system.renderer import Renderer
 from pygame.locals import *
 
