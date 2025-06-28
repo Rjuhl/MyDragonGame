@@ -11,7 +11,7 @@ class Renderer:
         pass
 
     def draw(self):
-        terrain = self.map.getMap()
+        terrain = self.map.get_map()
         rows, cols = terrain.shape
         for col in range(cols):
             for row in range(rows):

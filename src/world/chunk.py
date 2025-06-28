@@ -1,5 +1,6 @@
 import math
 import uuid
+import random
 from tile import Tile
 from pathlib import Path
 from bisect import bisect_left
@@ -9,7 +10,7 @@ from biome_tile_weights import BIOME_TILE_WEIGHTS
 class Chunk:
     delimiter = "|"
 
-    def __init__(self, biome, location, random_number_generator=None, size=128):
+    def __init__(self, biome, location, random_number_generator=random.randint, size=128):
         self.tiles = []
         self.SIZE = size
         self.biome = biome
@@ -18,7 +19,8 @@ class Chunk:
         self.random_number_generator = random_number_generator
     
     @classmethod
-    def load(cls, path):
+    def load(cls, x, y):
+        path = next(cls.get_data_path(x, y).iterdir())
         data = path.read_text(encoding='utf-8').split(cls.delimiter)
 
         chunk_id = data[0]
@@ -61,6 +63,7 @@ class Chunk:
             prefix_sum.append(current_sum)
         
         for b, biome in enumerate(neighbor_biomes):
+            if biome is None: continue
             for id, weight in BIOME_TILE_WEIGHTS[biome]:
                 current_sum += self.weight_decay(weight, self.get_distance(x, y, b))
                 ids.append(id)
@@ -90,3 +93,4 @@ class Chunk:
     @staticmethod
     def weight_decay(weight, distance):
         return weight * 2 * (math.e ** -distance)
+    

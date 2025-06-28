@@ -14,6 +14,7 @@ def runGame(logger):
     map = Map()
     renderer = Renderer(display, map)
 
+
     while True:
         display.fill((0,0,0))
         renderer.draw()
