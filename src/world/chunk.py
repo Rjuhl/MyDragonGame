@@ -45,11 +45,13 @@ class Chunk:
         if self.random_number_generator is None:
             raise ValueError("random_number_generator must be provided before generating tiles.")
 
+        # Generate tiles in rendering order
         self.tiles = []
         for i in range(self.SIZE * self.SIZE):
-            x, y = i % self.SIZE, i // self.SIZE
+            x, y = i // self.SIZE, i % self.SIZE
             self.tiles.append(self.generate_tile(x, y, neighbor_biomes))
 
+    
     def generate_tile(self, x, y, neighbor_biomes):
         prefix_sum, ids = [], []
         current_sum = 0
