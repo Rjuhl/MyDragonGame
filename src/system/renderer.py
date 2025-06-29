@@ -6,6 +6,7 @@ class Renderer:
         self.map = map
         self.display = display
         self.tile_drawer = TileDrawer(self.display)
+        self.view_location = [0, 0]
 
     def update(self):
         pass

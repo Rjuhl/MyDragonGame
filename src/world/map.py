@@ -2,6 +2,7 @@ import random
 import numpy as np
 from chunk import Chunk
 from biome_tile_weights import BIOME_TILE_WEIGHTS
+from constants import DISPLAY_SIZE
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -19,6 +20,9 @@ class Map:
     
     # TODO: Needs to update location. If locations crosses to new chunk, load new chunks
     def update_location(self, dx, dy):
+        pass
+
+    def get_tiles_to_render(self, screen_location):
         pass
  
     # setups map with a chunk grid based on location
