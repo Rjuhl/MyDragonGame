@@ -1,6 +1,7 @@
 class Tile:
-    def __init__(self, id):
+    def __init__(self, id, location):
         self.id = id
+        self.location = location
     
     @classmethod
     def load(cls):

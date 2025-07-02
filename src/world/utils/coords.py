@@ -42,10 +42,20 @@ class Coord:
     def update_as_world_coord(self, dx, dy):
         delta = np.array([int(dx), int(dy)], dtype=np.int32)
         self.location += delta
+        return self
 
     def update_as_view_coord(self, dx, dy):
         delta_world = Coord.INV_BASIS @ np.array([dx, dy], dtype=float)
         self.location += np.round(delta_world).astype(np.int32)
+        return self
+    
+    def update_as_chunk_coord(self, dx, dy):
+        delta = np.array([dx, dy]) * CHUNK_SIZE
+        self.location += np.round(delta).astype(np.int32)
+        return self
+    
+    def copy(self):
+        return Coord.world(*self.to_world_coord())
 
     def __eq__(self, other):
         if not isinstance(other, Coord):
@@ -54,3 +64,5 @@ class Coord:
 
     def __hash__(self):
         return hash((self.location[0], self.location[1]))
+
+    

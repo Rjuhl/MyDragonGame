@@ -1,8 +1,9 @@
+import math
 import random
 import numpy as np
 from chunk import Chunk
 from biome_tile_weights import BIOME_TILE_WEIGHTS
-from constants import DISPLAY_SIZE
+from constants import DISPLAY_SIZE, CHUNK_SIZE
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -12,18 +13,36 @@ from constants import DISPLAY_SIZE
 
 
 class Map:
-    def __init__(self, location, chunk_size=128):
+
+    def __init__(self, location):
         self.chunks = []
         self.location = location
-        self.chunk_size = chunk_size
         self.init_map_chunks()
     
     # TODO: Needs to update location. If locations crosses to new chunk, load new chunks
     def update_location(self, dx, dy):
         pass
 
-    def get_tiles_to_render(self, screen_location):
-        pass
+    def get_tiles_to_render(self, screen_location, padding=1):
+
+        # Get corners of view in world space
+        corners = [
+            screen_location.as_world_coord(),
+            screen_location.copy().update_as_view_coord(DISPLAY_SIZE[0], 0).as_world_coord(),
+            screen_location.copy().update_as_view_coord(0, DISPLAY_SIZE[1]).as_world_coord(),
+            screen_location.copy().update_as_view_coord(*DISPLAY_SIZE).as_world_coord(),
+        ]
+
+        # Find the bounding box (with padding)
+        min_x = math.floor(min(x for x, _ in corners)) - padding
+        max_x = math.ceil(max(x for x, _ in corners)) + padding
+        min_y = math.floor(min(y for _, y in corners)) - padding
+        max_y = math.ceil(max(y for _, y in corners)) + padding
+
+        
+                
+
+
  
     # setups map with a chunk grid based on location
     def init_map_chunks(self):
@@ -50,8 +69,7 @@ class Map:
         
     # Gets all chunk locations
     def get_chunk_locations(self):
-        center_x = self.location[0] // self.chunk_size
-        center_y = self.location[1] // self.chunk_size
+        center_x, center_y = self.location.as_chunk_coord()
         return [
             (center_x - 1, center_y + 1),
             (center_x - 1, center_y),

@@ -17,7 +17,7 @@ class TileDrawer:
         self.imgs = [pygame.image.load(file).convert() for file in paths]
         for img in self.imgs: img.set_colorkey((0, 0, 0))
 
-    def draw_tile(self, id, x, y, display=None):
+    def draw_tile(self, id, coord, screen_location, display=None):
         working_display = self.display if display is None else display
-        working_display.blit(self.imgs[id], (x, y))
+        working_display.blit(self.imgs[id], coord.as_view_coord(screen_location))
     
