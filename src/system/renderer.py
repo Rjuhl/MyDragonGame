@@ -1,4 +1,5 @@
 import pygame
+from constants import DISPLAY_SIZE
 from world.utils.coords import Coord
 from system.tile_drawer import TileDrawer
 
@@ -7,17 +8,13 @@ class Renderer:
         self.map = map
         self.display = display
         self.tile_drawer = TileDrawer(self.display)
-        self.view_location = Coord.as_view_coord(0, 0)
+        self.view_location = Coord.world(0, 0)
+        self.view_location.update_as_view_coord(0, 0)
 
     def update(self):
         pass
-
+ 
     def draw(self):
-        terrain = self.map.get_map()
-        rows, cols = terrain.shape
-        for col in range(cols):
-            for row in range(rows):
-                if terrain[row][col]:
-                    x = (col * 16) - (row * 16) - 8
-                    y = (row * 8) + (col * 8) - 8
-                    self.tile_drawer.draw_tile(0, coord, screen_location)
+        tiles_to_render = self.map.get_tiles_to_render(self.view_location)
+        for tile in tiles_to_render:
+            self.tile_drawer.draw_tile(tile, self.view_location)

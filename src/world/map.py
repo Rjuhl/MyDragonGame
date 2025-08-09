@@ -1,8 +1,9 @@
 import math
 import random
 import numpy as np
-from chunk import Chunk
-from biome_tile_weights import BIOME_TILE_WEIGHTS
+from world.utils.coords import Coord
+from world.chunk import Chunk
+from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from constants import DISPLAY_SIZE, CHUNK_SIZE
 
 # Updates chunk list based on player location
@@ -39,16 +40,17 @@ class Map:
         min_y = math.floor(min(y for _, y in corners)) - padding
         max_y = math.ceil(max(y for _, y in corners)) + padding
 
-        
-                
+        tiles_to_render = []
+        for chunk in self.chunks:
+            tiles_to_render.extend(chunk.get_tiles_in_chunk(min_x, max_x, min_y, max_y))
 
-
+        return tiles_to_render
  
     # setups map with a chunk grid based on location
     def init_map_chunks(self):
         chunk_locations = self.get_chunk_locations()
         self.chunks = [
-            Chunk.load(x, y) if self.check_dir_exists(x, y) else Chunk(self.choose_biome(), (x, y))
+            Chunk.load(x, y) if self.check_dir_exists(x, y) else Chunk(self.choose_biome(), Coord.chunk(x, y))
             for x, y in chunk_locations
         ]
 

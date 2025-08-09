@@ -1,12 +1,12 @@
 import math
 import uuid
 import random
-from tile import Tile
+from world.tile import Tile
 from pathlib import Path
 from bisect import bisect_left
-from utils.coords import Coord
+from world.utils.coords import Coord
 from constants import CHUNK_SIZE
-from biome_tile_weights import BIOME_TILE_WEIGHTS
+from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 
 # Chunk Size will be 128 x 128 tiles
 class Chunk:
@@ -51,10 +51,11 @@ class Chunk:
 
         # Generate tiles in rendering order
         self.tiles = []
-        for i in range(self.SIZE * self.SIZE):
-            x, y = i % self.SIZE, i // self.SIZE
+        num_tiles = self.SIZE ** 2
+        for i in range(num_tiles):
+            x, y = i // self.SIZE, i % self.SIZE
             self.tiles.append(self.generate_tile(x, y, neighbor_biomes))
-
+        
     
     def generate_tile(self, x, y, neighbor_biomes):
         prefix_sum, ids = [], []
@@ -70,9 +71,9 @@ class Chunk:
                 current_sum += self.weight_decay(weight, self.get_distance(x, y, b))
                 ids.append(id)
                 prefix_sum.append(current_sum)
-        
-        random_tile = self.random_number_generator(0, current_sum)
-        chunk_world_loc =  self.location.as_world_coors()
+
+        random_tile = self.random_number_generator(0, int(current_sum))
+        chunk_world_loc = self.location.as_world_coord()
         location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
         return Tile(ids[bisect_left(prefix_sum, random_tile)], location)
     
@@ -90,22 +91,46 @@ class Chunk:
                new_coord.y <= coord.y <= self.location.x
 
 
+    def get_tiles(self):
+        return self.tiles
 
-    def get_tile_row(self, world_row, world_col_start, world_col_end):
+
+    def get_tiles_in_chunk(self, world_row_start, world_row_end, world_col_start, world_col_end):
         chunk_wx, chunk_wy = self.location.as_world_coord()
-        if any(
-            world_row > chunk_wy,
-            world_row < chunk_wy - self.SIZE,
-            world_col_start > chunk_wx + self.SIZE,
-            world_col_end < chunk_wx,
-            world_col_start > world_col_end
-        ): return []
-        
-        world_col_start = min(world_col_start, chunk_wx) - chunk_wx
-        world_col_end = max(world_col_end + 1, chunk_wx + self.SIZE) - chunk_wx
-        section = (chunk_wy - world_row) * self.SIZE
-        return self.tiles[section + world_col_start: section + world_col_end]
 
+        x_min = chunk_wx
+        x_max = chunk_wx + self.SIZE - 1
+        y_min = chunk_wy - self.SIZE + 1
+        y_max = chunk_wy
+
+        if any([
+            world_row_start > x_max,
+            world_row_end < x_min,
+            world_col_start > y_max,
+            world_col_end < y_min,
+            world_row_start > world_row_end,
+            world_col_start > world_col_end
+        ]): return []
+
+        if all([
+            world_row_start <= x_min <= world_row_end,
+            world_row_start <= x_max <= world_row_end,
+            world_col_start <= y_min <= world_col_end,
+            world_col_start <= y_max <= world_col_end
+        ]): return self.get_tiles()
+
+        local_row_min = max(world_row_start - chunk_wx, 0) 
+        local_row_max = min(world_row_end - chunk_wx, self.SIZE)
+        local_col_min = -min(world_col_end - chunk_wy, 0) 
+        local_col_max = -max(world_col_start - chunk_wy, -self.SIZE) 
+
+        tiles_on_screen = []
+        for row in range(local_row_min, local_row_max):
+            startIdx = row * self.SIZE
+            tiles_on_screen.extend(self.tiles[startIdx + local_col_min: startIdx + local_col_max + 1])
+
+        return tiles_on_screen
+    
 
     @staticmethod
     def get_data_path(x, y):

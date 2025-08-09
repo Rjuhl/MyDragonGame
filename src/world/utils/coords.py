@@ -6,7 +6,7 @@ class Coord:
         [16, 16],
         [8, -8]
     ])
-    INV_BASIS = np.linalg.inv(BASIS) # * np.array([32, -16])
+    INV_BASIS = np.linalg.inv(BASIS)
 
     def __init__(self):
         raise RuntimeError("Initialize with classmethod: world, view, or chunk.")
@@ -44,7 +44,6 @@ class Coord:
         self.location += delta
         return self
 
-    # what is this for
     def update_as_view_coord(self, dx, dy):
         delta_world = Coord.INV_BASIS @ np.array([dx, dy], dtype=float)
         self.location += np.round(delta_world).astype(np.int32)
