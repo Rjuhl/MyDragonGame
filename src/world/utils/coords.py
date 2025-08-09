@@ -2,6 +2,8 @@ import numpy as np
 from constants import CHUNK_SIZE
 
 class Coord:
+    DELIMITER = "#"
+
     BASIS = np.array([
         [16, 16],
         [8, -8]
@@ -27,6 +29,11 @@ class Coord:
     @classmethod
     def chunk(cls, x, y):
         return cls.world(x * CHUNK_SIZE, y * CHUNK_SIZE)
+    
+    @classmethod
+    def load(cls, data):
+        data = data.split(cls.DELIMITER)
+        return cls.world(int(data[0]), int(data[1]))
 
     def as_world_coord(self):
         return tuple(self.location)
@@ -65,4 +72,6 @@ class Coord:
     def __hash__(self):
         return hash((self.location[0], self.location[1]))
 
-    
+    def __str__(self):
+        loc_x, loc_y = self.location.tolist()
+        return f"{loc_x}{self.DELIMITER}{loc_y}"

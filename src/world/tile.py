@@ -1,12 +1,17 @@
+from world.utils.coords import Coord
+
 class Tile:
+    delimiter = "$"
+
     def __init__(self, id, location):
         self.id = id
         self.location = location
     
     @classmethod
-    def load(cls):
-        return Tile(0)
+    def load(cls, data):
+        id, location = data.split(cls.delimiter)
+        return Tile(int(id), Coord.load(location))
     
     def __str__(self):
-        pass
+        return f"{self.id}{self.delimiter}{str(self.location)}"
 

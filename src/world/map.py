@@ -62,6 +62,7 @@ class Map:
                 neighbor_biomes.append(self.chunks[i - 1].biome if i % 3 > 0 else None)
                 neighbor_biomes.append(self.chunks[i + 1].biome if i % 3 < 2 else None)
                 chunk.generate(neighbor_biomes)
+                chunk.save()
 
     # For now randomly choose a biome
     def choose_biome(self):

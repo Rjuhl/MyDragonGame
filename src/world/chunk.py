@@ -75,11 +75,6 @@ class Chunk:
         random_tile = self.random_number_generator(0, math.floor(current_sum))
         chunk_world_loc = self.location.as_world_coord()
         location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
-        # print([self.biome] + neighbor_biomes)
-        # print(prefix_sum)
-        # print(ids)
-        # print(random_tile, bisect_left(prefix_sum, random_tile), ids[bisect_left(prefix_sum, random_tile)])
-        # print("\n")
         return Tile(ids[bisect_left(prefix_sum, random_tile)], location)
     
     def get_distance(self, x, y, biome):
