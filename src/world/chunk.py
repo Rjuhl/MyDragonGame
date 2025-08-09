@@ -57,31 +57,36 @@ class Chunk:
             self.tiles.append(self.generate_tile(x, y, neighbor_biomes))
         
     
-    def generate_tile(self, x, y, neighbor_biomes):
+    def generate_tile(self, x, y, neighbor_biomes, round_factor=100):
         prefix_sum, ids = [], []
         current_sum = 0
         for id, weight in BIOME_TILE_WEIGHTS[self.biome]:
-            current_sum += weight
+            current_sum += weight * round_factor
             ids.append(id)
             prefix_sum.append(current_sum)
         
         for b, biome in enumerate(neighbor_biomes):
             if biome is None: continue
             for id, weight in BIOME_TILE_WEIGHTS[biome]:
-                current_sum += self.weight_decay(weight, self.get_distance(x, y, b))
+                current_sum += math.floor(self.weight_decay(weight, self.get_distance(x, y, b)) * round_factor)
                 ids.append(id)
                 prefix_sum.append(current_sum)
 
-        random_tile = self.random_number_generator(0, int(current_sum))
+        random_tile = self.random_number_generator(0, math.floor(current_sum))
         chunk_world_loc = self.location.as_world_coord()
         location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
+        # print([self.biome] + neighbor_biomes)
+        # print(prefix_sum)
+        # print(ids)
+        # print(random_tile, bisect_left(prefix_sum, random_tile), ids[bisect_left(prefix_sum, random_tile)])
+        # print("\n")
         return Tile(ids[bisect_left(prefix_sum, random_tile)], location)
     
     def get_distance(self, x, y, biome):
         if biome == 0: return x
-        if biome == 1: return self.SIZE - x - 1
+        if biome == 1: return self.SIZE - x 
         if biome == 2: return y
-        if biome == 3: return self.SIZE - y - 1
+        if biome == 3: return self.SIZE - y
         else: return 0
     
     def contains_coord(self, coord):
@@ -141,5 +146,5 @@ class Chunk:
 
     @staticmethod
     def weight_decay(weight, distance):
-        return weight * 2 * (math.e ** -distance)
+        return weight * 2 * (math.e ** (-distance))
     

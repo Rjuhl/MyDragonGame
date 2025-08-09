@@ -21,7 +21,7 @@ def runGame(logger):
     while True:
         dt = clock.tick() 
         display.fill((0,0,0))
-        renderer.draw()
+        items_rendered = renderer.draw()
 
         for event in pygame.event.get():
             if event.type == QUIT:
@@ -33,7 +33,9 @@ def runGame(logger):
                     sys.exit()
 
         fps = clock.get_fps()           
-        text = font.render(f"FPS: {fps:.1f}", True, (255, 0, 0))
+        fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 0, 0))
+        tiles_text = font.render(f"Tiles Rendered: {items_rendered}", True, (255, 0, 0))
         screen.blit(pygame.transform.scale(display, screen.get_size()), (0, 0))
-        screen.blit(text, (10, 10))
+        screen.blit(fps_text, (10, 10))
+        screen.blit(tiles_text, (10, 26))
         pygame.display.update()

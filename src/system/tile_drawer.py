@@ -11,7 +11,7 @@ class TileDrawer:
         for file in tile_img_dir.iterdir():
             paths.append(file.resolve())
         
-        paths.sort()
+        paths.sort(key=lambda path: int(path.name[:path.name.find('_')]))
 
         self.display = display
         self.imgs = [pygame.image.load(file).convert() for file in paths]

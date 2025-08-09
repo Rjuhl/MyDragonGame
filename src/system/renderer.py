@@ -18,3 +18,5 @@ class Renderer:
         tiles_to_render = self.map.get_tiles_to_render(self.view_location)
         for tile in tiles_to_render:
             self.tile_drawer.draw_tile(tile, self.view_location)
+            
+        return len(tiles_to_render)
