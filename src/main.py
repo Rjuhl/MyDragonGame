@@ -22,6 +22,8 @@ def runGame(logger):
     while True:
         game_clock.tick() 
         display.fill((0,0,0))
+
+        renderer.update()
         items_rendered = renderer.draw()
 
         event_handler.event_tick()

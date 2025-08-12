@@ -12,11 +12,11 @@ class Renderer:
         self.view_location.update_as_view_coord(0, 0)
 
     def update(self):
-        pass
+        self.view_location.update_as_view_coord(*self.map.get_movement())
  
     def draw(self):
         tiles_to_render = self.map.get_tiles_to_render(self.view_location)
         for tile in tiles_to_render:
             self.tile_drawer.draw_tile(tile, self.view_location)
-            
+
         return len(tiles_to_render)
