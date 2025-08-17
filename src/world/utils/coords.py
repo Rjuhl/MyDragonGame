@@ -37,15 +37,16 @@ class Coord:
         return cls.world(float(data[0]), float(data[1]))
 
     def as_world_coord(self):
-        return self.location.astype(int)
+        return np.floor(self.location).astype(int)
 
-    def as_view_coord(self, screen_offset):
+    def as_view_coord(self, screen_offset=None, cam_offset=None):
         screen_pos = Coord.BASIS @ self.location
-        screen_offset_pos = Coord.BASIS @ screen_offset.location
-        return (screen_pos - screen_offset_pos).astype(int)
+        screen_offset_pos = Coord.BASIS @ screen_offset.location if cam_offset is None else cam_offset
+        return np.floor(screen_pos - screen_offset_pos).astype(int)
+       
 
     def as_chunk_coord(self):
-        return (self.location / CHUNK_SIZE).astype(int)
+        return np.floor(self.location / CHUNK_SIZE).astype(int)
 
     def update_as_world_coord(self, dx, dy):
         delta = np.array([dx, dy], dtype=np.float64)
@@ -53,7 +54,7 @@ class Coord:
         return self
 
     def update_as_view_coord(self, dx, dy):
-        delta_world = Coord.INV_BASIS @ np.array([dx, dy], dtype=np.float64)
+        delta_world = Coord.INV_BASIS @ np.array([dx, dy], dtype=np.float64) 
         self.location += delta_world
         return self
 

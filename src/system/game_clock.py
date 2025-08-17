@@ -1,5 +1,6 @@
 from pygame.time import Clock
 from decorators import singleton
+from constants import FRAME_CAP
 
 @singleton
 class GameClock:
@@ -24,4 +25,4 @@ class GameClock:
         return self.clock.get_fps()
 
 
-game_clock = GameClock()
+game_clock = GameClock(frame_cap=FRAME_CAP)

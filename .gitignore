@@ -198,3 +198,5 @@ isometric_tests/*
 
 data
 data/*
+
+**/*.DS_Store
