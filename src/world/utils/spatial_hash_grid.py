@@ -49,7 +49,7 @@ class SpatialHashGrid:
     def get_possible_onscreen_collisions(self, min_x, max_x, min_y, max_y):
         unique_collision_pairs = {}
         for x in range(min_x // self.partition, (max_x // self.partition) + 1):
-            for y in range(min_y // self.partition, (max_x // self.partition) + 1):
+            for y in range(min_y // self.partition, (max_y // self.partition) + 1):
                 self.add_pairs_from_grid(x, y, unique_collision_pairs)
         
         return unique_collision_pairs
