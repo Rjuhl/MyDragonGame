@@ -38,17 +38,31 @@ class SpatialHashGrid:
     
     def convert_location_to_keys(self, location, size):
         return set([
-            tuple([location.x // self.partition, location.y // self.partition]),
-            tuple([(location.x + size.x) // self.partition, location.y // self.partition]),
-            tuple([location.x // self.partition, (location.y + size.y) // self.partition]),
-            tuple([(location.x + size.x) // self.partition, (location.y + size.y) // self.partition])
+            self.convert_to_key(location.x, location.y),
+            self.convert_to_key(location.x + size.x, location.y),
+            self.convert_to_key(location.x, location.y + size.y),
+            self.convert_to_key(location.x + size.x, location.y + size.y)
         ])
+
 
     # TODO: finish this method
     def get_possiable_onscreen_collisions(self, min_x, max_x, min_y, max_y):
         unique_collision_pairs = {}
+        for x in range(min_x // self.partition, (max_x // self.partition) + 1):
+            for y in range(min_x // self.partition, (max_x // self.partition) + 1):
+                self.add_pairs_from_grid(x, y, unique_collision_pairs)
         
+        return unique_collision_pairs
 
+    def add_pairs_from_grid(self, x, y, unique_collision_pairs):
+        entities = self.location_to_entity_map[self.convert_to_key(x, y)]
+        for i in range(len(entities) - 1):
+            for j in range(i + 1, len(entities)):
+                entity_string = self.generate_unique_enitity_pair_string(entities[i], entities[j])
+                unique_collision_pairs[entity_string] = [entities[i], entities[j]]
+
+    def convert_to_key(self, x, y):
+        return tuple([x // self.partition, y // self.partition])
 
     @staticmethod
     def generate_unique_enitity_pair_string(entity1, entity2):
