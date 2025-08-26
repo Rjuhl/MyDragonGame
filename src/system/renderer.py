@@ -19,7 +19,7 @@ class Renderer:
 
     def draw(self):
         cam_screen_i = Coord.BASIS @ self.screen.location()
-        tiles_to_render = self.map.get_tiles_to_render(self.screen.coord)
+        tiles_to_render = self.map.get_tiles_to_render(*self.screen.get_bounding_box())
         for tile in tiles_to_render:
             self.tile_drawer.draw_tile(tile, cam_screen_i)
 

@@ -17,7 +17,7 @@ class Coord:
     @classmethod
     def world(cls, x, y):
         instance = object.__new__(cls)
-        instance.location = np.array([x, y], dtype=np.float64)  # float64 now
+        instance.location = np.array([x, y], dtype=np.float64)
         return instance
 
     @classmethod

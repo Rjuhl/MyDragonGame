@@ -24,21 +24,7 @@ class Map:
     def update_location(self, dx, dy):
         pass
 
-    def get_tiles_to_render(self, screen_location, padding=PADDING):
-
-        # Get corners of view in world space
-        corners = [
-            screen_location.as_world_coord(),
-            screen_location.copy().update_as_view_coord(DISPLAY_SIZE[0], 0).as_world_coord(),
-            screen_location.copy().update_as_view_coord(0, DISPLAY_SIZE[1]).as_world_coord(),
-            screen_location.copy().update_as_view_coord(*DISPLAY_SIZE).as_world_coord(),
-        ]
-
-        # Find the bounding box (with padding)
-        min_x = math.floor(min(x for x, _ in corners)) - padding
-        max_x = math.ceil(max(x for x, _ in corners)) + padding
-        min_y = math.floor(min(y for _, y in corners)) - padding
-        max_y = math.ceil(max(y for _, y in corners)) + padding
+    def get_tiles_to_render(self, min_x, max_x, min_y, max_y):
 
         tiles_to_render = []
         for chunk in self.chunks:

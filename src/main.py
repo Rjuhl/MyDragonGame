@@ -11,7 +11,7 @@ def runGame(logger):
     pygame.init()
     font = pygame.font.Font(None, 24) 
     pygame.display.set_caption(constants.GAME_NAME)
-    screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF | pygame.SCALED , vsync=1)
+    screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF , vsync=1)
     display = pygame.Surface(constants.DISPLAY_SIZE)
 
     map = Map(Coord.world(0, 0))

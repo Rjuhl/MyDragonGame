@@ -6,6 +6,7 @@ from pygame.locals import *
 from system.game_clock import game_clock
 from world.utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR
+from constants import DISPLAY_SIZE, PADDING
 
 class Screen:
     def __init__(self):
@@ -18,7 +19,26 @@ class Screen:
         cam_screen = Coord.BASIS @ self.coord.location 
         cam_screen_i = np.floor(cam_screen + 1e-9)
         self.coord.location = Coord.INV_BASIS @ cam_screen_i
+
+    def get_corners(self):
+        return [
+            self.coord.as_world_coord(),
+            self.coord.copy().update_as_view_coord(DISPLAY_SIZE[0], 0).as_world_coord(),
+            self.coord.copy().update_as_view_coord(0, DISPLAY_SIZE[1]).as_world_coord(),
+            self.coord.copy().update_as_view_coord(*DISPLAY_SIZE).as_world_coord(),
+        ]
     
+    def get_bounding_box(self, padding=PADDING):
+        corners = self.get_corners()
+        min_x = math.floor(min(x for x, _ in corners)) - padding
+        max_x = math.ceil(max(x for x, _ in corners)) + padding
+        min_y = math.floor(min(y for _, y in corners)) - padding
+        max_y = math.ceil(max(y for _, y in corners)) + padding
+
+        return min_x, max_x, min_y, max_y
+
+    
+    # movement in not the same speed in all directions?
     @staticmethod
     def get_movement():
         pressed = pygame.key.get_pressed()
