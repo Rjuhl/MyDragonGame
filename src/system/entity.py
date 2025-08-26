@@ -19,7 +19,7 @@ class Entity:
 
         if with_listeners:
             for movement_subscriber in self.movement_subscribers:
-                movement_subscriber.recieve_movement_event(self)
+                movement_subscriber.receive_movement_event(self)
 
         return self
 
