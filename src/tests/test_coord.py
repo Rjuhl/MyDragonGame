@@ -1,5 +1,5 @@
 import pytest
-from world.utils.coords import Coord
+from utils.coords import Coord
 from conftest import base_coord
 
 @pytest.mark.parametrize(

@@ -1,4 +1,4 @@
-from world.utils.coords import Coord
+from utils.coords import Coord
 
 class Tile:
     delimiter = "$"

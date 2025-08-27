@@ -1,6 +1,7 @@
 from collections import defaultdict
 from itertools import combinations
 from constants import SPATIAL_GRID_PARITION_SIZE
+from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
 
 
 class SpatialHashGrid:
@@ -57,12 +58,9 @@ class SpatialHashGrid:
     def add_pairs_from_grid(self, x, y, unique_collision_pairs):
         entities = self.location_to_entity_map[self.convert_to_key(x, y)]
         for e1, e2 in combinations(entities, 2):
-            key = self.generate_unique_entity_pair_string(e1, e2)
+            key = generate_unique_entity_pair_string(e1, e2)
             unique_collision_pairs[key] = [e1, e2]
 
     def convert_to_key(self, x, y):
         return tuple([x // self.partition, y // self.partition])
-
-    @staticmethod
-    def generate_unique_enitity_pair_string(entity1, entity2):
-        return str(entity1.id) + str(entity2.id) if entity1.id < entity2.id else str(entity2.id) + str(entity1.id)
+    

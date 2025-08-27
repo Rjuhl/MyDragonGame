@@ -4,7 +4,7 @@ import random
 from world.tile import Tile
 from pathlib import Path
 from bisect import bisect_left
-from world.utils.coords import Coord
+from utils.coords import Coord
 from constants import CHUNK_SIZE
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 

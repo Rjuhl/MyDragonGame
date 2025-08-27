@@ -1,7 +1,7 @@
 import math
 import random
 from pygame.locals import *
-from world.utils.coords import Coord
+from utils.coords import Coord
 from world.chunk import Chunk
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from constants import DISPLAY_SIZE, PADDING

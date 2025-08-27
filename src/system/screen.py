@@ -4,7 +4,7 @@ import pygame
 import numpy as np
 from pygame.locals import *
 from system.game_clock import game_clock
-from world.utils.coords import Coord
+from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR
 from constants import DISPLAY_SIZE, PADDING
 

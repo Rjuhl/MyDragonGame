@@ -2,7 +2,7 @@ import pygame
 import math
 import numpy as np
 from constants import DISPLAY_SIZE
-from world.utils.coords import Coord
+from utils.coords import Coord
 from system.tile_drawer import TileDrawer
 from system.screen import Screen
 

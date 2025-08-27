@@ -1,6 +1,6 @@
 import pygame
 import constants
-from world.utils.coords import Coord
+from utils.coords import Coord
 from world.map import Map
 from system.renderer import Renderer
 from system.event_handler import EventHandler
