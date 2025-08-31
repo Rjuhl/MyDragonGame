@@ -1,12 +1,12 @@
 from system.id_generator import id_generator
 
 class Entity:
-    def __init__(self, location, size, imd_id, render_size): # Use pygame rects
+    def __init__(self, location, size, img_id, render_size): # Use pygame rects
         self.id = id_generator.get_id()
         self.location = location
         self.size = size # Determines hitbox
         self.prev_location = size
-        self.img_id = imd_id
+        self.img_id = img_id
         self.render_size = render_size # Determines where to render
         self.lifespan = 0
 
@@ -42,6 +42,12 @@ class Entity:
     def update(self, dt, onscreen=True):
         self.lifespan += dt
         return self
+
+    def save(self):
+        pass
+
+    def load(self, data):
+        pass
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         pass

@@ -5,7 +5,6 @@ from system.entities.physics.collisions import check_collision, resolve_collisio
 from system.entities.physics.spatial_hash_grid import SpatialHashGrid
 from system.screen import Screen
 from system.entities.entity import Entity
-from system.entities.physics.vec3 import Vec3
 from constants import TILE_SIZE, DISPLAY_SIZE, WORLD_HEIGHT
 
 

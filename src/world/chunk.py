@@ -96,7 +96,7 @@ class Chunk:
 
 
     def get_tiles_in_chunk(self, world_row_start, world_row_end, world_col_start, world_col_end):
-        chunk_wx, chunk_wy = self.location.as_world_coord()
+        chunk_wx, chunk_wy, _ = self.location.as_world_coord()
 
         x_min = chunk_wx
         x_max = chunk_wx + self.SIZE - 1

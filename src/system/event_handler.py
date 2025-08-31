@@ -12,7 +12,8 @@ class EventHandler:
     def event_tick(self):
         for event in pygame.event.get():
             if event.type == QUIT:
-                self.close_app()
+                pygame.quit()
+                sys.exit()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     self.close_app()

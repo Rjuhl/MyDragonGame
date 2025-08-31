@@ -4,6 +4,7 @@ from pygame.locals import *
 from utils.coords import Coord
 from world.chunk import Chunk
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
+from system.entities.entity_manager import EntityManager
 from constants import DISPLAY_SIZE, PADDING
 
 # Updates chunk list based on player location
@@ -15,9 +16,10 @@ from constants import DISPLAY_SIZE, PADDING
 
 class Map:
 
-    def __init__(self, location):
+    def __init__(self, screen):
         self.chunks = []
-        self.location = location
+        self.screen = screen
+        self.entity_manager = EntityManager(self.screen)
         self.init_map_chunks()
     
     # TODO: Needs to update location. If locations crosses to new chunk, load new chunks
@@ -58,7 +60,7 @@ class Map:
         
     # Gets all chunk locations
     def get_chunk_locations(self):
-        center_x, center_y = self.location.as_chunk_coord()
+        center_x, center_y, _ = self.screen.coord.as_chunk_coord()
         return [
             (center_x - 1, center_y + 1),
             (center_x - 1, center_y),

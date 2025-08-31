@@ -60,7 +60,7 @@ class Vec3:
             return np.array([other, other, other], dtype=float)
         a = np.asarray(other, dtype=float)
         if a.shape != (3,):
-            raise TypeError("Expected Vec3, scalar, or array-like of length 3")
+            raise TypeError("Expected coord, scalar, or array-like of length 3")
         return a
 
     # --- arithmetic (new object) ---
@@ -81,12 +81,6 @@ class Vec3:
     def __imul__(self, other):     self._loc *= self._coerce(other); return self
     def __itruediv__(self, other): self._loc /= self._coerce(other); return self
 
-    # --- equality (float-friendly) ---
-    def __eq__(self, other) -> bool:
-        try:
-            return bool(np.allclose(self._loc, self._coerce(other)))
-        except TypeError:
-            return NotImplemented
         
     def copy(self):
         return Vec3(self.location)

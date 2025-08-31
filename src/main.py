@@ -6,25 +6,27 @@ from system.renderer import Renderer
 from system.event_handler import EventHandler
 from system.game_clock import game_clock
 from pygame.locals import *
+from system.screen import Screen
 
 def runGame(logger):
     pygame.init()
     font = pygame.font.Font(None, 24) 
     pygame.display.set_caption(constants.GAME_NAME)
-    screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF , vsync=1)
     display = pygame.Surface(constants.DISPLAY_SIZE)
+    screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF , vsync=1)
+    screen_entity = Screen.load()
+    
 
-    map = Map(Coord.world(0, 0))
-    renderer = Renderer(display, map)
+    map = Map(screen_entity)
+    renderer = Renderer(display)
     event_handler = EventHandler()
 
     while True:
         game_clock.tick() 
         display.fill((0,0,0))
 
-        renderer.update()
-        items_rendered = renderer.draw()
-
+        items_rendered = renderer.draw(map, screen_entity)
+        screen_entity.update()
         event_handler.event_tick()
 
         fps = game_clock.fps           

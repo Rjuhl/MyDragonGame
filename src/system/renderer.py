@@ -3,23 +3,18 @@ import math
 import numpy as np
 from constants import DISPLAY_SIZE
 from utils.coords import Coord
-from system.tile_drawer import TileDrawer
-from system.screen import Screen
+from system.asset_drawer import AssetDrawer
+
 
 
 class Renderer:
-    def __init__(self, display, map):
-        self.map = map
+    def __init__(self, display):
         self.display = display
-        self.tile_drawer = TileDrawer(self.display)
-        self.screen = Screen()
+        self.tile_drawer = AssetDrawer(self.display)
 
-    def update(self):
-        self.screen.update()
-
-    def draw(self):
-        cam_screen_i = Coord.BASIS @ self.screen.location()
-        tiles_to_render = self.map.get_tiles_to_render(*self.screen.get_bounding_box())
+    def draw(self, map, screen):
+        cam_screen_i = Coord.BASIS @ screen.location()
+        tiles_to_render = map.get_tiles_to_render(*screen.get_bounding_box())
         for tile in tiles_to_render:
             self.tile_drawer.draw_tile(tile, cam_screen_i)
 

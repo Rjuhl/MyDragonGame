@@ -2,18 +2,35 @@
 import math
 import pygame
 import numpy as np
+from pathlib import Path
 from pygame.locals import *
 from system.game_clock import game_clock
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR
 from constants import DISPLAY_SIZE, PADDING, TILE_SIZE, WORLD_HEIGHT
-from system.entities.physics.vec3 import Vec3
+from utils.coords import Coord
 
 class Screen:
-    def __init__(self):
-        self.coord = Coord.world(0, 0)
+    DELEMITER = ","
+    PATH = Path(__file__).parent.parent.parent / 'data'
+    def __init__(self, x, y):
+        self.coord = Coord.world(x, y)
     
+    @classmethod
+    def load(cls, id=""):
+        path = cls.PATH / f"screen{id}"
+        if path.exists():
+            x, y = path.read_text(encoding='utf-8')
+            return Screen(float(x), float(y))
+        return Screen(0, 0)
+
+
     def location(self): return self.coord.location
+
+    def save(self, id=""):
+        path = self.path / f"screen{id}"
+        x, y = self.location()
+        path.write_text(f"{x}{self.DELEMITER}{y}", encoding='utf-8')
 
     def update(self):
         self.coord.update_as_view_coord(*self.get_movement())
@@ -31,21 +48,21 @@ class Screen:
     
     def get_bounding_box(self, padding=PADDING):
         corners = self.get_corners()
-        min_x = math.floor(min(x for x, _ in corners)) - padding
-        max_x = math.ceil(max(x for x, _ in corners)) + padding
-        min_y = math.floor(min(y for _, y in corners)) - padding
-        max_y = math.ceil(max(y for _, y in corners)) + padding
+        min_x = math.floor(min(x for x, _, _ in corners)) - padding
+        max_x = math.ceil(max(x for x, _, _ in corners)) + padding
+        min_y = math.floor(min(y for _, y, _ in corners)) - padding
+        max_y = math.ceil(max(y for _, y, _ in corners)) + padding
 
         return min_x, max_x, min_y, max_y
     
     def git_hitbox(self):
         min_x, max_x, min_y, max_y = self.get_bounding_box()
-        size = Vec3(np.array([
+        size = Coord(np.array([
             max_x - min_x,
             max_y - min_y,
             WORLD_HEIGHT
         ]) / TILE_SIZE)
-        location = Vec3(np.array([min_x, min_y, 0]) / TILE_SIZE)
+        location = Coord(np.array([min_x, min_y, 0]) / TILE_SIZE)
 
         return location, size
 

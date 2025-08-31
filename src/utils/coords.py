@@ -5,31 +5,48 @@ class Coord:
     DELIMITER = "#"
 
     BASIS = np.array([
-        [16, 16],
-        [8, -8]
+        [16, 16, 0],
+        [8, -8, 0],
+        [0, 0, 1]
     ], dtype=np.float64)
 
     INV_BASIS = np.linalg.inv(BASIS)
 
-    def __init__(self):
-        raise RuntimeError("Initialize with classmethod: world, view, or chunk.")
+    def __init__(self, location):
+        self.location = location
+
+     # --- x, y, z always reflect/self-update location (in world coords) ---
+    @property
+    def x(self): return float(self.location[0])
+    @x.setter
+    def x(self, v): self.location[0] = float(v)
+
+    @property
+    def y(self): return float(self.location[1])
+    @y.setter
+    def y(self, v): self.location[1] = float(v)
+
+    @property
+    def z(self): return float(self.location[2])
+    @z.setter
+    def z(self, v): self.location[2] = float(v)
 
     @classmethod
-    def world(cls, x, y):
+    def world(cls, x, y, z=0):
         instance = object.__new__(cls)
-        instance.location = np.array([x, y], dtype=np.float64)
+        instance.location = np.array([x, y, z], dtype=np.float64)
         return instance
 
     @classmethod
     def view(cls, vx, vy, screen_offset):
         # Convert view coords to world coords using screen offset
-        screen = np.array([vx, vy], dtype=np.float64) + (Coord.BASIS @ screen_offset.location)
+        screen = np.array([vx, vy, 0], dtype=np.float64) + (Coord.BASIS @ screen_offset.location)
         world_coords = Coord.INV_BASIS @ screen
         return cls.world(world_coords[0], world_coords[1])
 
     @classmethod
-    def chunk(cls, x, y):
-        return cls.world(x * CHUNK_SIZE, y * CHUNK_SIZE)
+    def chunk(cls, x, y, z=0):
+        return cls.world(x * CHUNK_SIZE, y * CHUNK_SIZE, z)
 
     @classmethod
     def load(cls, data):
@@ -42,7 +59,7 @@ class Coord:
     def as_view_coord(self, screen_offset=None, cam_offset=None):
         screen_pos = Coord.BASIS @ self.location
         screen_offset_pos = Coord.BASIS @ screen_offset.location if cam_offset is None else cam_offset
-        return np.floor(screen_pos - screen_offset_pos).astype(int)
+        return np.floor(screen_pos - screen_offset_pos).astype(int)[:-1]
        
 
     def as_chunk_coord(self):
@@ -53,13 +70,13 @@ class Coord:
         self.location += delta
         return self
 
-    def update_as_view_coord(self, dx, dy):
-        delta_world = Coord.INV_BASIS @ np.array([dx, dy], dtype=np.float64) 
+    def update_as_view_coord(self, dx, dy, dz=0):
+        delta_world = Coord.INV_BASIS @ np.array([dx, dy, dz], dtype=np.float64) 
         self.location += delta_world
         return self
 
-    def update_as_chunk_coord(self, dx, dy):
-        delta = np.array([dx, dy], dtype=np.float64) * CHUNK_SIZE
+    def update_as_chunk_coord(self, dx, dy, dz=0):
+        delta = np.array([dx, dy, dz], dtype=np.float64) * CHUNK_SIZE
         self.location += delta
         return self
 
@@ -67,57 +84,45 @@ class Coord:
         return Coord.world(*self.as_world_coord())
 
     def __hash__(self):
-        return hash((self.location[0], self.location[1]))
+        return hash((self.location[0], self.location[1], self.location[2]))
 
     def __str__(self):
-        loc_x, loc_y = self.location.tolist()
-        return f"{loc_x}{self.DELIMITER}{loc_y}"
+        loc_x, loc_y, loc_z = self.location.tolist()
+        return f"{loc_x}{self.DELIMITER}{loc_y}{self.DELIMITER}{loc_z}"
 
-    def __eq__(self, other):
-        if not isinstance(other, Coord):
+   # --- helpers for arithmetic ---
+    @staticmethod
+    def _coerce(other) -> np.ndarray:
+        if isinstance(other, Coord):
+            return other.location
+        if np.isscalar(other):
+            return np.array([other, other, other], dtype=float)
+        a = np.asarray(other, dtype=float)
+        if a.shape != (3,):
+            raise TypeError("Expected coord, scalar, or array-like of length 3")
+        return a
+
+    # --- arithmetic (new object) ---
+    def __add__(self, other):      return Coord(self.location + self._coerce(other))
+    def __sub__(self, other):      return Coord(self.location - self._coerce(other))
+    def __mul__(self, other):      return Coord(self.location * self._coerce(other))
+    def __truediv__(self, other):  return Coord(self.location / self._coerce(other))
+
+    # --- reflected arithmetic ---
+    def __radd__(self, other):     return self.__add__(other)
+    def __rsub__(self, other):     return Coord(self._coerce(other) - self.location)
+    def __rmul__(self, other):     return self.__mul__(other)
+    def __rtruediv__(self, other): return Coord(self._coerce(other) / self.location)
+
+    # --- in-place arithmetic ---
+    def __iadd__(self, other):     self.location += self._coerce(other); return self
+    def __isub__(self, other):     self.location -= self._coerce(other); return self
+    def __imul__(self, other):     self.location *= self._coerce(other); return self
+    def __itruediv__(self, other): self.location /= self._coerce(other); return self
+
+    # --- equality (float-friendly) ---
+    def __eq__(self, other) -> bool:
+        try:
+            return bool(np.allclose(self.location, self._coerce(other)))
+        except TypeError:
             return NotImplemented
-        return np.allclose(self.location, other.location)
-
-    def __add__(self, other):
-        if isinstance(other, Coord):
-            return Coord.world(
-                self.location[0] + other.location[0],
-                self.location[1] + other.location[1]
-            )
-        if isinstance(other, tuple) and len(other) == 2:
-            return Coord.world(
-                self.location[0] + other[0],
-                self.location[1] + other[1]
-            )
-        return NotImplemented
-
-    def __sub__(self, other):
-        if isinstance(other, Coord):
-            return Coord.world(
-                self.location[0] - other.location[0],
-                self.location[1] - other.location[1]
-            )
-        if isinstance(other, tuple) and len(other) == 2:
-            return Coord.world(
-                self.location[0] - other[0],
-                self.location[1] - other[1]
-            )
-        return NotImplemented
-
-    def __iadd__(self, other):
-        if isinstance(other, Coord):
-            self.location += other.location
-            return self
-        if isinstance(other, tuple) and len(other) == 2:
-            self.location += np.array(other, dtype=np.float64)
-            return self
-        return NotImplemented
-
-    def __isub__(self, other):
-        if isinstance(other, Coord):
-            self.location -= other.location
-            return self
-        if isinstance(other, tuple) and len(other) == 2:
-            self.location -= np.array(other, dtype=np.float64)
-            return self
-        return NotImplemented
