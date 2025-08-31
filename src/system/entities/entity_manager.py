@@ -15,7 +15,7 @@ class EntityManager:
         self.spatial_hash_grid = SpatialHashGrid()
         self.entities = set()
     
-    def add_entity(self, entity: Entity) => None:
+    def add_entity(self, entity: Entity) -> None:
         entity.bind_to_manager(self)
         self.entities.add(entity)
         self.spatial_hash_grid.add_entity(entity)
