@@ -6,6 +6,7 @@ from world.chunk import Chunk
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.entities.entity_manager import EntityManager
 from constants import DISPLAY_SIZE, PADDING
+from system.entities.sprites.tree import Tree
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -72,6 +73,9 @@ class Map:
             (center_x + 1,  center_y),
             (center_x + 1, center_y - 1)
         ]
+
+    def get_entities_to_render(self):
+        return [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
 
     @staticmethod
     def check_dir_exists(x, y):

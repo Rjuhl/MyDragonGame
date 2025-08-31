@@ -47,6 +47,10 @@ class Coord:
     @classmethod
     def chunk(cls, x, y, z=0):
         return cls.world(x * CHUNK_SIZE, y * CHUNK_SIZE, z)
+    
+    @classmethod
+    def math(cls, x, y, z):
+        return cls.world(x, y, z)
 
     @classmethod
     def load(cls, data):

@@ -1,13 +1,13 @@
 from system.id_generator import id_generator
 
 class Entity:
-    def __init__(self, location, size, img_id, render_size): # Use pygame rects
+    def __init__(self, location, size, img_id, render_offset): # Use pygame rects
         self.id = id_generator.get_id()
         self.location = location
         self.size = size # Determines hitbox
         self.prev_location = size
         self.img_id = img_id
-        self.render_size = render_size # Determines where to render
+        self.render_offset = render_offset # Determines where to render
         self.lifespan = 0
 
         self.movement_subscribers = []
