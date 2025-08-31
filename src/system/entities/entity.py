@@ -11,6 +11,7 @@ class Entity:
         self.lifespan = 0
 
         self.movement_subscribers = []
+        self.mananger = None
     
     def move(self, movement_vec, with_listeners=True):
         # Need to update prev location to use for collisions in the future
@@ -23,6 +24,13 @@ class Entity:
 
         return self
     
+    def bind_to_manager(self, manager):
+        self.mananger = manager
+
+    def kill(self):
+        if self.mananger:
+            self.mananger.remove_entity(self)
+    
     def add_movement_subscriber(self, subscriber):
         self.movement_subscribers.append(subscriber)
         return self
@@ -31,7 +39,9 @@ class Entity:
         self.movement_subscribers.remove(subscriber)
         return self
     
-    def update(self):
-        self.lifespan += 1
+    def update(self, dt, onscreen=True):
+        self.lifespan += dt
         return self
 
+    def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
+        pass

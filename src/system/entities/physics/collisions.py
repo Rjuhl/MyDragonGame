@@ -1,3 +1,4 @@
+from enum import Enum
 from system.entities.entity import Entity
 from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
 from system.entities.entity_types import EntityTypes
@@ -5,19 +6,26 @@ from typing import List, Dict
 from constants import MAX_COLLISION_PASSES
 from system.game_clock import game_clock
 
-def check_collision(e1: Entity, e2: Entity) -> bool:
+class CollisionTypes(Enum):
+    STATIC = 1
+    DYNAMIC = 2
+    PASSTHROUGH = 3
+    KILL = 4
+    NONE = 5
+
+def check_collision(
+        e1_location: float, e1_size: float, 
+        e2_location: float, e2_size: float
+    ) -> bool:
     """AABB overlap test in 3D. """
 
-    if not isinstance(e1, Entity) or not isinstance(e2, Entity):
-        raise NotImplementedError("Collision is only defined between Entity instances.")
-
     # Self box min/max on each axis
-    ax1, ay1, az1 = e1.location.x, e1.location.y, e1.location.z
-    ax2, ay2, az2 = ax1 + e1.size.x, ay1 + e1.size.y, az1 + e1.size.z
+    ax1, ay1, az1 = e1_location.x, e1_location.y, e1_location.z
+    ax2, ay2, az2 = ax1 + e1_size.x, ay1 + e1_size.y, az1 + e1_size.z
 
     # Other box min/max
-    bx1, by1, bz1 = e2.location.x, e2.location.y, e2.location.z
-    bx2, by2, bz2 = bx1 + e2.size.x, by1 + e2.size.y, bz1 + e2.size.z
+    bx1, by1, bz1 = e2_location.x, e2_location.y, e2_location.z
+    bx2, by2, bz2 = bx1 + e2_size.x, by1 + e2_size.y, bz1 + e2_size.z
 
     
 
@@ -37,7 +45,14 @@ def check_collision(e1: Entity, e2: Entity) -> bool:
     return overlap_x and overlap_y and overlap_z
 
 def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Dict[Entity, float]:
-    pass
+    velocities = {}
+    for e1, e2 in unique_collision_pairs.value():
+        if e1 not in velocities:
+            velocities[e1] = e1.location - e1.prev_location
+        if e2 not in velocities:
+            velocities[e2] = e2.location - e2.prev_location
+    
+    return velocities
 
 def update_collision_entities(
         e1: Entity, e2: Entity, 
@@ -54,7 +69,7 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
         stable = True
 
         for e1, e2 in unique_collision_pairs.value():
-            if check_collision(e1, e2):
+            if check_collision(e1.location, e1.size, e2.location, e2.size):
                 update_collision_entities(e1, e2, velocities, timestep)
                 stable = False
         

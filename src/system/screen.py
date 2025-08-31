@@ -6,7 +6,8 @@ from pygame.locals import *
 from system.game_clock import game_clock
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR
-from constants import DISPLAY_SIZE, PADDING
+from constants import DISPLAY_SIZE, PADDING, TILE_SIZE, WORLD_HEIGHT
+from system.entities.physics.vec3 import Vec3
 
 class Screen:
     def __init__(self):
@@ -36,6 +37,17 @@ class Screen:
         max_y = math.ceil(max(y for _, y in corners)) + padding
 
         return min_x, max_x, min_y, max_y
+    
+    def git_hitbox(self):
+        min_x, max_x, min_y, max_y = self.get_bounding_box()
+        size = Vec3(np.array([
+            max_x - min_x,
+            max_y - min_y,
+            WORLD_HEIGHT
+        ]) / TILE_SIZE)
+        location = Vec3(np.array([min_x, min_y, 0]) / TILE_SIZE)
+
+        return location, size
 
     
     # movement in not the same speed in all directions?

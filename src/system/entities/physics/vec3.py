@@ -1,5 +1,6 @@
 import numpy as np
 from typing import Iterable, Union
+from utils.coords import Coord
 
 Number = Union[int, float, np.number]
 
@@ -7,8 +8,8 @@ class Vec3:
     DELIMITER = "!"
     __slots__ = ("_loc",)  # no __dict__; store only the underlying array
 
-    def __init__(self, np_array: Iterable[Number]):
-        self.location = np_array.as_type(np.float64)  # goes through the property setter
+    def __init__(self, v: Union[Iterable[Number], Coord]):
+        self.location = v.append(0).as_type(np.float64) if isinstance(v, Coord) else v.as_type(np.float64)
 
     # --- location stored in _loc; expose as a property ---
     @property
