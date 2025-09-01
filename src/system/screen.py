@@ -65,6 +65,9 @@ class Screen:
         location = Coord(np.array([min_x, min_y, 0]) / TILE_SIZE)
 
         return location, size
+    
+    def get_screen_center(self):
+        return self.coord.copy().update_as_view_coord(DISPLAY_SIZE[0] / 2, DISPLAY_SIZE[1] / 2)
 
     
     # movement in not the same speed in all directions?

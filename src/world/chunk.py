@@ -37,7 +37,7 @@ class Chunk:
         return chunk
     
     def save(self):
-        x, y = self.location.as_chunk_coord()
+        x, y, _ = self.location.as_chunk_coord()
         path = self.get_data_path(x, y)
         file_path = path / f"{self.id}.chunk"
         base = f"{self.id}{self.delimiter}{self.biome}{self.delimiter}{self.SIZE}{self.delimiter}{x}{self.delimiter}{y}"
@@ -54,10 +54,11 @@ class Chunk:
         num_tiles = self.SIZE ** 2
         for i in range(num_tiles):
             x, y = i // self.SIZE, i % self.SIZE
-            self.tiles.append(self.generate_tile(x, y, neighbor_biomes))
+            onborder = (x == 0 or x == self.SIZE - 1 or y == 0 or y == self.SIZE - 1)
+            self.tiles.append(self.generate_tile(x, y, neighbor_biomes, onborder))
         
     
-    def generate_tile(self, x, y, neighbor_biomes, round_factor=100):
+    def generate_tile(self, x, y, neighbor_biomes, on_border, round_factor=100):
         prefix_sum, ids = [], []
         current_sum = 0
         for id, weight in BIOME_TILE_WEIGHTS[self.biome]:
@@ -75,7 +76,7 @@ class Chunk:
         random_tile = self.random_number_generator(0, math.floor(current_sum))
         chunk_world_loc = self.location.as_world_coord()
         location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
-        return Tile(ids[bisect_left(prefix_sum, random_tile)], location)
+        return Tile(ids[bisect_left(prefix_sum, random_tile)], location, on_border)
     
     def get_distance(self, x, y, biome):
         if biome == 0: return x

@@ -25,8 +25,10 @@ def runGame(logger):
         game_clock.tick() 
         display.fill((0,0,0))
 
+        
+        screen_entity.update() # handle inside of map? Maybe a screen and map should be tied to together (map := scene)?
+        map.update()
         items_rendered = renderer.draw(map, screen_entity)
-        screen_entity.update()
         event_handler.event_tick()
 
         fps = game_clock.fps           

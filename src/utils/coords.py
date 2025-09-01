@@ -67,7 +67,14 @@ class Coord:
        
 
     def as_chunk_coord(self):
-        return np.floor(self.location / CHUNK_SIZE).astype(int)
+        # Floor x, ceil y, and floor z if present
+        loc = self.location / CHUNK_SIZE
+        x = np.floor(loc[0]).astype(int)
+        y = np.ceil(loc[1]).astype(int)
+        if len(loc) > 2:
+            z = np.floor(loc[2]).astype(int)
+            return np.array([x, y, z])
+        return np.array([x, y])
 
     def update_as_world_coord(self, dx, dy):
         delta = np.array([dx, dy], dtype=np.float64)
