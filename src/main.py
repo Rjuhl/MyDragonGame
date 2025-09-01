@@ -7,9 +7,11 @@ from system.event_handler import EventHandler
 from system.game_clock import game_clock
 from pygame.locals import *
 from system.screen import Screen
+from system.global_vars import set_base_globals
 
 def runGame(logger):
     pygame.init()
+    set_base_globals()
     font = pygame.font.Font(None, 24) 
     pygame.display.set_caption(constants.GAME_NAME)
     display = pygame.Surface(constants.DISPLAY_SIZE)
@@ -32,8 +34,8 @@ def runGame(logger):
         event_handler.event_tick()
 
         fps = game_clock.fps           
-        fps_text = font.render(f"FPS: {fps:.1f}", True, (255, 0, 0))
-        tiles_text = font.render(f"Tiles Rendered: {items_rendered}", True, (255, 0, 0))
+        fps_text = font.render(f"FPS: {fps:.1f}", True, (0, 0, 255))
+        tiles_text = font.render(f"Tiles Rendered: {items_rendered}", True, (0, 0, 255))
         screen.blit(pygame.transform.scale(display, screen.get_size()), (0, 0))
         screen.blit(fps_text, (10, 10))
         screen.blit(tiles_text, (10, 26))
