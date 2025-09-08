@@ -1,5 +1,7 @@
 import pygame
+import numpy as np
 from pathlib import Path
+from utils.coords import Coord
 
 class AssetDrawer:
     def __init__(self, display):
@@ -43,7 +45,7 @@ class AssetDrawer:
         working_display = self.display if display is None else display
         working_display.blit(
             self.sprites[sprite.img_id], 
-            sprite.location.as_view_coord(cam_offset=cam_offset) + sprite.render_offset.location[:-1]
+            sprite.draw(cam_offset)
         )
 
     def blit_dot(self, world_location, cam_offset, color=(255, 0, 0), radius=2, display=None):
@@ -52,6 +54,12 @@ class AssetDrawer:
         pygame.draw.circle(dot_surface, color, (radius, radius), radius)
         x, y = world_location.as_view_coord(cam_offset=cam_offset)
         working_display.blit(dot_surface, (x - radius, y - radius))
+
+    def mark_hitbox(self, location, size, cam_offset, color=(255, 0, 0), radius=2, display=None):
+        self.blit_dot(location, cam_offset, color, radius, display)
+        self.blit_dot(location + Coord.math(size.x, 0, 0), cam_offset, color, radius, display)
+        self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)
+        self.blit_dot(location + size, cam_offset, color, radius, display)
 
     @staticmethod
     def load_assets(path):

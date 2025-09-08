@@ -7,6 +7,7 @@ from system.event_handler import EventHandler
 from system.game_clock import game_clock
 from pygame.locals import *
 from system.screen import Screen
+from system.entities.sprites.player import Player
 from system.global_vars import set_base_globals
 
 def runGame(logger):
@@ -18,18 +19,22 @@ def runGame(logger):
     screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF , vsync=1)
     screen_entity = Screen.load()
     
+    player = Player(Coord.world(0, 0))
 
     map = Map(screen_entity)
     renderer = Renderer(display)
     event_handler = EventHandler()
+
+    map.bind_player(player)
 
     while True:
         game_clock.tick() 
         display.fill((0,0,0))
 
         
-        screen_entity.update() # handle inside of map? Maybe a screen and map should be tied to together (map := scene)?
+         
         map.update()
+        screen_entity.update() # handle inside of map? Maybe a screen and map should be tied to together (map := scene)?
         items_rendered = renderer.draw(map, screen_entity)
         event_handler.event_tick()
 

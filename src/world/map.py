@@ -5,9 +5,11 @@ from pygame.locals import *
 from utils.coords import Coord
 from world.chunk import Chunk
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
+from system.entities.entity import Entity
 from system.entities.entity_manager import EntityManager
 from constants import DISPLAY_SIZE, PADDING
 from system.entities.sprites.tree import Tree
+from system.game_clock import game_clock
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -20,12 +22,22 @@ class Map:
 
     def __init__(self, screen):
         self.chunks = []
+        self.player = None
         self.screen = screen
         self.entity_manager = EntityManager(self.screen)
 
         self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
         self.init_map_chunks()
 
+    def bind_player(self, player):
+        self.player = player
+        self.screen.anchor = player
+        self.screen.center_anchor()
+
+    def unbind_player(self):
+        self.player = None
+        self.screen.anchor = Entity.dummy()
+        self.screen.center_anchor()
 
     def update(self):
         self.handle_chunk_loading()
@@ -107,8 +119,15 @@ class Map:
             (center_x + 1, center_y - 1)
         ]
 
+    # TODO: implement this
     def get_entities_to_render(self):
-        return [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
+        E =  [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
+        # E = []
+        if self.player: E.append(self.player)
+
+        for e in E: e.update(game_clock.dt)
+
+        return E
 
     @staticmethod
     def check_dir_exists(x, y):

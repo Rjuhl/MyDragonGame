@@ -23,6 +23,13 @@ class EventHandler:
                 if event.key == K_c:
                     game_globals.chunk_borders_on = not game_globals.chunk_borders_on
 
+                # Turn on hitboxes
+                if event.key == K_h:
+                    game_globals.show_hitboxes_on = not game_globals.show_hitboxes_on
+                
+                if event.key == K_z:
+                    game_globals.render_debug = not game_globals.render_debug
+
     def close_app(self):
         id_generator.save()
         pygame.quit()

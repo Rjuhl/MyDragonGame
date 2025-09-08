@@ -3,21 +3,28 @@ import math
 import pygame
 import numpy as np
 from pathlib import Path
-from pygame.locals import *
-from system.game_clock import game_clock
 from utils.coords import Coord
-from constants import TEMP_MOVEMENT_FACTOR
-from constants import DISPLAY_SIZE, PADDING, TILE_SIZE, WORLD_HEIGHT
+from constants import DISPLAY_SIZE, PADDING, TILE_SIZE, WORLD_HEIGHT, TRACKING_BOX_SCALE
 from utils.coords import Coord
+from system.entities.entity import Entity
+from system.entities.physics.collisions import check_collision
 
 class Screen:
     DELEMITER = ","
     PATH = Path(__file__).parent.parent.parent / 'data'
-    def __init__(self, x, y):
-        self.coord = Coord.world(x, y)
+    def __init__(self):
+        self.coord = None
+        self.tracking_box = Entity.dummy()
+        self.anchor = Entity.dummy()
+        self.center_anchor()
+        self.init_tracking_box(TRACKING_BOX_SCALE)
+
+        self.cam_offset = Coord.BASIS @ self.location()
     
     @classmethod
     def load(cls, id=""):
+        return Screen()
+
         path = cls.PATH / f"screen{id}"
         if path.exists():
             x, y = path.read_text(encoding='utf-8')
@@ -27,16 +34,20 @@ class Screen:
 
     def location(self): return self.coord.location
 
-    def save(self, id=""):
-        path = self.path / f"screen{id}"
-        x, y = self.location()
-        path.write_text(f"{x}{self.DELEMITER}{y}", encoding='utf-8')
+    # def save(self, id=""):
+    #     path = self.path / f"screen{id}"
+    #     x, y = self.location()
+    #     path.write_text(f"{x}{self.DELEMITER}{y}", encoding='utf-8')
 
     def update(self):
-        self.coord.update_as_view_coord(*self.get_movement())
-        cam_screen = Coord.BASIS @ self.coord.location 
-        cam_screen_i = np.floor(cam_screen + 1e-9)
-        self.coord.location = Coord.INV_BASIS @ cam_screen_i
+
+        if not self.anchor_in_tracking_box():
+            # TODO: This needs to be updated due to the player draw update
+            self.coord += self.anchor.location - self.anchor.prev_location # This calculation needs to be fixed when draw is finished
+            # self.coord.normalize_in_screen_space()
+        self.cam_offset = Coord.BASIS @ self.location()
+        
+        
 
     def get_corners(self):
         return [
@@ -55,33 +66,74 @@ class Screen:
 
         return min_x, max_x, min_y, max_y
     
-    def git_hitbox(self):
+    # Does not give the correct coords
+    def get_hitbox(self):
         min_x, max_x, min_y, max_y = self.get_bounding_box()
         size = Coord(np.array([
             max_x - min_x,
             max_y - min_y,
             WORLD_HEIGHT
         ]) / TILE_SIZE)
+
         location = Coord(np.array([min_x, min_y, 0]) / TILE_SIZE)
 
         return location, size
     
-    def get_screen_center(self):
-        return self.coord.copy().update_as_view_coord(DISPLAY_SIZE[0] / 2, DISPLAY_SIZE[1] / 2)
+    # Used to move screen with player
+    def init_tracking_box(self, scale):
+        box_dims = Coord.math(
+            (DISPLAY_SIZE[0] * scale) / TILE_SIZE,
+            (DISPLAY_SIZE[1] * scale) / TILE_SIZE,
+            WORLD_HEIGHT
+        )
+        
+        box_loc = self.get_screen_center().update_as_view_coord(
+            -(DISPLAY_SIZE[0] / 4),
+            -(DISPLAY_SIZE[1] / 4),
+        )
+    
+        self.tracking_box = Entity(box_loc, box_dims, None, Coord.math(0, 0, 0))
 
     
-    # movement in not the same speed in all directions?
-    @staticmethod
-    def get_movement():
-        pressed = pygame.key.get_pressed()
-        dx = int(pressed[K_d] or pressed[K_RIGHT]) - int(pressed[K_a] or pressed[K_LEFT])
-        dy = int(pressed[K_s] or pressed[K_DOWN]) - int(pressed[K_w] or pressed[K_UP])
-        
-        if dx != 0 and dy != 0:
-            dx = math.copysign(1 / math.sqrt(2), dx)
-            dy = math.copysign(1 / math.sqrt(2), dy)
 
-        dx *= TEMP_MOVEMENT_FACTOR * (game_clock.dt / 1000)
-        dy *= TEMP_MOVEMENT_FACTOR * (game_clock.dt / 1000)
+    def get_screen_center(self):
+        return self.coord.copy().update_as_view_coord(DISPLAY_SIZE[0] / 2, DISPLAY_SIZE[1] / 2) 
+    
+    def center_anchor(self):
+        self.coord = self.anchor.location.copy()
+        self.coord.update_as_view_coord(-DISPLAY_SIZE[0] / 2, -DISPLAY_SIZE[1] / 2)
+
+    def get_tracking_box(self, screen_axis=True):
+        d1, d2 = DISPLAY_SIZE[0] * TRACKING_BOX_SCALE, DISPLAY_SIZE[1] * TRACKING_BOX_SCALE
+        dx, dy = (1 - TRACKING_BOX_SCALE) * DISPLAY_SIZE[0] / 2, (1 - TRACKING_BOX_SCALE) * DISPLAY_SIZE[1] / 2
         
-        return dx, dy
+        bl = self.coord.copy().update_as_view_coord(dx, dy)
+        br = bl.copy().update_as_view_coord(d1, 0)
+        tl = bl.copy().update_as_view_coord(0, d2)
+        tr = bl.copy().update_as_view_coord(d1, d2)
+
+        if screen_axis:
+            return [
+                tl.as_view_coord(cam_offset=self.cam_offset),
+                tr.as_view_coord(cam_offset=self.cam_offset),
+                bl.as_view_coord(cam_offset=self.cam_offset),
+                br.as_view_coord(cam_offset=self.cam_offset),
+            ]
+
+        return tl, tr, bl, br
+
+    def anchor_in_tracking_box(self):
+        screen_box = self.get_tracking_box()
+        location, size = self.anchor.location.copy(), self.anchor.size.copy()
+        return any([
+            self.check_point_in_square(location.as_view_coord(cam_offset=self.cam_offset), screen_box),
+            self.check_point_in_square((location + Coord.math(size.x, 0, 0)).as_view_coord(cam_offset=self.cam_offset), screen_box),
+            self.check_point_in_square((location + Coord.math(0, size.y, 0)).as_view_coord(cam_offset=self.cam_offset), screen_box),
+            self.check_point_in_square((location + size).as_view_coord(cam_offset=self.cam_offset), screen_box)
+        ])
+
+    @staticmethod
+    def check_point_in_square(point, square):
+        x, y = point
+        tl, tr, bl, _ = square
+        return tl[0] <= x <= tr[0] and bl[1] <= y <= tl[1]

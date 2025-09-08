@@ -13,7 +13,7 @@ class Coord:
     INV_BASIS = np.linalg.inv(BASIS)
 
     def __init__(self, location):
-        self.location = location
+        self.location = location.astype(np.float64)
 
      # --- x, y, z always reflect/self-update location (in world coords) ---
     @property
@@ -38,11 +38,11 @@ class Coord:
         return instance
 
     @classmethod
-    def view(cls, vx, vy, screen_offset):
+    def view(cls, vx, vy, vz, cam_offset):
         # Convert view coords to world coords using screen offset
-        screen = np.array([vx, vy, 0], dtype=np.float64) + (Coord.BASIS @ screen_offset.location)
+        screen = np.array([vx, vy, vz], dtype=np.float64) - cam_offset
         world_coords = Coord.INV_BASIS @ screen
-        return cls.world(world_coords[0], world_coords[1])
+        return Coord(world_coords)
 
     @classmethod
     def chunk(cls, x, y, z=0):
@@ -63,7 +63,7 @@ class Coord:
     def as_view_coord(self, screen_offset=None, cam_offset=None):
         screen_pos = Coord.BASIS @ self.location
         screen_offset_pos = Coord.BASIS @ screen_offset.location if cam_offset is None else cam_offset
-        return np.floor(screen_pos - screen_offset_pos).astype(int)[:-1]
+        return (np.floor(screen_pos - screen_offset_pos)).astype(int)[:-1]
        
 
     def as_chunk_coord(self):
@@ -76,14 +76,22 @@ class Coord:
             return np.array([x, y, z])
         return np.array([x, y])
 
-    def update_as_world_coord(self, dx, dy):
-        delta = np.array([dx, dy], dtype=np.float64)
+    def update_as_world_coord(self, dx, dy, dz=0):
+        delta = np.array([dx, dy, dz], dtype=np.float64)
         self.location += delta
         return self
 
     def update_as_view_coord(self, dx, dy, dz=0):
         delta_world = Coord.INV_BASIS @ np.array([dx, dy, dz], dtype=np.float64) 
         self.location += delta_world
+        return self
+    
+    
+    def normalize_in_screen_space(self):
+        cam_screen = Coord.BASIS @ self.location 
+        cam_screen_i = np.floor(cam_screen + 1e-9)
+        self.location = Coord.INV_BASIS @ cam_screen_i
+
         return self
 
     def update_as_chunk_coord(self, dx, dy, dz=0):
@@ -92,7 +100,7 @@ class Coord:
         return self
 
     def copy(self):
-        return Coord.world(*self.as_world_coord())
+        return Coord.world(*self.location)
 
     def __hash__(self):
         return hash((self.location[0], self.location[1], self.location[2]))
@@ -107,8 +115,8 @@ class Coord:
         if isinstance(other, Coord):
             return other.location
         if np.isscalar(other):
-            return np.array([other, other, other], dtype=float)
-        a = np.asarray(other, dtype=float)
+            return np.array([other, other, other], dtype=np.float64)
+        a = np.asarray(other, dtype=np.float64)
         if a.shape != (3,):
             raise TypeError("Expected coord, scalar, or array-like of length 3")
         return a

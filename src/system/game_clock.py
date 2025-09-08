@@ -1,3 +1,4 @@
+import math
 from pygame.time import Clock
 from decorators import singleton
 from constants import FRAME_CAP
@@ -23,6 +24,10 @@ class GameClock:
     @property
     def fps(self):
         return self.clock.get_fps()
+
+    @staticmethod
+    def _round(number, places=3):
+        return math.floor(number * (10 ** places)) / (10 ** places)
 
 
 game_clock = GameClock(frame_cap=FRAME_CAP)
