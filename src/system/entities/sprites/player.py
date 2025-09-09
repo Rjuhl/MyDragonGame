@@ -12,8 +12,8 @@ class Player(Entity):
         self.init_human(location) if is_human else self.init_dragon(location)
 
     def update(self, dt, onscreen=True):
-        super().update(dt, onscreen)
         self.move(self.get_movement(dt))
+        super().update(dt, onscreen)
         return self
 
 

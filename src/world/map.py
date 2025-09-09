@@ -39,8 +39,13 @@ class Map:
         self.screen.anchor = Entity.dummy()
         self.screen.center_anchor()
 
+    def update_entities(self):
+        self.player.update(game_clock.dt)
+
     def update(self):
         self.handle_chunk_loading()
+        self.update_entities()
+        self.screen.update()
 
     def get_tiles_to_render(self, min_x, max_x, min_y, max_y):
 
@@ -125,9 +130,10 @@ class Map:
         # E = []
         if self.player: E.append(self.player)
 
-        for e in E: e.update(game_clock.dt)
+        # for e in E: e.update(game_clock.dt)
 
         return E
+    
 
     @staticmethod
     def check_dir_exists(x, y):

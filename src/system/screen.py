@@ -19,7 +19,7 @@ class Screen:
         self.center_anchor()
         self.init_tracking_box(TRACKING_BOX_SCALE)
 
-        self.cam_offset = Coord.BASIS @ self.location()
+        self.cam_offset = np.floor(Coord.BASIS @ self.location())[:-1]
     
     @classmethod
     def load(cls, id=""):
@@ -40,12 +40,11 @@ class Screen:
     #     path.write_text(f"{x}{self.DELEMITER}{y}", encoding='utf-8')
 
     def update(self):
-
         if not self.anchor_in_tracking_box():
-            # TODO: This needs to be updated due to the player draw update
-            self.coord += self.anchor.location - self.anchor.prev_location # This calculation needs to be fixed when draw is finished
-            # self.coord.normalize_in_screen_space()
-        self.cam_offset = Coord.BASIS @ self.location()
+            delta = self.anchor.last_drawn_location - self.anchor.prev_drawn_location
+            self.coord.update_as_view_coord(*delta) 
+            self.cam_offset += delta
+        
         
         
 
@@ -114,10 +113,10 @@ class Screen:
 
         if screen_axis:
             return [
-                tl.as_view_coord(cam_offset=self.cam_offset),
-                tr.as_view_coord(cam_offset=self.cam_offset),
-                bl.as_view_coord(cam_offset=self.cam_offset),
-                br.as_view_coord(cam_offset=self.cam_offset),
+                tl.as_view_coord(),
+                tr.as_view_coord(),
+                bl.as_view_coord(),
+                br.as_view_coord(),
             ]
 
         return tl, tr, bl, br
@@ -126,10 +125,10 @@ class Screen:
         screen_box = self.get_tracking_box()
         location, size = self.anchor.location.copy(), self.anchor.size.copy()
         return any([
-            self.check_point_in_square(location.as_view_coord(cam_offset=self.cam_offset), screen_box),
-            self.check_point_in_square((location + Coord.math(size.x, 0, 0)).as_view_coord(cam_offset=self.cam_offset), screen_box),
-            self.check_point_in_square((location + Coord.math(0, size.y, 0)).as_view_coord(cam_offset=self.cam_offset), screen_box),
-            self.check_point_in_square((location + size).as_view_coord(cam_offset=self.cam_offset), screen_box)
+            self.check_point_in_square(location.as_view_coord(), screen_box),
+            self.check_point_in_square((location + Coord.math(size.x, 0, 0)).as_view_coord(), screen_box),
+            self.check_point_in_square((location + Coord.math(0, size.y, 0)).as_view_coord(), screen_box),
+            self.check_point_in_square((location + size).as_view_coord(), screen_box)
         ])
 
     @staticmethod

@@ -34,7 +34,6 @@ def runGame(logger):
         
          
         map.update()
-        screen_entity.update() # handle inside of map? Maybe a screen and map should be tied to together (map := scene)?
         items_rendered = renderer.draw(map, screen_entity)
         event_handler.event_tick()
 

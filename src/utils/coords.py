@@ -60,10 +60,9 @@ class Coord:
     def as_world_coord(self):
         return np.floor(self.location).astype(int)
 
-    def as_view_coord(self, screen_offset=None, cam_offset=None):
+    def as_view_coord(self):
         screen_pos = Coord.BASIS @ self.location
-        screen_offset_pos = Coord.BASIS @ screen_offset.location if cam_offset is None else cam_offset
-        return (np.floor(screen_pos - screen_offset_pos)).astype(int)[:-1]
+        return np.floor(screen_pos).astype(int)[:-1]
        
 
     def as_chunk_coord(self):
@@ -89,7 +88,7 @@ class Coord:
     
     def normalize_in_screen_space(self):
         cam_screen = Coord.BASIS @ self.location 
-        cam_screen_i = np.floor(cam_screen + 1e-9)
+        cam_screen_i = np.floor(cam_screen)
         self.location = Coord.INV_BASIS @ cam_screen_i
 
         return self

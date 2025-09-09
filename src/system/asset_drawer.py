@@ -38,21 +38,21 @@ class AssetDrawer:
         else:
             tinted_img = tile_img
 
-        working_display.blit(tinted_img, tile.location.as_view_coord(cam_offset=cam_offset))
+        working_display.blit(tinted_img, tile.location.as_view_coord() - cam_offset)
 
 
     def draw_sprite(self, sprite, cam_offset, display=None):
         working_display = self.display if display is None else display
         working_display.blit(
             self.sprites[sprite.img_id], 
-            sprite.draw(cam_offset)
+            sprite.draw() - cam_offset
         )
 
     def blit_dot(self, world_location, cam_offset, color=(255, 0, 0), radius=2, display=None):
         working_display = self.display if display is None else display
         dot_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(dot_surface, color, (radius, radius), radius)
-        x, y = world_location.as_view_coord(cam_offset=cam_offset)
+        x, y = world_location.as_view_coord() - cam_offset
         working_display.blit(dot_surface, (x - radius, y - radius))
 
     def mark_hitbox(self, location, size, cam_offset, color=(255, 0, 0), radius=2, display=None):

@@ -13,7 +13,7 @@ class Renderer:
         self.asset_drawer = AssetDrawer(self.display)
 
     def draw(self, map, screen):
-        cam_screen_i = screen.cam_offset #np.floor(screen.cam_offset + 1e-9)
+        cam_screen_i = screen.cam_offset 
         # print(cam_screen_i)
         tiles_to_render = map.get_tiles_to_render(*screen.get_bounding_box())
         for tile in tiles_to_render:
@@ -22,17 +22,7 @@ class Renderer:
             self.asset_drawer.draw_tile(tile, cam_screen_i, tint)
 
         for entity in map.get_entities_to_render():
-            # entity.location.normalize_in_screen_space()
             self.asset_drawer.draw_sprite(entity, cam_screen_i)
-            # print("World location", entity.location.x, entity.location.y)
-            # print("Change in world location", (entity.location - entity.prev_location).x, (entity.location - entity.prev_location).y)
-            
-            # x, y = entity.location.as_view_coord(cam_offset=cam_screen_i)
-            # px, py = entity.prev_location.as_view_coord(cam_offset=cam_screen_i)
-
-            # print("View location", x, y)
-            # print("Change in view location", x - px, y - py)
-            # print("\n")
 
             # If hitboxes are turned on draw hitbox corners
             if game_globals.show_hitboxes_on:
