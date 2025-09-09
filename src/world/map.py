@@ -129,9 +129,6 @@ class Map:
         E =  [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
         # E = []
         if self.player: E.append(self.player)
-
-        # for e in E: e.update(game_clock.dt)
-
         return E
     
 

@@ -64,15 +64,10 @@ class Entity:
         x, y = self.location.as_view_coord()
         if bool(dx) ^ bool(dy):
             p1_x, p1_y = self.last_drawn_location
-            p2_x, p2_y = p1_x + math.copysign(GRID_RATIO[0], dy + dx), p1_y + math.copysign(GRID_RATIO[1], -dy + dx)
-
-            # TODO: Fix this
-            #This can cause visaul glitches because the entity could be moving to fast
-            if self.norm_1_distance(x, y, p2_x, p2_y) < self.norm_1_distance(x, y, p1_x, p1_y):
-                self.last_drawn_location = np.array([p2_x, p2_y])
+            ray_vector = math.copysign(GRID_RATIO[0], dy + dx), math.copysign(GRID_RATIO[1], -dy + dx)
+            self.last_drawn_location = self.find_closest_point_on_discrete_ray((x, y), (p1_x, p1_y), ray_vector, )
         else:
             self.last_drawn_location = self.location.as_view_coord()
-
 
         return self
 
@@ -90,5 +85,20 @@ class Entity:
 
     # move this methods elswhere (to a utlity or physics sections)
     @staticmethod
-    def norm_1_distance(p1_x, p1_y, p2_x, p2_y):
-        return abs(p2_x - p1_x) + abs(p2_y - p1_y)
+    def find_closest_point_on_discrete_ray(point, ray_start, ray_vector):
+        x0, y0 = point
+        dx, dy = ray_vector
+        x1, y1 = ray_start
+       
+        m = dy / dx
+
+        # Direction vector along the line and projection scalar
+        # d = (1, m)
+        # t = ((P - A) · d) / (d · d)
+        t = ((x0 - x1) + m * (y0 - y1)) / (1.0 + m * m)
+
+        qx = x1 + t
+        qy = y1 + m * t
+
+        x, y = (((qx - x1) // dx) * dx) + x1, (((qy - y1) // dy) * dy) + y1
+        return np.array([x, y])
