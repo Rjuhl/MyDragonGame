@@ -64,17 +64,16 @@ class Screen:
         max_y = math.ceil(max(y for _, y, _ in corners)) + padding
 
         return min_x, max_x, min_y, max_y
-    
-    # Does not give the correct coords
+        
     def get_hitbox(self):
         min_x, max_x, min_y, max_y = self.get_bounding_box()
         size = Coord(np.array([
             max_x - min_x,
             max_y - min_y,
             WORLD_HEIGHT
-        ]) / TILE_SIZE)
+        ]))
 
-        location = Coord(np.array([min_x, min_y, 0]) / TILE_SIZE)
+        location = Coord(np.array([min_x, min_y, 0]))
 
         return location, size
     

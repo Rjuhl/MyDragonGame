@@ -25,26 +25,33 @@ class Map:
         self.player = None
         self.screen = screen
         self.entity_manager = EntityManager(self.screen)
+        self.entities_to_render = []
 
         self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
         self.init_map_chunks()
+
+        # TEMP for testing
+        E = [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
+        for e in E: self.entity_manager.add_entity(e)
 
     def bind_player(self, player):
         self.player = player
         self.screen.anchor = player
         self.screen.center_anchor()
+        self.entity_manager.add_entity(player)
+
+
 
     def unbind_player(self):
+        self.entity_manager.remove_entity(self.player)
         self.player = None
         self.screen.anchor = Entity.dummy()
         self.screen.center_anchor()
-
-    def update_entities(self):
-        self.player.update(game_clock.dt)
-
+        
     def update(self):
         self.handle_chunk_loading()
-        self.update_entities()
+        self.entities_to_render = self.entity_manager.update_entities()
+        self.player.smooth_movement()
         self.screen.update()
 
     def get_tiles_to_render(self, min_x, max_x, min_y, max_y):
@@ -124,12 +131,8 @@ class Map:
             (center_x + 1, center_y - 1)
         ]
 
-    # TODO: implement this
     def get_entities_to_render(self):
-        E =  [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
-        # E = []
-        if self.player: E.append(self.player)
-        return E
+        return self.entities_to_render
     
 
     @staticmethod

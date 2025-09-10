@@ -19,6 +19,9 @@ def check_collision(
     ) -> bool:
     """AABB overlap test in 3D. """
 
+    # print("Entity location and size", f"({e1_location.x}, {e1_location.y})", f"({e1_size.x}, {e1_size.y})")
+    # print("Screen location and size", f"({e2_location.x}, {e2_location.y})", f"({e2_size.x}, {e2_size.y})")
+
     # Self box min/max on each axis
     ax1, ay1, az1 = e1_location.x, e1_location.y, e1_location.z
     ax2, ay2, az2 = ax1 + e1_size.x, ay1 + e1_size.y, az1 + e1_size.z
@@ -46,7 +49,7 @@ def check_collision(
 
 def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Dict[Entity, float]:
     velocities = {}
-    for e1, e2 in unique_collision_pairs.value():
+    for e1, e2 in unique_collision_pairs.values():
         if e1 not in velocities:
             velocities[e1] = e1.location - e1.prev_location
         if e2 not in velocities:
@@ -54,13 +57,6 @@ def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Di
     
     return velocities
 
-def update_collision_entities(
-        e1: Entity, e2: Entity, 
-        velocities: Dict[Entity, float], 
-        timestep: float
-    ) -> None:
-    
-    pass
 
 def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
     timestep = game_clock.dt / MAX_COLLISION_PASSES
@@ -68,9 +64,10 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
     for _ in range(MAX_COLLISION_PASSES):
         stable = True
 
-        for e1, e2 in unique_collision_pairs.value():
+        for e1, e2 in unique_collision_pairs.values():
             if check_collision(e1.location, e1.size, e2.location, e2.size):
-                update_collision_entities(e1, e2, velocities, timestep)
+                e1.handle_collision(velocities[e1], e2, velocities[e2], timestep)
+                e2.handle_collision(velocities[e2], e1, velocities[e1], timestep)
                 stable = False
         
         if stable:

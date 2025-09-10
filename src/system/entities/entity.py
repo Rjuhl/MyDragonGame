@@ -16,9 +16,6 @@ class Entity:
 
         self.movement_subscribers = []
         self.mananger = None
-
-        self.last_drawn_location = self.location.as_view_coord()
-        self.prev_drawn_location = self.location.as_view_coord()
     
     @classmethod
     def dummy(cls):
@@ -57,18 +54,6 @@ class Entity:
     
     def update(self, dt, onscreen=True):
         self.lifespan += dt
-
-        # Update draw location 
-        self.prev_drawn_location = self.last_drawn_location
-        dx, dy, _ = self.location.location - self.prev_location.location
-        x, y = self.location.as_view_coord()
-        if bool(dx) ^ bool(dy):
-            p1_x, p1_y = self.last_drawn_location
-            ray_vector = math.copysign(GRID_RATIO[0], dy + dx), math.copysign(GRID_RATIO[1], -dy + dx)
-            self.last_drawn_location = self.find_closest_point_on_discrete_ray((x, y), (p1_x, p1_y), ray_vector, )
-        else:
-            self.last_drawn_location = self.location.as_view_coord()
-
         return self
 
     def save(self):
@@ -81,7 +66,7 @@ class Entity:
         pass
 
     def draw(self):
-        return self.last_drawn_location + self.render_offset.location[:-1]
+        return self.location.as_view_coord() + self.render_offset.location[:-1]
 
     # move this methods elswhere (to a utlity or physics sections)
     @staticmethod

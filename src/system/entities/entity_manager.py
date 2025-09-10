@@ -19,10 +19,13 @@ class EntityManager:
         self.entities.add(entity)
         self.spatial_hash_grid.add_entity(entity)
 
+    def remove_entity(self, player):
+        pass
+
     # Updates all entities and returns a list of them to render
     def update_entities(self) -> List[Entity]:
         dt = game_clock.dt
-        screen_size, screen_location = self.screen.git_hitbox()
+        screen_location, screen_size = self.screen.get_hitbox()
 
         entities_on_screen = []
         for entity in self.entities:

@@ -43,9 +43,6 @@ class Renderer:
         self.asset_drawer.blit_dot(br, cam_screen_i, (0, 0, 0))
 
         l, s  = screen.get_hitbox()
-        self.asset_drawer.mark_hitbox(l, s, cam_screen_i)
-        self.asset_drawer.mark_hitbox(screen.tracking_box.location, screen.tracking_box.size, cam_screen_i, color=(0, 0, 255))
-        self.asset_drawer.blit_dot(screen.tracking_box.location, cam_screen_i, (0, 0, 0))
+        self.asset_drawer.mark_hitbox(l, s, cam_screen_i, color=(0, 255, 0))
 
         self.asset_drawer.blit_dot(screen.get_screen_center(), cam_screen_i, (0, 0, 0), radius=3)
-        self.asset_drawer.blit_dot(Coord.world(0, 0), cam_screen_i)
