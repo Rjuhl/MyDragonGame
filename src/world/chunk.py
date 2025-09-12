@@ -1,5 +1,6 @@
 import math
 import uuid
+import json
 import random
 from world.tile import Tile
 from pathlib import Path
@@ -7,42 +8,60 @@ from bisect import bisect_left
 from utils.coords import Coord
 from constants import CHUNK_SIZE
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
+from system.id_generator import id_generator
+from regestries import ENTITY_REGISTRY
 
 # Chunk Size will be 128 x 128 tiles
 class Chunk:
-    delimiter = "|"
-
-    def __init__(self, biome, location, random_number_generator=random.randint, size=CHUNK_SIZE):
+    def __init__(self, biome, location, random_number_generator=random.randint, size=CHUNK_SIZE, id=id_generator.get_id()):
         self.tiles = []
         self.SIZE = size
         self.biome = biome
         self.location = location
-        self.id = str(uuid.uuid4())
+        self.id = id
         self.random_number_generator = random_number_generator
+
+        self.entities = []
     
     @classmethod
     def load(cls, x, y):
         path = next(cls.get_data_path(x, y).iterdir())
-        data = path.read_text(encoding='utf-8').split(cls.delimiter)
+        data = json.loads(path.read_text(encoding='utf-8'))
 
-        chunk_id = data[0]
-        biome = data[1]
-        size = int(data[2])
-        location = Coord.chunk(int(data[3]), int(data[4]))
-        tiles = [Tile.load(d) for d in data[5:]]
+        chunk_id = data["id"]
+        biome = data["biome"]
+        size = int(data["size"])
+        location = Coord.load(data["location"])
+        tiles = [Tile.load(d) for d in data["tiles"]]
+        entities = [ENTITY_REGISTRY[e["classname"].load(e["data"])] for e in data["entities"]]
 
-        chunk = cls(biome=biome, location=location, size=size)
-        chunk.id = chunk_id
+        chunk = cls(biome=biome, location=location, size=size, id=chunk_id)
         chunk.tiles = tiles
+        chunk.entities = entities
+
         return chunk
     
     def save(self):
         x, y, _ = self.location.as_chunk_coord()
         path = self.get_data_path(x, y)
         file_path = path / f"{self.id}.chunk"
-        base = f"{self.id}{self.delimiter}{self.biome}{self.delimiter}{self.SIZE}{self.delimiter}{x}{self.delimiter}{y}"
-        serialization = [base] + [str(tile) for tile in self.tiles]
-        file_path.write_text(self.delimiter.join(serialization), encoding='utf-8')
+        file_path.write_text(json.dumps(self.jsonify(), ensure_ascii=False, indent=2), encoding='utf-8')
+
+    def jsonify(self):
+        return {
+            "id": self.id,
+            "size": self.SIZE,
+            "biome": self.biome,
+            "location": self.location.jsonify(),
+            "tiles": [tile.jsonify() for tile in self.tiles],
+            "entities": [entity.jsonify() for entity in self.entities]
+        }
+    
+    def add_entity(self, entity):
+        pass
+
+    def remove(self, entity):
+        pass
     
     # neighbor_biomes arr -> [left, right, top, bottom] biomes
     def generate(self, neighbor_biomes):

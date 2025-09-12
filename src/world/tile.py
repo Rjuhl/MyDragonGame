@@ -1,8 +1,6 @@
 from utils.coords import Coord
 
 class Tile:
-    delimiter = "$"
-
     def __init__(self, id, location, is_chunk_border=False):
         self.id = id
         self.location = location
@@ -10,9 +8,15 @@ class Tile:
     
     @classmethod
     def load(cls, data):
-        id, location, is_chunk_border = data.split(cls.delimiter)
-        return Tile(int(id), Coord.load(location), True if str(is_chunk_border) == 't' else False)
+        return Tile(int(data["id"]), Coord.load(data["location"]), True if data["is_chunk_border"] == 't' else False)
+    
+    def jsonify(self):
+        return {
+            "id": self.id,
+            "location": self.location.jsonify(),
+            "is_chunk_border": self.is_chunk_border
+        }
     
     def __str__(self):
-        return f"{self.id}{self.delimiter}{str(self.location)}{self.delimiter}{ 't' if self.is_chunk_border else 'f'}"
+        return f"Id: {self.id} -- Location {str(self.location)} -- Is Chunk Border { 't' if self.is_chunk_border else 'f'}"
 

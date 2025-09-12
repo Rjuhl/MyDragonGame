@@ -43,7 +43,7 @@ class Player(Entity):
     def draw(self):
         return self.last_drawn_location + self.render_offset.location[:-1]
     
-    # TODO: Better collision handling
+    # TODO: Better collision handling (ie special handling for static opbjects and so on)
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         self.move(self_velocity * -timestep)
 

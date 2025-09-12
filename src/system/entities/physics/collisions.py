@@ -47,6 +47,12 @@ def check_collision(
 
     return overlap_x and overlap_y and overlap_z
 
+def center_hit_box(location, size):
+    top_left = location.copy()
+    top_left.x = top_left.x - size.x / 2
+    top_left.y = top_left.y - size.y / 2
+    return top_left, size
+
 def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Dict[Entity, float]:
     velocities = {}
     for e1, e2 in unique_collision_pairs.values():
@@ -65,7 +71,10 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
         stable = True
 
         for e1, e2 in unique_collision_pairs.values():
-            if check_collision(e1.location, e1.size, e2.location, e2.size):
+            if check_collision(
+                *center_hit_box(e1.location, e1.size), 
+                *center_hit_box(e2.location, e2.size)
+            ): 
                 e1.handle_collision(velocities[e1], e2, velocities[e2], timestep)
                 e2.handle_collision(velocities[e2], e1, velocities[e1], timestep)
                 stable = False

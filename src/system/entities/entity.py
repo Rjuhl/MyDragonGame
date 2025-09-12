@@ -3,10 +3,13 @@ from utils.coords import Coord
 from constants import GRID_RATIO
 import math
 import numpy as np
+from system.entities.base_entity import BaseEntity
+from decorators import register_entity
 
-class Entity:
-    def __init__(self, location, size, img_id, render_offset): # Use pygame rects
-        self.id = id_generator.get_id()
+@register_entity
+class Entity(BaseEntity):
+    def __init__(self, location, size, img_id, render_offset, id=None): 
+        self.id = id if id is not None else id_generator.get_id()
         self.location = location
         self.size = size # Determines hitbox
         self.prev_location = location.copy()
@@ -56,11 +59,30 @@ class Entity:
         self.lifespan += dt
         return self
 
-    def save(self):
-        pass
+    def jsonify(self):
+        return {
+            "id": self.id,
+            "img_id": self.img_id,
+            "size": self.size.jsonify(),
+            "location": self.location.jsonify(),
+            "prev_location": self.prev_location.jsonify(),
+            "render_offset": self.render_offset.jsonify(),
+            "lifespan": self.lifespan
+        }
 
     def load(self, data):
-        pass
+        entity = Entity(
+            Coord.load(data["location"]),
+            Coord.load(data["size"]),
+            data["img_id"],
+            Coord.load(data["render_offset"]),
+            id=data["id"]
+        )
+
+        entity.prev_location = Coord.load(data["prev_location"])
+        entity.lifespan = data["lifespan"]
+
+        return entity
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         pass

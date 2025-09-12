@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 from pathlib import Path
 from utils.coords import Coord
+from system.entities.physics.collisions import center_hit_box
 
 class AssetDrawer:
     def __init__(self, display):
@@ -55,7 +56,8 @@ class AssetDrawer:
         x, y = world_location.as_view_coord() - cam_offset
         working_display.blit(dot_surface, (x - radius, y - radius))
 
-    def mark_hitbox(self, location, size, cam_offset, color=(255, 0, 0), radius=2, display=None):
+    def mark_hitbox(self, loc, size, cam_offset, color=(255, 0, 0), radius=2, display=None):
+        location, _ = center_hit_box(loc, size)
         self.blit_dot(location, cam_offset, color, radius, display)
         self.blit_dot(location + Coord.math(size.x, 0, 0), cam_offset, color, radius, display)
         self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)

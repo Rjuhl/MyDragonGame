@@ -1,4 +1,6 @@
 from functools import wraps
+from regestries import ENTITY_REGISTRY
+from system.entities.base_entity import BaseEntity
 
 def singleton(cls):
     """Make a class a singleton."""
@@ -9,3 +11,22 @@ def singleton(cls):
             instances[cls] = cls(*args, **kwargs)
         return instances[cls]
     return get_instance
+
+def register_entity(cls):
+    if not issubclass(cls, BaseEntity):
+        raise TypeError("Only classes that inherit from BaseEntity can be added to registry")
+    
+    if not hasattr(cls, "jsonify"):
+            raise AttributeError(f"{cls.__name__} has no jsonify method")
+
+    ENTITY_REGISTRY[cls.__name__] = cls
+    orig = cls.jsonify
+    @wraps(orig)
+    def new_jsonify(self, *args, **kwargs):
+        return {
+            "classname": self.__class__.__name__,
+            "data": orig(self, *args, **kwargs),
+        }
+
+    cls.jsonify = new_jsonify
+    return cls

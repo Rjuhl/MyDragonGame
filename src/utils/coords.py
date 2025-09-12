@@ -54,8 +54,11 @@ class Coord:
 
     @classmethod
     def load(cls, data):
-        data = data.split(cls.DELIMITER)
-        return cls.world(float(data[0]), float(data[1]))
+        return cls.world(
+            float(data["x"]), 
+            float(data["y"]), 
+            float(data["z"])
+        )
 
     def as_world_coord(self):
         return np.floor(self.location).astype(int)
@@ -100,13 +103,20 @@ class Coord:
 
     def copy(self):
         return Coord.world(*self.location)
+    
+    def jsonify(self):
+        return {
+            "x": self.x,
+            "y": self.y,
+            "z": self.z,
+        }
 
     def __hash__(self):
         return hash((self.location[0], self.location[1], self.location[2]))
 
     def __str__(self):
         loc_x, loc_y, loc_z = self.location.tolist()
-        return f"{loc_x}{self.DELIMITER}{loc_y}{self.DELIMITER}{loc_z}"
+        return f"({loc_x}, {loc_y}, {loc_z})"
 
    # --- helpers for arithmetic ---
     @staticmethod
