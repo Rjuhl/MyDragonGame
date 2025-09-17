@@ -75,17 +75,22 @@ class Map:
         new_locations = self.get_chunk_locations()
         chunks_not_to_save = []
         for i, (x, y) in enumerate(new_locations):
+            # If chunk is still loaded
             if (index := self.get_chunk_index(self.chunks, Coord.chunk(x, y))):
                 chunks.append(self.chunks[index - 1])
                 chunks_not_to_save.append(index - 1)
-            elif self.check_dir_exists(x, y):
-                chunks.append(Chunk.load(x, y))
+
             else:
-                chunks.append(Chunk(self.choose_biome(), Coord.chunk(x, y)))
+                chunk = Chunk.load(x, y) if self.check_dir_exists(x, y) else Chunk(self.choose_biome(), Coord.chunk(x, y))
+                chunks.append(chunk)
+                for entity in chunk.entities: self.entity_manager.add_entity(entity)
         
         for i, chunk in enumerate(self.chunks):
-            if i not in chunks_not_to_save: chunk.save()
-        
+            if i not in chunks_not_to_save: 
+                # First remove entities from manager and add them to chunk to save
+                chunk.entities = self.entity_manager.get_and_removed_chunk_entities(chunk)
+                chunk.save()
+               
         self.chunks = chunks
         self.generate_loaded_chunks()
  

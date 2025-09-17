@@ -1,7 +1,9 @@
 from collections import defaultdict
 from itertools import combinations
 from constants import SPATIAL_GRID_PARITION_SIZE
+from utils.coords import Coord
 from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
+from system.entities.sprites.player import Player
 
 
 class SpatialHashGrid:
@@ -42,25 +44,41 @@ class SpatialHashGrid:
         return {
             self.convert_to_key(location.x, location.y),
             self.convert_to_key(location.x + size.x, location.y),
-            self.convert_to_key(location.x, location.y + size.y),
-            self.convert_to_key(location.x + size.x, location.y + size.y),
+            self.convert_to_key(location.x, location.y - size.y),
+            self.convert_to_key(location.x + size.x, location.y - size.y),
         }
 
 
     def get_possible_onscreen_collisions(self, min_x, max_x, min_y, max_y):
         unique_collision_pairs = {}
-        for x in range(min_x // self.partition, (max_x // self.partition) + 1):
-            for y in range(min_y // self.partition, (max_y // self.partition) + 1):
+        for x in range(min_x - self.partition, max_x + self.partition, self.partition):
+            for y in range(min_y - self.partition, max_y + self.partition, self.partition):
                 self.add_pairs_from_grid(x, y, unique_collision_pairs)
-        
         return unique_collision_pairs
 
     def add_pairs_from_grid(self, x, y, unique_collision_pairs):
-        entities = self.location_to_entity_map[self.convert_to_key(x, y)]
+        key = self.convert_to_key(x, y)
+        entities = self.location_to_entity_map[key]
+        if len(entities) == 0: del self.location_to_entity_map[key]
         for e1, e2 in combinations(entities, 2):
             key = generate_unique_entity_pair_string(e1, e2)
             unique_collision_pairs[key] = [e1, e2]
 
     def convert_to_key(self, x, y):
         return tuple([x // self.partition, y // self.partition])
+    
+    def get_and_delete(self, x, y, dx, dy, exception=Player):
+        entities = set()
+        for i in range((dx // self.partition) + 1):
+            for j in range((dy // self.partition) + 1):
+                key = next(iter(self.convert_location_to_keys( # TODO: [BUG] The direction might be off here
+                    Coord.math(x + (i * (dx // self.partition)), y - (j * (dy // self.partition)), 0), 
+                    Coord.math(0, 0, 0)
+                )))
+                for entity in self.location_to_entity_map[key]:
+                    if not isinstance(entity, exception):
+                        entities.add(entity)
+                        self.remove_entity(entity)
+
+        return entities
     

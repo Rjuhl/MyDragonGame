@@ -75,6 +75,7 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
                 *center_hit_box(e1.location, e1.size), 
                 *center_hit_box(e2.location, e2.size)
             ): 
+                # print("collision")
                 e1.handle_collision(velocities[e1], e2, velocities[e2], timestep)
                 e2.handle_collision(velocities[e2], e1, velocities[e1], timestep)
                 stable = False
@@ -82,5 +83,5 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
         if stable:
             break
     
-
+    # print("no collision")
                 

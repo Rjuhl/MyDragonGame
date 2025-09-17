@@ -33,7 +33,7 @@ class Chunk:
         size = int(data["size"])
         location = Coord.load(data["location"])
         tiles = [Tile.load(d) for d in data["tiles"]]
-        entities = [ENTITY_REGISTRY[e["classname"].load(e["data"])] for e in data["entities"]]
+        entities = [ENTITY_REGISTRY.get(e_data["classname"]).load(e_data) for e_data in data["entities"]]
 
         chunk = cls(biome=biome, location=location, size=size, id=chunk_id)
         chunk.tiles = tiles

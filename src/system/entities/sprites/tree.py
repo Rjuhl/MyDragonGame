@@ -11,7 +11,8 @@ class Tree(Entity):
         render_offset = Coord.math(-24, -76, 0) # Coord.math(-8, 48, 0)
         super().__init__(location, size, img_id, render_offset)
 
-    def load(self, data):
+    @classmethod
+    def load(cls, data):
         tree = Tree(Coord.load(data["location"]))
 
         tree.prev_location = Coord.load(data["prev_location"])

@@ -5,6 +5,7 @@ from system.entities.physics.collisions import check_collision, resolve_collisio
 from system.entities.physics.spatial_hash_grid import SpatialHashGrid
 from system.screen import Screen
 from system.entities.entity import Entity
+from world.chunk import Chunk
 from constants import TILE_SIZE, DISPLAY_SIZE, WORLD_HEIGHT
 
 
@@ -38,5 +39,12 @@ class EntityManager:
         entities_on_screen.sort(key = lambda e: (e.location.z, e.location.x, e.location.y))
 
         return entities_on_screen
+    
+    def get_and_removed_chunk_entities(self, chunk: Chunk) -> List[Entity]:
+        x, y, _ = chunk.location.location
+        removed_entities = self.spatial_hash_grid.get_and_delete(x, y, chunk.SIZE, chunk.SIZE)
+        self.entities.difference_update(removed_entities)
+        return removed_entities
+
 
     

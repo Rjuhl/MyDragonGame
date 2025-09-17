@@ -12,6 +12,7 @@ def singleton(cls):
         return instances[cls]
     return get_instance
 
+# TODO: [BUG] Since thus applied to Entitiy and children its nesting the json with the change
 def register_entity(cls):
     if not issubclass(cls, BaseEntity):
         raise TypeError("Only classes that inherit from BaseEntity can be added to registry")
@@ -23,10 +24,9 @@ def register_entity(cls):
     orig = cls.jsonify
     @wraps(orig)
     def new_jsonify(self, *args, **kwargs):
-        return {
-            "classname": self.__class__.__name__,
-            "data": orig(self, *args, **kwargs),
-        }
+        json = orig(self, *args, **kwargs)
+        json["classname"] = self.__class__.__name__
+        return json
 
     cls.jsonify = new_jsonify
     return cls

@@ -8,7 +8,7 @@ class Tile:
     
     @classmethod
     def load(cls, data):
-        return Tile(int(data["id"]), Coord.load(data["location"]), True if data["is_chunk_border"] == 't' else False)
+        return Tile(int(data["id"]), Coord.load(data["location"]), data["is_chunk_border"])
     
     def jsonify(self):
         return {
@@ -18,5 +18,5 @@ class Tile:
         }
     
     def __str__(self):
-        return f"Id: {self.id} -- Location {str(self.location)} -- Is Chunk Border { 't' if self.is_chunk_border else 'f'}"
+        return f"Id: {self.id} -- Location {str(self.location)} -- Is Chunk Border { self.is_chunk_border }"
 
