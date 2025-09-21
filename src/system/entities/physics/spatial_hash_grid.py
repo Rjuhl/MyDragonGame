@@ -71,7 +71,7 @@ class SpatialHashGrid:
         entities = set()
         for i in range((dx // self.partition) + 1):
             for j in range((dy // self.partition) + 1):
-                key = next(iter(self.convert_location_to_keys( # TODO: [BUG] The direction might be off here
+                key = next(iter(self.convert_location_to_keys(
                     Coord.math(x + (i * (dx // self.partition)), y - (j * (dy // self.partition)), 0), 
                     Coord.math(0, 0, 0)
                 )))

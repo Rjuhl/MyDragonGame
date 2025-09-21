@@ -14,14 +14,25 @@ class EntityManager:
         self.screen = screen
         self.spatial_hash_grid = SpatialHashGrid()
         self.entities = set()
+        self.player = None
+
+        self.kill_listener_subscribers = []
     
     def add_entity(self, entity: Entity) -> None:
         entity.bind_to_manager(self)
         self.entities.add(entity)
         self.spatial_hash_grid.add_entity(entity)
 
-    def remove_entity(self, player):
-        pass
+    def remove_entity(self, entity):
+        # kill entity
+
+        # Notify subscribers
+        for subscriber in self.kill_listener_subscribers:
+            subscriber.recieve_death_event(entity)
+
+
+    def add_kill_listener_subscriber(self, subscriber):
+        self.kill_listener_subscribers.append(subscriber)
 
     # Updates all entities and returns a list of them to render
     def update_entities(self) -> List[Entity]:
