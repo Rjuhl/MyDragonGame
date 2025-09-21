@@ -7,7 +7,7 @@ from decorators import register_entity
 class Tree(Entity):
     def __init__(self, location):
         img_id = 0
-        size = Coord.world(0.5, 0.5, 2)
+        size = Coord.world(0.5, 0.5, 3)
         render_offset = Coord.math(-24, -76, 0) # Coord.math(-8, 48, 0)
         super().__init__(location, size, img_id, render_offset)
 

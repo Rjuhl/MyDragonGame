@@ -2,11 +2,9 @@ import numpy as np
 from constants import CHUNK_SIZE
 
 class Coord:
-    DELIMITER = "#"
-
     BASIS = np.array([
         [16, 16, 0],
-        [8, -8, 0],
+        [8, -8, -16],
         [0, 0, 1]
     ], dtype=np.float64)
 

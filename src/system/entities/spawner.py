@@ -16,7 +16,7 @@ class SpawnerArgs:
     entity_to_spawn: Entity
     spawn_entity: Callable[[], Entity]
 
-# TODO: Add Abstract subscriber class(es) to illustrate the methods that could be called and for typing
+    
 class Spawner(Entity, EntityManagerSubscriber):
     def __init__(self, location, size, img_id, render_offset, spawner_args):
         super().__init__(location, size, img_id, render_offset)

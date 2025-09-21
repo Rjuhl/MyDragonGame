@@ -1,6 +1,6 @@
 from system.id_generator import id_generator
 from utils.coords import Coord
-from constants import GRID_RATIO
+from constants import GRID_RATIO, WORLD_HEIGHT, TILE_SIZE
 import math
 import numpy as np
 from system.entities.base_entity import BaseEntity
@@ -33,6 +33,9 @@ class Entity(BaseEntity):
         # Need to update prev location to use for collisions in the future
         self.prev_location = self.location.copy()
         self.location += movement_vec
+
+        # Clamp z axis movement 
+        self.location.z = np.clip(self.location.z, 0, WORLD_HEIGHT / TILE_SIZE)
 
         if with_listeners:
             for movement_subscriber in self.movement_subscribers:
