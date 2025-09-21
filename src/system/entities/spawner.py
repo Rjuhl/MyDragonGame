@@ -1,6 +1,6 @@
 from system.entities.entity import Entity
 from system.game_clock import game_clock
-from system.entities.entity_manager import EntityManager
+from system.entities.entity_manager import EntityManager, EntityManagerSubscriber
 from utils.math import distance_between_coords
 from typing import List, Dict, Callable
 from dataclasses import dataclass
@@ -17,7 +17,7 @@ class SpawnerArgs:
     spawn_entity: Callable[[], Entity]
 
 # TODO: Add Abstract subscriber class(es) to illustrate the methods that could be called and for typing
-class Spawner(Entity):
+class Spawner(Entity, EntityManagerSubscriber):
     def __init__(self, location, size, img_id, render_offset, spawner_args):
         super().__init__(location, size, img_id, render_offset)
         self.spawn_limit = spawner_args.spawn_limit

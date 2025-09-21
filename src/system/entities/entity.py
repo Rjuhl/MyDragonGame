@@ -109,3 +109,8 @@ class Entity(BaseEntity):
 
         x, y = (((qx - x1) // dx) * dx) + x1, (((qy - y1) // dy) * dy) + y1
         return np.array([x, y])
+
+
+class EntitySubscriber:
+    def receive_movement_event(entity: Entity):
+        pass

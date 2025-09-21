@@ -23,7 +23,7 @@ class EntityManager:
         self.entities.add(entity)
         self.spatial_hash_grid.add_entity(entity)
 
-    def remove_entity(self, entity):
+    def remove_entity(self, entity: Entity) -> None:
         # kill entity
 
         # Notify subscribers
@@ -58,4 +58,7 @@ class EntityManager:
         return removed_entities
 
 
-    
+class EntityManagerSubscriber:
+    def recieve_death_event(entity: Entity):
+        pass
+

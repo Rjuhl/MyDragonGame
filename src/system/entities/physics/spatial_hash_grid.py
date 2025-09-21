@@ -4,9 +4,10 @@ from constants import SPATIAL_GRID_PARITION_SIZE
 from utils.coords import Coord
 from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
 from system.entities.sprites.player import Player
+from system.entities.entity import EntitySubscriber
 
 
-class SpatialHashGrid:
+class SpatialHashGrid(EntitySubscriber):
     def __init__(self, partition=SPATIAL_GRID_PARITION_SIZE):
         self.partition = partition
         self.location_to_entity_map = defaultdict(list)
