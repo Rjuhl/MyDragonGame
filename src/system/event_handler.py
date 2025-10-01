@@ -5,6 +5,7 @@ from system.game_clock import game_clock
 from constants import TEMP_MOVEMENT_FACTOR
 from system.id_generator import id_generator
 from system.global_vars import game_globals
+import time
 
 class EventHandler:
     def __init__(self):
@@ -13,8 +14,7 @@ class EventHandler:
     def event_tick(self):
         for event in pygame.event.get():
             if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
+                self.close_app()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     self.close_app()

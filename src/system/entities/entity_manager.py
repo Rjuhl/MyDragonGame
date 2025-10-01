@@ -43,11 +43,13 @@ class EntityManager:
         for entity in self.entities:
             onscreen = check_collision(entity.location, entity.size, screen_location, screen_size)
             entity.update(dt, onscreen)
-            if onscreen: entities_on_screen.append(entity)
+            if onscreen: 
+                entities_on_screen.append(entity)
+                if (shadow_entity := entity.serve_shadow_entity()): entities_on_screen.append(shadow_entity)
         
         resolve_collisions(self.spatial_hash_grid.get_possible_onscreen_collisions(*self.screen.get_bounding_box()))
 
-        entities_on_screen.sort(key = lambda e: (e.location.z, e.location.x, e.location.y))
+        entities_on_screen.sort(key = lambda e: (e.location.x, e.location.y, e.location.z))
 
         return entities_on_screen
     

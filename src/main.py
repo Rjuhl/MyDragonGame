@@ -1,5 +1,6 @@
 import pygame
 import constants
+from pathlib import Path
 from utils.coords import Coord
 from world.map import Map
 from system.renderer import Renderer
@@ -11,7 +12,13 @@ from system.entities.sprites.player import Player
 from system.global_vars import set_base_globals
 
 def runGame(logger):
-    pygame.init()
+    # Load and set icon image 
+    current_dir = Path(__file__).parent
+    icon_path = current_dir.parent / 'assets' / 'dragon_game_logo_scaled.png'
+    icon_surface = pygame.image.load(icon_path)
+    pygame.init() 
+    pygame.display.set_icon(icon_surface)
+
     set_base_globals()
     font = pygame.font.Font(None, 24) 
     pygame.display.set_caption(constants.GAME_NAME)

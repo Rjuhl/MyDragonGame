@@ -2,7 +2,9 @@ import pygame
 import numpy as np
 from pathlib import Path
 from utils.coords import Coord
+from utils.generate_shadow_ellipse import generate_shadow_ellipse
 from system.entities.physics.collisions import center_hit_box
+from regestries import SHADOW_ENTITY_REGISTRY
 
 class AssetDrawer:
     def __init__(self, display):
@@ -13,6 +15,8 @@ class AssetDrawer:
 
         self.tiles = self.load_assets(tile_img_dir)
         self.sprites = self.load_assets(sprite_img_dir)
+
+        self._add_shadow_sprites()
 
     def draw_tile(self, tile, cam_offset, tint, display=None):
         working_display = self.display if display is None else display
@@ -63,12 +67,20 @@ class AssetDrawer:
         self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)
         self.blit_dot(location + size, cam_offset, color, radius, display)
 
+    def _add_shadow_sprites(self):
+        next_id = len(self.sprites)
+        for entity_cls in SHADOW_ENTITY_REGISTRY:
+            self.sprites.append(generate_shadow_ellipse(*SHADOW_ENTITY_REGISTRY[entity_cls]))
+            entity_cls.SHADOW_ID = next_id
+            next_id += 1
+
+
     @staticmethod
     def load_assets(path):
         paths = []
         for file in path.iterdir():
             paths.append(file.resolve())
         paths.sort(key=lambda path: int(path.name[:path.name.find('_')]))
-        imgs = [pygame.image.load(file).convert() for file in paths]
+        imgs = [pygame.image.load(file).convert_alpha() for file in paths]
         for img in imgs: img.set_colorkey((0, 0, 0))
         return imgs

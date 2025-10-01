@@ -36,7 +36,7 @@ class Coord:
         return instance
 
     @classmethod
-    def view(cls, vx, vy, vz, cam_offset):
+    def view(cls, vx, vy, vz, cam_offset=np.array([0, 0, 0])):
         # Convert view coords to world coords using screen offset
         screen = np.array([vx, vy, vz], dtype=np.float64) - cam_offset
         world_coords = Coord.INV_BASIS @ screen

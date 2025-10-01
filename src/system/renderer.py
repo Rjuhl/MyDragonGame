@@ -25,7 +25,7 @@ class Renderer:
             self.asset_drawer.draw_sprite(entity, cam_screen_i)
 
             # If hitboxes are turned on draw hitbox corners
-            if game_globals.show_hitboxes_on:
+            if game_globals.show_hitboxes_on and hasattr(entity, "SHADOW_ID"):
                 self.asset_drawer.mark_hitbox(entity.location, entity.size, cam_screen_i, color=(0, 255, 0))
 
         

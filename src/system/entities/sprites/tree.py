@@ -1,9 +1,12 @@
 from typing import List, Dict
 from system.entities.entity import Entity
 from utils.coords import Coord
-from decorators import register_entity
+from decorators import register_entity, generate_shadow
+
+
 
 @register_entity
+@generate_shadow(1, 1)
 class Tree(Entity):
     def __init__(self, location):
         img_id = 0

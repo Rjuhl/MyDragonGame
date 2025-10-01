@@ -6,7 +6,7 @@ import numpy as np
 from system.entities.base_entity import BaseEntity
 from decorators import register_entity
 
-@register_entity
+@register_entity 
 class Entity(BaseEntity):
     def __init__(self, location, size, img_id, render_offset, id=None): 
         self.id = id if id is not None else id_generator.get_id()
@@ -19,6 +19,8 @@ class Entity(BaseEntity):
 
         self.movement_subscribers = []
         self.mananger = None
+
+        # Shadow casting parameters
     
     @classmethod
     def dummy(cls):
@@ -29,6 +31,9 @@ class Entity(BaseEntity):
             Coord.math(0, 0, 0)
         )
     
+    def serve_shadow_entity(self): 
+        return None
+
     def move(self, movement_vec, with_listeners=True):
         # Need to update prev location to use for collisions in the future
         self.prev_location = self.location.copy()

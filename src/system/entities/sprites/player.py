@@ -5,7 +5,9 @@ from system.entities.entity import Entity
 from typing import List, Dict
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO
+from decorators import generate_shadow
 
+@generate_shadow(0.5, 0.5)
 class Player(Entity):
     def __init__(self, location: Coord) -> None:
         is_human = True

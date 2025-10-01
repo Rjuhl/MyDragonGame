@@ -1,6 +1,8 @@
 from functools import wraps
-from regestries import ENTITY_REGISTRY
+from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY
 from system.entities.base_entity import BaseEntity
+from utils.coords import Coord
+from utils.types.shade_levels import ShadeLevel
 
 def singleton(cls):
     """Make a class a singleton."""
@@ -12,8 +14,9 @@ def singleton(cls):
         return instances[cls]
     return get_instance
 
-# TODO: [BUG] Since thus applied to Entitiy and children its nesting the json with the change
+
 def register_entity(cls):
+    """ Adds different entity types to a regestry so that the can be saved and loaded together"""
     if not issubclass(cls, BaseEntity):
         raise TypeError("Only classes that inherit from BaseEntity can be added to registry")
     
@@ -30,3 +33,34 @@ def register_entity(cls):
 
     cls.jsonify = new_jsonify
     return cls
+
+
+def generate_shadow(
+        length: float, width: float, fade: float = 1, 
+        override_serve_shadow_entity: bool =True, shadeLevel: ShadeLevel = ShadeLevel.DEFAULT
+    ):
+    """ Generates an elliptical shadow for the entity """
+    from system.entities.entity import Entity
+    def decorator(cls: Entity):
+        if not issubclass(cls, Entity):
+            raise TypeError("Only classes that inherit from BaseEntity can be added to registry")
+        
+        cls.SHADOW_ID = -1
+        SHADOW_ENTITY_REGISTRY[cls] = (length, width, fade)
+
+        if override_serve_shadow_entity:
+            
+            def serve_shadow_entity(self):
+                loc = self.location.copy()
+                loc.z = shadeLevel
+                return Entity(
+                    loc, 
+                    Coord.math(0, 0, 0), self.SHADOW_ID, 
+                    Coord.math(-length * Coord.BASIS[0][0], -width * Coord.BASIS[1][0], 0), 
+                    id=-1
+                ) # Will likely need to update how this is generated
+
+            cls.serve_shadow_entity = serve_shadow_entity
+
+        return cls
+    return decorator
