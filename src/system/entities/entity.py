@@ -4,6 +4,9 @@ from constants import GRID_RATIO, WORLD_HEIGHT, TILE_SIZE
 import math
 import numpy as np
 from system.entities.base_entity import BaseEntity
+from system.render_obj import RenderObj
+from utils.types.shade_levels import ShadeLevel
+from typing import List
 from decorators import register_entity
 
 @register_entity 
@@ -31,7 +34,7 @@ class Entity(BaseEntity):
             Coord.math(0, 0, 0)
         )
     
-    def serve_shadow_entity(self): 
+    def serve_shadow(self): 
         return None
 
     def move(self, movement_vec, with_listeners=True):
@@ -95,8 +98,20 @@ class Entity(BaseEntity):
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         pass
 
-    def draw(self):
+    def shade_level(self):
+        return ShadeLevel.SPRITE
+
+    def draw_location(self):
         return self.location.as_view_coord() + self.render_offset.location[:-1]
+
+    def get_render_objs(self) -> List[RenderObj]:
+        return [RenderObj(
+            self.img_id,
+            self.draw_location(),
+            (self.shade_level(), self.location.x, self.location.y, self.location.z),
+            location=self.location, size=self.size
+        )]
+
 
     # move this methods elswhere (to a utlity or physics sections)
     @staticmethod

@@ -1,5 +1,8 @@
 from enum import Enum
 
 class ShadeLevel(float, Enum):
-    DEFAULT = 0
-    CANOPY_START = 1
+    GROUND = 0
+    SPRITE = 1
+    CANOPY_START = 2
+    CANOPY = 3
+    CANOPY_END = 4

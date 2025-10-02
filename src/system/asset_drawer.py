@@ -49,8 +49,8 @@ class AssetDrawer:
     def draw_sprite(self, sprite, cam_offset, display=None):
         working_display = self.display if display is None else display
         working_display.blit(
-            self.sprites[sprite.img_id], 
-            sprite.draw() - cam_offset
+            self.sprites[sprite.id], 
+            sprite.draw_location - cam_offset
         )
 
     def blit_dot(self, world_location, cam_offset, color=(255, 0, 0), radius=2, display=None):

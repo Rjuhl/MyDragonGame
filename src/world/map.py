@@ -50,9 +50,10 @@ class Map:
         
     def update(self):
         self.handle_chunk_loading()
-        self.entities_to_render = self.entity_manager.update_entities()
+        self.entity_manager.update_entities()
         self.player.smooth_movement()
         self.screen.update()
+        self.entities_to_render = self.entity_manager.get_entity_render_objs()
 
     def get_tiles_to_render(self, min_x, max_x, min_y, max_y):
 

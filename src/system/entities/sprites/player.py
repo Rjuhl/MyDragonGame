@@ -5,6 +5,8 @@ from system.entities.entity import Entity
 from typing import List, Dict
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO
+from system.render_obj import RenderObj
+from utils.types.shade_levels import ShadeLevel
 from decorators import generate_shadow
 
 @generate_shadow(0.5, 0.5)
@@ -41,8 +43,13 @@ class Player(Entity):
             self.last_drawn_location = self.find_closest_point_on_discrete_ray((x, y), (p1_x, p1_y), ray_vector, )
         else:
             self.last_drawn_location = self.location.as_view_coord()
+
+    def shade_level(self):
+        if self.location.z <= 1: return ShadeLevel.SPRITE
+        elif self.location.z <= 3: return ShadeLevel.CANOPY
+        return ShadeLevel.CANOPY_END
     
-    def draw(self):
+    def draw_location(self):
         return self.last_drawn_location + self.render_offset.location[:-1]
     
     # TODO: Better collision handling (ie special handling for static opbjects and so on)

@@ -5,6 +5,7 @@ from system.entities.physics.collisions import check_collision, resolve_collisio
 from system.entities.physics.spatial_hash_grid import SpatialHashGrid
 from system.screen import Screen
 from system.entities.entity import Entity
+from system.render_obj import RenderObj
 from world.chunk import Chunk
 from constants import TILE_SIZE, DISPLAY_SIZE, WORLD_HEIGHT
 
@@ -17,6 +18,7 @@ class EntityManager:
         self.player = None
 
         self.kill_listener_subscribers = []
+        self.entities_on_screen = []
     
     def add_entity(self, entity: Entity) -> None:
         entity.bind_to_manager(self)
@@ -35,23 +37,28 @@ class EntityManager:
         self.kill_listener_subscribers.append(subscriber)
 
     # Updates all entities and returns a list of them to render
-    def update_entities(self) -> List[Entity]:
+    def update_entities(self) -> None :
         dt = game_clock.dt
         screen_location, screen_size = self.screen.get_hitbox()
 
-        entities_on_screen = []
+        self.entities_on_screen = []
         for entity in self.entities:
             onscreen = check_collision(entity.location, entity.size, screen_location, screen_size)
             entity.update(dt, onscreen)
             if onscreen: 
-                entities_on_screen.append(entity)
-                if (shadow_entity := entity.serve_shadow_entity()): entities_on_screen.append(shadow_entity)
+                self.entities_on_screen.append(entity)
+                
         
         resolve_collisions(self.spatial_hash_grid.get_possible_onscreen_collisions(*self.screen.get_bounding_box()))
 
-        entities_on_screen.sort(key = lambda e: (e.location.x, e.location.y, e.location.z))
-
-        return entities_on_screen
+        
+    def get_entity_render_objs(self) -> List[RenderObj]:
+        render_objs = []
+        for entity in self.entities_on_screen:
+            render_objs.extend(entity.get_render_objs())
+            if (shadow:= entity.serve_shadow()): render_objs.append(shadow)
+        render_objs.sort(key= lambda r_obj: r_obj.render_order)
+        return render_objs
     
     def get_and_removed_chunk_entities(self, chunk: Chunk) -> List[Entity]:
         x, y, _ = chunk.location.location

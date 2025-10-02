@@ -1,3 +1,4 @@
+import numpy as np
 from functools import wraps
 from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY
 from system.entities.base_entity import BaseEntity
@@ -36,11 +37,12 @@ def register_entity(cls):
 
 
 def generate_shadow(
-        length: float, width: float, fade: float = 1, 
-        override_serve_shadow_entity: bool =True, shadeLevel: ShadeLevel = ShadeLevel.DEFAULT
+        length: float, width: float, fade: float = 0, 
+        override_serve_shadow_entity: bool =True, shadeLevel: ShadeLevel = ShadeLevel.GROUND
     ):
     """ Generates an elliptical shadow for the entity """
     from system.entities.entity import Entity
+    from system.render_obj import RenderObj
     def decorator(cls: Entity):
         if not issubclass(cls, Entity):
             raise TypeError("Only classes that inherit from BaseEntity can be added to registry")
@@ -49,18 +51,18 @@ def generate_shadow(
         SHADOW_ENTITY_REGISTRY[cls] = (length, width, fade)
 
         if override_serve_shadow_entity:
-            
-            def serve_shadow_entity(self):
-                loc = self.location.copy()
-                loc.z = shadeLevel
-                return Entity(
-                    loc, 
-                    Coord.math(0, 0, 0), self.SHADOW_ID, 
-                    Coord.math(-length * Coord.BASIS[0][0], -width * Coord.BASIS[1][0], 0), 
-                    id=-1
-                ) # Will likely need to update how this is generated
+           
+            def serve_shadow(self):
+                draw_location = self.draw_location() - self.render_offset.location[:-1] + np.array([-length * Coord.BASIS[0, 0], -width * Coord.BASIS[1, 0]])
+                draw_location[1] -= np.floor(self.location.z * Coord.BASIS[1, 2])
+                return RenderObj(
+                    self.SHADOW_ID,
+                    draw_location, # Need to add adjustment for z term
+                    (shadeLevel, self.location.x, self.location.y, self.location.z),
+                    isShadow=True
+                )  # Will likely need to update how this is generated
 
-            cls.serve_shadow_entity = serve_shadow_entity
+            cls.serve_shadow = serve_shadow
 
         return cls
     return decorator
