@@ -23,7 +23,7 @@ def runGame(logger):
     font = pygame.font.Font(None, 24) 
     pygame.display.set_caption(constants.GAME_NAME)
     display = pygame.Surface(constants.DISPLAY_SIZE)
-    screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF , vsync=1)
+    screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF, vsync=1)
     screen_entity = Screen.load()
     
     player = Player(Coord.world(0, 0))
@@ -38,8 +38,6 @@ def runGame(logger):
         game_clock.tick() 
         display.fill((0,0,0))
 
-        
-         
         map.update()
         items_rendered = renderer.draw(map, screen_entity)
         event_handler.event_tick()

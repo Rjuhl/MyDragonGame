@@ -56,6 +56,14 @@ class Screen:
             self.coord.copy().update_as_view_coord(*DISPLAY_SIZE).as_world_coord(),
         ]
     
+    def get_ccw_poly(self):
+        return [
+            self.coord.copy(),
+            self.coord.copy().update_as_view_coord(0, DISPLAY_SIZE[1]),
+            self.coord.copy().update_as_view_coord(*DISPLAY_SIZE),
+            self.coord.copy().update_as_view_coord(DISPLAY_SIZE[0], 0)
+        ]
+    
     def get_bounding_box(self, padding=PADDING):
         corners = self.get_corners()
         min_x = math.floor(min(x for x, _, _ in corners)) - padding

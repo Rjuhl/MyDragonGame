@@ -38,7 +38,7 @@ def register_entity(cls):
 
 def generate_shadow(
         length: float, width: float, fade: float = 0, 
-        override_serve_shadow_entity: bool =True, shadeLevel: ShadeLevel = ShadeLevel.GROUND
+        override_serve_shadow_entity: bool = True, shade_level: ShadeLevel = ShadeLevel.GROUND
     ):
     """ Generates an elliptical shadow for the entity """
     from system.entities.entity import Entity
@@ -57,10 +57,10 @@ def generate_shadow(
                 draw_location[1] -= np.floor(self.location.z * Coord.BASIS[1, 2])
                 return RenderObj(
                     self.SHADOW_ID,
-                    draw_location, # Need to add adjustment for z term
-                    (shadeLevel, self.location.x, self.location.y, self.location.z),
+                    draw_location,
+                    (shade_level, self.location.x, self.location.y, self.location.z),
                     isShadow=True
-                )  # Will likely need to update how this is generated
+                )
 
             cls.serve_shadow = serve_shadow
 

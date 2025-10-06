@@ -1,20 +1,18 @@
 import pygame
-import math
 import numpy as np
-from constants import DISPLAY_SIZE
-from utils.coords import Coord
 from system.asset_drawer import AssetDrawer
 from system.global_vars import game_globals
-
+from world.map import Map
+from system.screen import Screen
+from numpy.typing import NDArray
 
 class Renderer:
-    def __init__(self, display):
+    def __init__(self, display: pygame.Surface):
         self.display = display
         self.asset_drawer = AssetDrawer(self.display)
 
-    def draw(self, map, screen):
+    def draw(self, map: Map, screen: Screen) -> int:
         cam_screen_i = screen.cam_offset 
-        # print(cam_screen_i)
         tiles_to_render = map.get_tiles_to_render(*screen.get_bounding_box())
         for tile in tiles_to_render:
             # Set tile color to red if on chunk border and chunk borders on has been toggled on
@@ -35,7 +33,7 @@ class Renderer:
 
         return len(tiles_to_render)
     
-    def _render_dubug_elements(self, map, screen, cam_screen_i):
+    def _render_dubug_elements(self, map: Map, screen: Screen, cam_screen_i: NDArray[np.float64]) -> None:
         tl, tr, bl, br = screen.get_tracking_box(screen_axis=False)
         self.asset_drawer.blit_dot(tl, cam_screen_i, (0, 0, 0))
         self.asset_drawer.blit_dot(tr, cam_screen_i, (0, 0, 0))

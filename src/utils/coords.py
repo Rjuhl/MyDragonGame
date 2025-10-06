@@ -127,6 +127,15 @@ class Coord:
         if a.shape != (3,):
             raise TypeError("Expected coord, scalar, or array-like of length 3")
         return a
+    
+    # --- vector math ---
+    def norm(self): return np.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
+    def dot(self, other): return np.dot(self.location, self._coerce(other))
+    def cross(self, other): return Coord(np.cross(self.location, self._coerce(other)))
+    def norm_2D(self): return np.sqrt(self.x ** 2 + self.y ** 2)
+    def dot_2D(self, other): return np.dot(self.location[:2], self._coerce(other)[:2])
+    def cross_2D(self, other): return np.cross(self.location[:2], self._coerce(other)[:2])
+
 
     # --- arithmetic (new object) ---
     def __add__(self, other):      return Coord(self.location + self._coerce(other))

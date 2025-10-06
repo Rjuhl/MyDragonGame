@@ -5,9 +5,12 @@ from utils.coords import Coord
 from utils.generate_shadow_ellipse import generate_shadow_ellipse
 from system.entities.physics.collisions import center_hit_box
 from regestries import SHADOW_ENTITY_REGISTRY
+from world.tile import Tile
+from numpy.typing import NDArray
+from system.render_obj import RenderObj
 
 class AssetDrawer:
-    def __init__(self, display):
+    def __init__(self, display: pygame.Surface):
         current_dir = Path(__file__).parent
         tile_img_dir = current_dir.parent.parent / 'assets' / 'tiles'
         sprite_img_dir = current_dir.parent.parent / 'assets' / 'sprites'
@@ -18,7 +21,7 @@ class AssetDrawer:
 
         self._add_shadow_sprites()
 
-    def draw_tile(self, tile, cam_offset, tint, display=None):
+    def draw_tile(self, tile: Tile, cam_offset: NDArray[np.float64], tint: pygame.typing.ColorLike, display=None):
         working_display = self.display if display is None else display
         tile_img = self.tiles[tile.id]
 
@@ -46,14 +49,14 @@ class AssetDrawer:
         working_display.blit(tinted_img, tile.location.as_view_coord() - cam_offset)
 
 
-    def draw_sprite(self, sprite, cam_offset, display=None):
+    def draw_sprite(self, sprite: RenderObj, cam_offset: NDArray[np.float64], display=None) -> None:
         working_display = self.display if display is None else display
         working_display.blit(
-            self.sprites[sprite.id], 
+            self.sprites[sprite.id] if sprite.img is None else sprite.img, 
             sprite.draw_location - cam_offset
         )
 
-    def blit_dot(self, world_location, cam_offset, color=(255, 0, 0), radius=2, display=None):
+    def blit_dot(self, world_location: Coord, cam_offset:  NDArray[np.float64], color=(255, 0, 0), radius=2, display=None) -> None:
         working_display = self.display if display is None else display
         dot_surface = pygame.Surface((radius * 2, radius * 2), pygame.SRCALPHA)
         pygame.draw.circle(dot_surface, color, (radius, radius), radius)

@@ -11,7 +11,7 @@ from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
 from regestries import ENTITY_REGISTRY
 
-# Chunk Size will be 128 x 128 tiles
+# Chunk Size will be 64 x 64 tiles
 class Chunk:
     def __init__(self, biome, location, random_number_generator=random.randint, size=CHUNK_SIZE, id=id_generator.get_id()):
         self.tiles = []

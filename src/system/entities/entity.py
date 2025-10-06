@@ -6,12 +6,12 @@ import numpy as np
 from system.entities.base_entity import BaseEntity
 from system.render_obj import RenderObj
 from utils.types.shade_levels import ShadeLevel
-from typing import List
+from typing import List, Optional, Self, Tuple
 from decorators import register_entity
 
 @register_entity 
 class Entity(BaseEntity):
-    def __init__(self, location, size, img_id, render_offset, id=None): 
+    def __init__(self, location: Coord, size: Coord, img_id: int, render_offset: Coord, id: Optional[int] = None): 
         self.id = id if id is not None else id_generator.get_id()
         self.location = location
         self.size = size # Determines hitbox
@@ -23,7 +23,6 @@ class Entity(BaseEntity):
         self.movement_subscribers = []
         self.mananger = None
 
-        # Shadow casting parameters
     
     @classmethod
     def dummy(cls):
@@ -34,10 +33,13 @@ class Entity(BaseEntity):
             Coord.math(0, 0, 0)
         )
     
+    def serve_reciever(self) -> Optional[List[Tuple[List[Coord], ShadeLevel]]]:
+        return None
+
     def serve_shadow(self): 
         return None
 
-    def move(self, movement_vec, with_listeners=True):
+    def move(self, movement_vec: Coord, with_listeners: bool = True) -> Self:
         # Need to update prev location to use for collisions in the future
         self.prev_location = self.location.copy()
         self.location += movement_vec
@@ -123,8 +125,6 @@ class Entity(BaseEntity):
         m = dy / dx
 
         # Direction vector along the line and projection scalar
-        # d = (1, m)
-        # t = ((P - A) · d) / (d · d)
         t = ((x0 - x1) + m * (y0 - y1)) / (1.0 + m * m)
 
         qx = x1 + t

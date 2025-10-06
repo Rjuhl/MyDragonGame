@@ -6,10 +6,10 @@ from typing import List, Dict
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO
 from system.render_obj import RenderObj
+from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
-from decorators import generate_shadow
 
-@generate_shadow(0.5, 0.5)
+
 class Player(Entity):
     def __init__(self, location: Coord) -> None:
         is_human = True
@@ -52,11 +52,17 @@ class Player(Entity):
     def draw_location(self):
         return self.last_drawn_location + self.render_offset.location[:-1]
     
+    def get_shadow(self) -> EllipseData:
+        return EllipseData(
+            self.location,
+            0.5, 0.5, 0
+        )
+    
     # TODO: Better collision handling (ie special handling for static opbjects and so on)
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         self.move(self_velocity * -timestep)
 
-    # movement in not the same speed in all directions?
+    
     @staticmethod
     def get_movement(dt: float):
         pressed = pygame.key.get_pressed()
