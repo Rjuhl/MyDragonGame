@@ -54,7 +54,7 @@ class Player(Entity):
     
     def get_shadow(self) -> EllipseData:
         return EllipseData(
-            self.location,
+            Coord.view(self.last_drawn_location[0], self.last_drawn_location[1], self.location.z),
             0.5, 0.5, 0
         )
     

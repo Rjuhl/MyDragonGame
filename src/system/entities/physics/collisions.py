@@ -19,9 +19,6 @@ def check_collision(
     ) -> bool:
     """AABB overlap test in 3D. """
 
-    # print("Entity location and size", f"({e1_location.x}, {e1_location.y})", f"({e1_size.x}, {e1_size.y})")
-    # print("Screen location and size", f"({e2_location.x}, {e2_location.y})", f"({e2_size.x}, {e2_size.y})")
-
     # Self box min/max on each axis
     ax1, ay1, az1 = e1_location.x, e1_location.y, e1_location.z
     ax2, ay2, az2 = ax1 + e1_size.x, ay1 + e1_size.y, az1 + e1_size.z

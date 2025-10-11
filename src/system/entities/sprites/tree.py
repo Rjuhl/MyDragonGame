@@ -8,7 +8,7 @@ from decorators import register_entity, generate_shadow
 
 
 @register_entity
-@generate_shadow(1, 1, shade_level=ShadeLevel.CANOPY_START, fade=0.5)
+@generate_shadow(1.5, 1.5, shade_level=ShadeLevel.CANOPY_START, fade=0.5)
 class Tree(Entity):
     def __init__(self, location):
         img_id = None
@@ -35,15 +35,17 @@ class Tree(Entity):
 
     def serve_reciever(self):
         p0 = self.location.copy()
-        p0.z = 4
-
-        p1 = self.location.copy().update_as_world_coord(-0.5, -0.5, 1)
-        p2 = self.location.copy().update_as_world_coord(0.5, -0.5, 1)
-        p3 = self.location.copy().update_as_world_coord(0.5, 0.5, 1)
+        p0.x -= 0.45
+        p0.y += 0.35
+        p0.z = 4.15
+        scale = 0.65
+        p1 = self.location.copy().update_as_world_coord(-scale, -scale, 1)
+        p2 = self.location.copy().update_as_world_coord(scale, -scale, 1)
+        p3 = self.location.copy().update_as_world_coord(scale, scale, 1)
         
         return [
             ([p0, p1, p2], ShadeLevel.CANOPY_END),
-            ([p0, p2, p3], ShadeLevel.CANOPY_END)
+            ([p0, p2, p3], ShadeLevel.CANOPY)
         ]
 
     @classmethod
