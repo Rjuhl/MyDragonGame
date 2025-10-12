@@ -15,68 +15,105 @@ class EllipseData:
     ry: float
     rotation: float
 
-@dataclass
-class Receiver:
-    # Plane: n·X + d = 0  (n is NOT required to be unit length here)
-    n: Coord 
-    d: float
-    # Top-down footprint of this surface (convex, CCW) in world XY
-    polygon: list[Coord]
-    # A hint for sorting “higher first” (max z over footprint vertices)
-    ref_z: float
-    min_z: float
-    id: int | None = None
-    shade_level: ShadeLevel = ShadeLevel.CANOPY_START
+class Triangle:
+    """ Represents a plane in 3D space bounded by a triangle """
+    def __init__(self, points = List[Coord]):
+        if len(points) != 3: raise ValueError("Triangle can only be initlized with 3 points")
 
-    def z_at(self, x: float, y: float) -> float:
+        self.p0, self.p1, self.p2 = points
+        self.n = (self.p1 - self.p0).cross(self.p2 - self.p0)
+        # self.n /= self.n.norm()
+
+        if self.n.norm() == 0:
+            raise ValueError("Degenerate triangle")
+        
+        self.d = -self.n.dot(self.p0)
+
+        self.ref_z = max(self.p0.z, self.p1.z, self.p2.z)
+        self.min_z = min(self.p0.z, self.p1.z, self.p2.z)
+    
+    def within_2d_proj(self, x: float, y: float, eps: float = 1e-6) -> bool:
+        """ Check if point lies with proj of triangle using barycentric coords """
+        A, B, C = self.p0, self.p1, self.p2
+        v0 = Coord.math(C.x - A.x, C.y - A.y, 0)   
+        v1 = Coord.math(B.x - A.x, B.y - A.y, 0)  
+        v2 = Coord.math(x - A.x, y - A.y, 0)
+
+        dot00 = v0.dot_2D(v0); dot01 = v0.dot_2D(v1); dot02 = v0.dot_2D(v2)
+        dot11 = v1.dot_2D(v1); dot12 = v1.dot_2D(v2)
+
+        denom = dot00 * dot11 - dot01 * dot01
+        if abs(denom) < eps: return False
+        inv = 1.0 / denom
+
+        u = (dot11 * dot02 - dot01 * dot12) * inv
+        v = (dot00 * dot12 - dot01 * dot02) * inv
+
+        return (u >= -eps) and (v >= -eps) and (u + v <= 1.0 + eps)
+
+    def z_at(self,x: float, y: float) -> float:
+        """ Use the normal/d to find the z value for an xy on the plane """
         # Solve n.x*x + n.y*y + n.z*z + d = 0  =>  z = -(d + n.x*x + n.y*y)/n.z
         if abs(self.n.z) < 1e-8:
             raise ValueError("Normal z must be greater than 0")
         return (-(self.d + self.n.x*x + self.n.y*y) / self.n.z)
 
-    def project_xy_to_world(self, x: float, y: float) -> Coord:
+    def project_to_world(self, x: float, y: float) -> Coord:
+        """ Generate a 3D coord from using an xy and the receiver planes """
         z = self.z_at(x, y)
         return Coord.math(x, y, z)
 
-    @staticmethod
-    def from_horizontal(polygon: List[Coord]):
-        # For z = const, plane is n=(0,0,1), d=-z (or any scalar multiple)
-        n = Coord.math(0, 0, 1)
-        z = polygon[0].z
-        return Receiver(n=n, d=-z, polygon=polygon, ref_z=z, min_z=z)
 
-    @staticmethod
-    def from_triangle(polygon: List[Coord]):
-        p0, p1, p2 = polygon
-        n = (p1 - p0).cross(p2 - p0)
-        if n.norm() == 0:
-            raise ValueError("Degenerate triangle")
-        
-        # Use point p0 to solve for d: n·X + d = 0  => d = -n·p0
-        d = -n.dot(p0)
-        polygon = [Coord.math(p0.x, p0.y, 0), Coord.math(p1.x, p1.y, 0), Coord.math(p2.x, p2.y, 0)]
-        ref_z = max(p0.z, p1.z, p2.z)
-        min_z = min(p0.z, p1.z, p2.z)
-        return Receiver(n=n, d=d, polygon=polygon, ref_z=ref_z, min_z=min_z)
+
+class Receiver:
+    """ A polygon to intersect with shadows and faces to find heights from 2D intersections """
+    def __init__(self, faces: List[Triangle], polygon: List[Coord], shade_level: ShadeLevel, id: int | None = None):
+        self.faces = faces
+        self.polygon = self._ensure_ccw(polygon)  
+
+        self.shade_level = shade_level
+        self.ref_z = max([f.ref_z for f in self.faces])
+        self.min_z = min([f.min_z for f in self.faces])
+        self.id = id
+
+    def z_at(self, x: float, y: float) -> float:
+        for face in self.faces:
+            if face.within_2d_proj(x, y): return face.z_at(x, y)
+        return 0
+
+    def project_to_world(self, x: float, y: float) -> Coord:
+        z = self.z_at(x, y)
+        return Coord.math(x, y, z)
     
     @staticmethod
-    def load_receiver(polygon: List[Coord], shade_level: ShadeLevel):
-        r = Receiver.from_triangle(polygon) if len(polygon) == 3 else Receiver.from_horizontal(polygon)
-        r.shade_level = shade_level
-        return r
+    def _signed_area_ccw(poly: List[Coord]) -> float:
+        a = 0.0
+        for i in range(len(poly)):
+            x1, y1 = poly[i].x, poly[i].y
+            x2, y2 = poly[(i+1) % len(poly)].x, poly[(i+1) % len(poly)].y
+            a += x1 * y2 - x2 * y1
+        return 0.5 * a
+
+    @staticmethod
+    def _ensure_ccw(poly: List[Coord]) -> List[Coord]:
+        area = 0.0
+        for i in range(len(poly)):
+            x1, y1 = poly[i].x, poly[i].y
+            x2, y2 = poly[(i+1) % len(poly)].x, poly[(i+1) % len(poly)].y
+            area += x1*y2 - x2*y1
+        return poly if area > 0 else list(reversed(poly))
 
 
 class Shadows:
     """ Builds a 3D world representation to cast noon shadows onto reciever surfaces"""
-    STRICT = True
 
     def __init__(self, ellipse_samples: int = 16):
         self.receivers = []
         self.ellipse_samples = ellipse_samples
 
-    def add_receiver(self, polygon: List[Coord], shade_level: ShadeLevel) -> None:
+    def add_receiver(self, receiver: Receiver) -> None:
         """ Adds a triangle or horizonatal plane to receivers """
-        self.receivers.append(Receiver.load_receiver(polygon, shade_level))
+        self.receivers.append(receiver)
 
     def reset_receivers(self) -> None:
         self.receivers = []
@@ -91,43 +128,41 @@ class Shadows:
         self.receivers.sort(key=lambda r: r.ref_z, reverse=True)
         ellipse_poly = self.generate_ellipse_poly(ellipse, samples=self.ellipse_samples)
         ellipse_bbox  = self._bbox_xy(ellipse_poly)
-        
 
-        for reciever in self.receivers:
+        for receiver in self.receivers:
 
             # Quick checks to discount recievers 
-            if reciever.min_z >= ellipse.center.z: continue
-            if not self._bbox_overlaps(ellipse_bbox, self._bbox_xy(reciever.polygon), pad=1e-6): continue
+            if receiver.min_z >= ellipse.center.z: continue
+            if not self._bbox_overlaps(ellipse_bbox, self._bbox_xy(receiver.polygon), pad=1e-6): continue
 
             # Base region on this receiver
-            region_in_shadow = self.poly_intersection(ellipse_poly, reciever.polygon)
+            region_in_shadow = self.poly_intersection(ellipse_poly, receiver.polygon)
             if len(region_in_shadow) < 3: continue
 
             # Decide which higher receivers actually steal rays here and collect 'holes'
             hole_polys_xy = []
-            for higher_reciever in higher:
-                overlap = self.poly_intersection(region_in_shadow, higher_reciever.polygon)
-                if (centriod := self.poly_centroid(overlap)):
-                    reciever_hieght = reciever.z_at(centriod.x, centriod.y)
-                    higher_reciver_hieght = higher_reciever.z_at(centriod.x, centriod.y)
+            for higher_receiver in higher:
+                overlap = self.poly_intersection(region_in_shadow, higher_receiver.polygon)
+                if self.poly_centroid(overlap):
+                    reciever_hieght = receiver.min_z
+                    higher_reciver_hieght = higher_receiver.min_z
 
                     # double check the higher z > reciever z and add it holes
                     if (higher_reciver_hieght < ellipse.center.z) and (higher_reciver_hieght > reciever_hieght + 1e-4):
                         hole_polys_xy.append(overlap)
 
             # reciever truly receives shadow so it can occlude things below
-            higher.append(reciever)
+            higher.append(receiver)
 
             # Project base + holes to screen using this receiver’s plane
-            base_screen = []
-            holes_screen = []
             min_x = min_y = float("inf")
             max_x = max_y = float("-inf")
+            base_screen, holes_screen = [], []
 
             # Construct shadow poly in view coords that hits reciever
             for point in region_in_shadow:
-                point_3d = reciever.project_xy_to_world(point.x, point.y)
-                point_3d.z = min(point_3d.z, ellipse.center.z)
+                point_3d = receiver.project_to_world(point.x, point.y)
+                point_3d.z = min(point_3d.z, max(ellipse.center.z - 0.5, 1)) # The 0.5 numbner migt need tweeking in the future
                 px, py = point_3d.as_view_coord()
                 base_screen.append((px, py))
                 min_x, max_x, min_y, max_y = min(min_x, px), max(max_x, px), min(min_y, py), max(max_y, py)
@@ -136,7 +171,7 @@ class Shadows:
             for hole_xy in hole_polys_xy:
                 holes = []
                 for point in hole_xy:
-                    point_3d = reciever.project_xy_to_world(point.x, point.y)
+                    point_3d = receiver.project_to_world(point.x, point.y)
                     point_3d.z = min(point_3d.z, ellipse.center.z)
                     px, py = point_3d.as_view_coord()
                     holes.append((px, py))
@@ -148,7 +183,7 @@ class Shadows:
 
             # Alpha & softness from height
             centriod = self.poly_centroid(region_in_shadow)
-            reciever_centriod_height = reciever.z_at(centriod.x, centriod.y)
+            reciever_centriod_height = receiver.z_at(centriod.x, centriod.y)
             hgap = max(0.0, ellipse.center.z - reciever_centriod_height)
             alpha = self.get_alpha(hgap)
 
@@ -176,7 +211,7 @@ class Shadows:
                 RenderObj(
                     None,
                     np.array([min_x, min_y]),
-                    (reciever.shade_level, centriod.x if centriod else 0.0, centriod.y if centriod else 0.0, reciever.ref_z),
+                    (receiver.shade_level, centriod.x, centriod.y, receiver.ref_z),
                     isShadow=True,
                     img=shadow_surf,
                 )
@@ -188,7 +223,6 @@ class Shadows:
     @staticmethod
     def _get_local_poly(offset_x: int, offset_y: int, poly: List[Coord]) -> List[Coord]:
         return [(int(round(x - offset_x)), int(round(y - offset_y))) for (x, y) in poly]
-
 
     @staticmethod
     def get_alpha(height: float) -> int:
@@ -222,14 +256,13 @@ class Shadows:
             a, b = clipper[i], clipper[(i + 1) % len(clipper)]
             inp, out = out, []
 
-            if not inp:
-                break
+            if not inp: break
 
             prev = inp[-1]
-            prev_in = Shadows.side(prev, a, b) >= -1e-8
+            prev_in = Shadows.side(prev, a, b) >= -1e-6
 
             for cur in inp:
-                cur_in = Shadows.side(cur, a, b) >= -1e-8
+                cur_in = Shadows.side(cur, a, b) >= -1e-6
 
                 if cur_in:
                     if not prev_in:
@@ -277,8 +310,6 @@ class Shadows:
             x = cx + ex * ct - ey * st
             y = cy + ex * st + ey * ct
             pts.append(Coord.math(x, y, height))
-
-        if Shadows.STRICT: Shadows._ensure_ccw(pts)
         
         return pts
 
@@ -292,19 +323,6 @@ class Shadows:
             sy += p.y
 
         return Coord.math(sx / len(poly), sy / len(poly), 0)
-    
-    @staticmethod
-    def _signed_area_ccw(poly: List[Coord]) -> float:
-        a = 0.0
-        for i in range(len(poly)):
-            x1, y1 = poly[i].x, poly[i].y
-            x2, y2 = poly[(i+1) % len(poly)].x, poly[(i+1) % len(poly)].y
-            a += x1 * y2 - x2 * y1
-        return 0.5 * a
-
-    @staticmethod
-    def _ensure_ccw(poly: List[Coord]) -> List[Coord]:
-        return poly if Shadows._signed_area_ccw(poly) > 0 else list(reversed(poly))
     
     @staticmethod
     def _bbox_xy(poly: List[Coord]) -> Tuple[float,float,float,float]:

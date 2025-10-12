@@ -47,15 +47,15 @@ class EntityManager:
 
         self.entities_on_screen = []
         self.shadows.reset_receivers()
-        self.shadows.add_receiver(self.screen.get_ccw_poly(), ShadeLevel.GROUND)
+
+        self.shadows.add_receiver(self.screen.get_screen_reciever())
         for entity in self.entities:
             onscreen = check_collision(entity.location, entity.size, screen_location, screen_size)
             entity.update(dt, onscreen)
             if onscreen: 
                 self.entities_on_screen.append(entity)
-                if (recievers := entity.serve_reciever()): 
-                    for reviever, shade_level in recievers:
-                        self.shadows.add_receiver(reviever, shade_level)
+                if (reciever := entity.serve_reciever()): 
+                    self.shadows.add_receiver(reciever)
                 
         
         resolve_collisions(self.spatial_hash_grid.get_possible_onscreen_collisions(*self.screen.get_bounding_box()))

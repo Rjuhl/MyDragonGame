@@ -7,6 +7,7 @@ from system.entities.base_entity import BaseEntity
 from system.render_obj import RenderObj
 from utils.types.shade_levels import ShadeLevel
 from typing import List, Optional, Self, Tuple
+from system.entities.physics.shadows import Receiver
 from decorators import register_entity
 
 @register_entity 
@@ -33,7 +34,7 @@ class Entity(BaseEntity):
             Coord.math(0, 0, 0)
         )
     
-    def serve_reciever(self) -> Optional[List[Tuple[List[Coord], ShadeLevel]]]:
+    def serve_reciever(self) -> Optional[Receiver]:
         return None
 
     def serve_shadow(self): 

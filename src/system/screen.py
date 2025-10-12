@@ -8,6 +8,8 @@ from constants import DISPLAY_SIZE, PADDING, TILE_SIZE, WORLD_HEIGHT, TRACKING_B
 from utils.coords import Coord
 from system.entities.entity import Entity
 from system.entities.physics.collisions import check_collision
+from system.entities.physics.shadows import Triangle, Receiver
+from utils.types.shade_levels import ShadeLevel
 
 class Screen:
     DELEMITER = ","
@@ -56,13 +58,23 @@ class Screen:
             self.coord.copy().update_as_view_coord(*DISPLAY_SIZE).as_world_coord(),
         ]
     
-    def get_ccw_poly(self):
-        return [
-            self.coord.copy(),
-            self.coord.copy().update_as_view_coord(0, DISPLAY_SIZE[1]),
-            self.coord.copy().update_as_view_coord(*DISPLAY_SIZE),
-            self.coord.copy().update_as_view_coord(DISPLAY_SIZE[0], 0)
+    def get_screen_reciever(self) -> Receiver:
+        base = self.coord.copy()
+        base.z = -0.1
+        
+        faces = []
+        poly = [
+            base.copy(),
+            base.copy().update_as_view_coord(0, DISPLAY_SIZE[1]),
+            base.copy().update_as_view_coord(*DISPLAY_SIZE),
+            base.copy().update_as_view_coord(DISPLAY_SIZE[0], 0)
         ]
+
+        faces.append(Triangle((poly[0].copy(), poly[1].copy(), poly[2].copy())))
+        faces.append(Triangle((poly[0].copy(), poly[2].copy(), poly[3].copy())))
+
+        return Receiver(faces, poly, ShadeLevel.GROUND)
+
     
     def get_bounding_box(self, padding=PADDING):
         corners = self.get_corners()

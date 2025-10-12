@@ -3,6 +3,7 @@ from system.render_obj import RenderObj
 from system.entities.entity import Entity
 from utils.coords import Coord
 from utils.types.shade_levels import ShadeLevel
+from system.entities.physics.shadows import Triangle, Receiver
 from decorators import register_entity, generate_shadow
 
 
@@ -35,18 +36,28 @@ class Tree(Entity):
 
     def serve_reciever(self):
         p0 = self.location.copy()
+
+        # parameter tunning
         p0.x -= 0.45
         p0.y += 0.35
         p0.z = 4.15
         scale = 0.65
+
+
         p1 = self.location.copy().update_as_world_coord(-scale, -scale, 1)
         p2 = self.location.copy().update_as_world_coord(scale, -scale, 1)
         p3 = self.location.copy().update_as_world_coord(scale, scale, 1)
+
+        faces = (
+            Triangle((p0.copy(), p1.copy(), p2.copy())),
+            Triangle((p0.copy(), p2.copy(), p3.copy())),
+        )
         
-        return [
-            ([p0, p1, p2], ShadeLevel.CANOPY_END),
-            ([p0, p2, p3], ShadeLevel.CANOPY)
-        ]
+        return Receiver(
+            faces,
+            (p0, p1, p2, p3),
+            ShadeLevel.CANOPY
+        )
 
     @classmethod
     def load(cls, data):
