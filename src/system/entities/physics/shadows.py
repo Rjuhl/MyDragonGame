@@ -15,6 +15,7 @@ class EllipseData:
     ry: float
     rotation: float
 
+
 class Triangle:
     """ Represents a plane in 3D space bounded by a triangle """
     def __init__(self, points = List[Coord]):
@@ -331,9 +332,11 @@ class Shadows:
         return (min(xs), min(ys), max(xs), max(ys))
 
     @staticmethod
-    def _bbox_overlaps(a: Tuple[float,float,float,float],
-                    b: Tuple[float,float,float,float],
-                    pad: float = 0.0) -> bool:
+    def _bbox_overlaps(
+        a: Tuple[float,float,float,float],
+        b: Tuple[float,float,float,float],
+        pad: float = 0.0
+    ) -> bool:
         """True if AABBs overlap (optionally grown by `pad`)."""
         ax1, ay1, ax2, ay2 = a
         bx1, by1, bx2, by2 = b

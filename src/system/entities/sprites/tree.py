@@ -49,8 +49,8 @@ class Tree(Entity):
         p3 = self.location.copy().update_as_world_coord(scale, scale, 1)
 
         faces = (
-            Triangle((p0.copy(), p1.copy(), p2.copy())),
-            Triangle((p0.copy(), p2.copy(), p3.copy())),
+            Triangle((p0, p1, p2)),
+            Triangle((p0, p2, p3)),
         )
         
         return Receiver(
