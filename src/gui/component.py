@@ -125,7 +125,7 @@ class Component:
     #                              ABSTRACT-LIKE METHODS
     # --------------------------------------------------------------------------
 
-    def handle_mouse_actions(self, isAbove: bool, click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
+    def handle_mouse_actions(self, mouse_pos: Tuple[int, int], click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
         """Executes actions based on mouse position and click."""
         pass
 

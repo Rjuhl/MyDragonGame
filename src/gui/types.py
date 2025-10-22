@@ -1,6 +1,5 @@
 from enum import Enum
 
-
 class ItemAlign(Enum):
     First = "First"
     Last = "Last"
@@ -17,7 +16,7 @@ class SizeUnit(Enum):
     Relative = "Relative"
 
 
-class ClickEvent:
+class ClickEvent(Enum):
     Right = "Right"
     Left = "Left"
     Empty = "Empty"

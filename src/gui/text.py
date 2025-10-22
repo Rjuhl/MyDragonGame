@@ -3,7 +3,7 @@ from pathlib import Path
 from gui.component import Component
 
 class PixelText(Component):
-    FONT_FILE = Path(__file__).parent  / 'fonts' / 'pixelated.ttf'
+    FONT_FILE = Path(__file__).parent.parent.parent  /'assets' / 'gui' / 'fonts' / 'pixelated.ttf'
     
     def __init__(self, text_content, font_size, font_color):
         self.text = pygame.font.Font(self.FONT_FILE.resolve(), font_size).render(

@@ -17,7 +17,7 @@ class EventHandler:
                 self.close_app()
             if event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
-                    self.close_app()
+                    return "escape"
 
                 # Turn on chunk borders 
                 if event.key == K_c:

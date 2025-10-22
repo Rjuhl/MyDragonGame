@@ -1,9 +1,10 @@
 import numpy as np
 from functools import wraps
-from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY
+from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY, PAGE_REGISTRY
 from system.entities.base_entity import BaseEntity
 from utils.coords import Coord
 from utils.types.shade_levels import ShadeLevel
+from gui.page import Page
 
 def singleton(cls):
     """Make a class a singleton."""
@@ -34,6 +35,25 @@ def register_entity(cls):
 
     cls.jsonify = new_jsonify
     return cls
+
+def register_page(_cls=None, *, default=False):
+    """
+    Decorator to register Page subclasses.
+    Supports both:
+        @register_page
+        @register_page(default=True)
+    Stores in PAGE_REGISTRY: {PageClass: bool}
+    """
+    def _decorate(cls):
+        if not issubclass(cls, Page):
+            raise TypeError("Only classes that inherit from Page can be added to PAGE_REGISTRY")
+        PAGE_REGISTRY[cls] = default
+        return cls
+
+    if _cls is None:
+        return _decorate
+    
+    return _decorate(_cls)
 
 
 def generate_shadow(

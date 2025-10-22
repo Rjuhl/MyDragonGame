@@ -9,6 +9,8 @@ from system.game_clock import game_clock
 from pygame.locals import *
 from system.screen import Screen
 from system.entities.sprites.player import Player
+from system.page_manager import PageManager
+from system.page_context import PageContext
 from system.global_vars import set_base_globals
 
 def runGame(logger):
@@ -32,20 +34,24 @@ def runGame(logger):
     renderer = Renderer(display)
     event_handler = EventHandler()
 
+    page_context = PageContext(
+        display, player, map, event_handler, renderer, screen_entity
+    )
+
+    page_manager = PageManager(page_context)
+
     map.bind_player(player)
 
     while True:
         game_clock.tick() 
         display.fill((0,0,0))
 
-        map.update()
-        items_rendered = renderer.draw(map, screen_entity)
-        event_handler.event_tick()
-
+        if not page_manager.show_page(): event_handler.close_app()
         fps = game_clock.fps           
         fps_text = font.render(f"FPS: {fps:.1f}", True, (0, 0, 255))
-        tiles_text = font.render(f"Tiles Rendered: {items_rendered}", True, (0, 0, 255))
+        tiles_text = font.render(f"Tiles Rendered: {page_context.state["items_rendered"]}", True, (0, 0, 255))
         screen.blit(pygame.transform.scale(display, screen.get_size()), (0, 0))
         screen.blit(fps_text, (10, 10))
         screen.blit(tiles_text, (10, 26))
         pygame.display.flip()
+            

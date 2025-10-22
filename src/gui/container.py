@@ -26,10 +26,13 @@ class Container(Component):
         self.padding = padding
         self.gap = gap
         self.children = children
-        
+    
+    def add_child(self, child: Component):
+        self.children.append(child)
 
-    def handle_mouse_actions(self, isAbove: bool, click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
-        for child in self.children: child.handle_mouse_actions(True, click_event, state_dict)
+    def handle_mouse_actions(self, mouse_pos: tuple[int, int], click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
+        for child in self.children: 
+            child.handle_mouse_actions(mouse_pos, click_event, state_dict)
 
     def reposition_children(self) -> None:
         # Container pixel size (depends on container's parent size)
