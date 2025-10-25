@@ -5,7 +5,7 @@ GAME_NAME = "My Game [Change Name Later]"
 SCREEN_INIT_SIZE = (1280, 960)
 FRAME_CAP = 60
 TEMP_MOVEMENT_FACTOR = 6
-DISPLAY_SIZE = (720, 360)
+DISPLAY_SIZE = (640, 360)
 # DISPLAY_SIZE = (960, 540)
 # DISPLAY_SIZE = (3440, 1440)
 TRACKING_BOX_SCALE = 0.65
@@ -33,3 +33,6 @@ MOVEMENT_MAP = {
     (1, -1): (1, 0),
     (-1, 1): (-1, 0)
 }
+
+# To moved later
+SEED = 0

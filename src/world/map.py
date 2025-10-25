@@ -31,8 +31,8 @@ class Map:
         self.init_map_chunks()
 
         # TEMP for testing
-        E = [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
-        for e in E: self.entity_manager.add_entity(e)
+        # E = [Tree(Coord.world(1, 0)), Tree(Coord.world(2, 0)), Tree(Coord.world(14, -8))]
+        # for e in E: self.entity_manager.add_entity(e)
 
     def bind_player(self, player):
         self.player = player
@@ -84,7 +84,8 @@ class Map:
             else:
                 chunk = Chunk.load(x, y) if self.check_dir_exists(x, y) else Chunk(self.choose_biome(), Coord.chunk(x, y))
                 chunks.append(chunk)
-                for entity in chunk.entities: self.entity_manager.add_entity(entity)
+                for entity in chunk.entities: 
+                    self.entity_manager.add_entity(entity)
         
         for i, chunk in enumerate(self.chunks):
             if i not in chunks_not_to_save: 
@@ -93,7 +94,6 @@ class Map:
                 chunk.save()
                
         self.chunks = chunks
-        self.generate_loaded_chunks()
  
     # setups map with a chunk grid based on location
     def init_map_chunks(self):
@@ -103,7 +103,9 @@ class Map:
             for x, y in chunk_locations
         ]
 
-        self.generate_loaded_chunks()
+        for chunk in self.chunks:
+            for entity in chunk.entities: self.entity_manager.add_entity(entity)
+
 
     def generate_loaded_chunks(self):
         for i, chunk in enumerate(self.chunks):

@@ -6,10 +6,11 @@ from world.tile import Tile
 from pathlib import Path
 from bisect import bisect_left
 from utils.coords import Coord
-from constants import CHUNK_SIZE
+from constants import CHUNK_SIZE, SEED
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
 from regestries import ENTITY_REGISTRY
+from world.generation.terrain_generator import terrain_generator
 
 # Chunk Size will be 64 x 64 tiles
 class Chunk:
@@ -22,6 +23,7 @@ class Chunk:
         self.random_number_generator = random_number_generator
 
         self.entities = []
+        self.generate()
     
     @classmethod
     def load(cls, x, y):
@@ -64,19 +66,24 @@ class Chunk:
         pass
     
     # neighbor_biomes arr -> [left, right, top, bottom] biomes
-    def generate(self, neighbor_biomes):
+    def generate(self):
         if self.random_number_generator is None:
             raise ValueError("random_number_generator must be provided before generating tiles.")
 
         # Generate tiles in rendering order
         self.tiles = []
         num_tiles = self.SIZE ** 2
+        chunk_world_loc = self.location.as_world_coord()
         for i in range(num_tiles):
             x, y = i // self.SIZE, i % self.SIZE
             onborder = (x == 0 or x == self.SIZE - 1 or y == 0 or y == self.SIZE - 1)
-            self.tiles.append(self.generate_tile(x, y, neighbor_biomes, onborder))
+            location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
+            tile, entity = terrain_generator.generate_tile(location.x, location.y, onborder)
+            self.tiles.append(tile)
+            if entity: self.entities.append(entity)
         
     
+    # generate_tile -> Deprecated 
     def generate_tile(self, x, y, neighbor_biomes, on_border, round_factor=100):
         prefix_sum, ids = [], []
         current_sum = 0

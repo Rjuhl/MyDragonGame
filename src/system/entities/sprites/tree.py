@@ -24,13 +24,13 @@ class Tree(Entity):
             RenderObj(
                 self.trunk_img_id,
                 self.draw_location(),
-                (ShadeLevel.SPRITE, self.location.x, self.location.y, self.location.z),
+                (ShadeLevel.SPRITE, self.location.x, -self.location.y, self.location.z),
                 location=self.location, size=self.size
             ),
             RenderObj(
                 self.canopy_img_id,
                 self.draw_location(),
-                (ShadeLevel.CANOPY, self.location.x, self.location.y, self.location.z)
+                (ShadeLevel.CANOPY, self.location.x, -self.location.y, self.location.z)
             )
         ]
 
