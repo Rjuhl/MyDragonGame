@@ -11,10 +11,10 @@ from decorators import register_entity, generate_shadow
 @register_entity
 @generate_shadow(1.5, 1.5, shade_level=ShadeLevel.CANOPY_START, fade=0.5)
 class Tree(Entity):
-    def __init__(self, location):
+    def __init__(self, location, snowy=False):
         img_id = None
         self.trunk_img_id = 2
-        self.canopy_img_id = 3
+        self.canopy_img_id = 3 + int(snowy)
         size = Coord.world(0.5, 0.5, 3)
         render_offset = Coord.math(-24, -76, 0) # Coord.math(-8, 48, 0)
         super().__init__(location, size, img_id, render_offset)

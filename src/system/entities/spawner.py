@@ -30,8 +30,8 @@ class Spawner(Entity, EntityManagerSubscriber):
         self.last_spawn_time = float('inf')
         self.alive_entities_spawned = 0
     
-    def update(self):
-        self.last_spawn_time += game_clock.dt
+    def update(self, dt, _):
+        self.last_spawn_time += dt
 
         if self.within_player_spawn_distance() \
            and self.within_spawn_cooltime_period() \
