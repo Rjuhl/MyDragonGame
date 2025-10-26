@@ -13,7 +13,8 @@ class RenderObj:
             render_order: tuple[float], 
             isShadow: bool = False, 
             location: Optional[Coord] = None, size: Optional[Coord] = None,
-            img: Optional[pygame.Surface] = None
+            img: Optional[pygame.Surface] = None,
+            frame: Optional[int] = None
         ):
         self.id = id
         self.draw_location = draw_location
@@ -22,3 +23,4 @@ class RenderObj:
         self.location = location
         self.size = size
         self.img = img
+        self.frame = frame

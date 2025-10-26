@@ -32,7 +32,7 @@ class Map:
         self.init_map_chunks()
 
         # TEMP for testing
-        E = [FoxBurrow(Coord.world(1, 0), self.entity_manager)]
+        E = [FoxBurrow(Coord.world(1, 0))]
         for e in E: self.entity_manager.add_entity(e)
 
     def bind_player(self, player):

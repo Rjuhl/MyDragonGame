@@ -2,12 +2,11 @@ import pygame
 import numpy as np
 from pathlib import Path
 from utils.coords import Coord
-from utils.generate_shadow_ellipse import generate_shadow_ellipse
 from system.entities.physics.collisions import center_hit_box
-from regestries import SHADOW_ENTITY_REGISTRY
 from world.tile import Tile
 from numpy.typing import NDArray
 from system.render_obj import RenderObj
+from system.entities.sheet import SheetManager
 
 class AssetDrawer:
     def __init__(self, display: pygame.Surface):
@@ -17,9 +16,8 @@ class AssetDrawer:
         self.display = display
 
         self.tiles = self.load_assets(tile_img_dir)
-        self.sprites = self.load_assets(sprite_img_dir)
-
-        self._add_shadow_sprites()
+        
+        self.sheet_manager = SheetManager(sprite_img_dir)
 
     def draw_tile(self, tile: Tile, cam_offset: NDArray[np.float64], tint: pygame.typing.ColorLike, display=None):
         working_display = self.display if display is None else display
@@ -52,7 +50,7 @@ class AssetDrawer:
     def draw_sprite(self, sprite: RenderObj, cam_offset: NDArray[np.float64], display=None) -> None:
         working_display = self.display if display is None else display
         working_display.blit(
-            self.sprites[sprite.id] if sprite.img is None else sprite.img, 
+            self.sheet_manager.get_sprite(sprite.id, sprite.frame) if sprite.img is None else sprite.img, 
             sprite.draw_location - cam_offset
         )
 
@@ -69,13 +67,6 @@ class AssetDrawer:
         self.blit_dot(location + Coord.math(size.x, 0, 0), cam_offset, color, radius, display)
         self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)
         self.blit_dot(location + size, cam_offset, color, radius, display)
-
-    def _add_shadow_sprites(self):
-        next_id = len(self.sprites)
-        for entity_cls in SHADOW_ENTITY_REGISTRY:
-            self.sprites.append(generate_shadow_ellipse(*SHADOW_ENTITY_REGISTRY[entity_cls]))
-            entity_cls.SHADOW_ID = next_id
-            next_id += 1
 
 
     @staticmethod

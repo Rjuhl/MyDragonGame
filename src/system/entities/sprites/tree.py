@@ -59,10 +59,15 @@ class Tree(Entity):
             ShadeLevel.CANOPY
         )
 
+    
+    def jsonify(self):
+        json = super().jsonify()
+        json["is_snowy"] = int(self.canopy_img_id - 3)
+        return json
+
     @classmethod
     def load(cls, data):
-        tree = Tree(Coord.load(data["location"]))
-
+        tree = Tree(Coord.load(data["location"]), snowy=bool(data["is_snowy"]))
         tree.prev_location = Coord.load(data["prev_location"])
         tree.lifespan = data["lifespan"]
 

@@ -22,7 +22,7 @@ class Entity(BaseEntity):
         self.lifespan = 0
 
         self.movement_subscribers = []
-        self.mananger = None
+        self.manager = None
 
     
     @classmethod
@@ -37,7 +37,7 @@ class Entity(BaseEntity):
     def serve_reciever(self) -> Optional[Receiver]:
         return None
 
-    def serve_shadow(self): 
+    def serve_shadow(self, rotation=False): 
         return None
 
     def move(self, movement_vec: Coord, with_listeners: bool = True) -> Self:
@@ -55,11 +55,11 @@ class Entity(BaseEntity):
         return self
     
     def bind_to_manager(self, manager):
-        self.mananger = manager
+        self.manager = manager
 
     def kill(self):
-        if self.mananger:
-            self.mananger.remove_entity(self)
+        if self.manager:
+            self.manager.remove_entity(self)
     
     def add_movement_subscriber(self, subscriber):
         self.movement_subscribers.append(subscriber)
