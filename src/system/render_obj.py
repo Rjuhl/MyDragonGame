@@ -1,5 +1,5 @@
 import pygame
-from typing import Optional
+from typing import Optional, Tuple
 from utils.coords import Coord
 import numpy as np
 from numpy.typing import NDArray
@@ -14,7 +14,8 @@ class RenderObj:
             isShadow: bool = False, 
             location: Optional[Coord] = None, size: Optional[Coord] = None,
             img: Optional[pygame.Surface] = None,
-            frame: Optional[int] = None
+            frame: Optional[int] = None,
+            mask: Optional[Tuple[int, int, int, int]] = None
         ):
         self.id = id
         self.draw_location = draw_location
@@ -24,3 +25,4 @@ class RenderObj:
         self.size = size
         self.img = img
         self.frame = frame
+        self.mask = mask

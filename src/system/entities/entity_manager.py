@@ -27,10 +27,12 @@ class EntityManager:
     def add_entity(self, entity: Entity) -> None:
         entity.bind_to_manager(self)
         self.entities.add(entity)
-        self.spatial_hash_grid.add_entity(entity)
+        if entity.solid: self.spatial_hash_grid.add_entity(entity)
 
     def remove_entity(self, entity: Entity) -> None:
         # kill entity
+        self.entities.remove(entity)
+        if entity.solid: self.spatial_hash_grid.remove_entity(entity)
 
         # Notify subscribers
         for subscriber in self.kill_listener_subscribers:

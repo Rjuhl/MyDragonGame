@@ -12,7 +12,7 @@ from decorators import register_entity
 
 @register_entity 
 class Entity(BaseEntity):
-    def __init__(self, location: Coord, size: Coord, img_id: int, render_offset: Coord, id: Optional[int] = None): 
+    def __init__(self, location: Coord, size: Coord, img_id: int, render_offset: Coord, id: Optional[int] = None, solid: Optional[bool] = True): 
         self.id = id if id is not None else id_generator.get_id()
         self.location = location
         self.size = size # Determines hitbox
@@ -23,6 +23,9 @@ class Entity(BaseEntity):
 
         self.movement_subscribers = []
         self.manager = None
+
+        self.rotated = False
+        self.solid = True
 
     
     @classmethod
@@ -37,7 +40,7 @@ class Entity(BaseEntity):
     def serve_reciever(self) -> Optional[Receiver]:
         return None
 
-    def serve_shadow(self, rotation=False): 
+    def serve_shadow(self): 
         return None
 
     def move(self, movement_vec: Coord, with_listeners: bool = True) -> Self:
