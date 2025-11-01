@@ -23,7 +23,15 @@ class EntityManager:
 
         self.kill_listener_subscribers = []
         self.entities_on_screen = []
+        self.queued_additions = set()
+        self.queued_removals = set()
     
+    def queue_entity_addition(self, entity: Entity) -> None:
+        self.queued_additions.add(entity)
+
+    def queue_entity_removal(self, entity: Entity) -> None:
+        self.queued_removals.add(entity)
+
     def add_entity(self, entity: Entity) -> None:
         entity.bind_to_manager(self)
         self.entities.add(entity)
@@ -61,8 +69,15 @@ class EntityManager:
                 
         
         resolve_collisions(self.spatial_hash_grid.get_possible_onscreen_collisions(*self.screen.get_bounding_box()))
-
         
+        # Handle entity adds/removes that initaited in the update loop
+
+        for entity in self.queued_removals: self.remove_entity(entity)
+        for entity in self.queued_additions: self.add_entity(entity)
+        
+        self.queued_removals = set()
+        self.queued_additions = set()
+
     def get_entity_render_objs(self, player: Player) -> List[RenderObj]:
         render_objs = []
         for entity in self.entities_on_screen:
@@ -71,6 +86,8 @@ class EntityManager:
         
         render_objs.extend(self.shadows.get_shadow_objs(player.get_shadow()))
         render_objs.sort(key= lambda r_obj: r_obj.render_order)
+
+       # print(type(render_objs[-1]), render_objs[-1].draw_location, render_objs[-1].render_order)
         return render_objs
     
     def get_and_removed_chunk_entities(self, chunk: Chunk) -> List[Entity]:

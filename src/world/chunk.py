@@ -56,7 +56,7 @@ class Chunk:
             "biome": self.biome,
             "location": self.location.jsonify(),
             "tiles": [tile.jsonify() for tile in self.tiles],
-            "entities": [entity.jsonify() for entity in self.entities]
+            "entities": [e for entity in self.entities if (e := entity.jsonify())]
         }
     
     def add_entity(self, entity):

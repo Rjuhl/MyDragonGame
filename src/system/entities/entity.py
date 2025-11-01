@@ -62,7 +62,7 @@ class Entity(BaseEntity):
 
     def kill(self):
         if self.manager:
-            self.manager.remove_entity(self)
+            self.manager.queue_entity_removal(self)
     
     def add_movement_subscriber(self, subscriber):
         self.movement_subscribers.append(subscriber)

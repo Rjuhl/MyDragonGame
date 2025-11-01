@@ -6,3 +6,4 @@ class ShadeLevel(float, Enum):
     CANOPY_START = 2
     CANOPY = 3
     CANOPY_END = 4
+    UI = 5

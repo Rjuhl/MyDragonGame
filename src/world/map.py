@@ -11,6 +11,7 @@ from constants import DISPLAY_SIZE, PADDING
 from system.entities.sprites.tree import Tree
 from system.game_clock import game_clock
 from system.entities.spawners.fox_burrow import FoxBurrow
+from system.entities.sprites.fox import Fox
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -32,7 +33,7 @@ class Map:
         self.init_map_chunks()
 
         # TEMP for testing
-        E = [FoxBurrow(Coord.world(1, 0))]
+        E = [Fox(Coord.world(1, 0))]
         for e in E: self.entity_manager.add_entity(e)
 
     def bind_player(self, player):

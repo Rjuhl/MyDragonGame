@@ -1,3 +1,4 @@
+import random
 import math
 import numpy as np
 from typing import Callable, Self, Set, Tuple, List, Any
@@ -61,6 +62,7 @@ class Character(Entity):
         self.damage_mask = None
         self.damage_animation_frame = []
         self.animation_offset = 0
+        
 
     def add_effect(self, effect: Callable[[Self], None], duration: float) -> None:
         self.effects.add((effect, duration))
@@ -90,17 +92,14 @@ class Character(Entity):
         return self.eff_base_speed * self._stat_to_multiplier(self.eff_spd) * self._terrain_spd_multiplier(terrain)
 
     # Maybe make regen field based purley off of stats and not need any inputs
-    def regen_health(self, health: float, apply_stats: bool = True) -> None:
-        health_gain_mod = self._stat_to_multiplier(self.vit) if apply_stats else 1
-        self.current_health = min(self.eff_max_health, self.current_health + (health * health_gain_mod))
+    def regen_health(self) -> None:
+        self.current_health = min(self.eff_max_health, self.current_health + self._stat_to_multiplier(self.vit))
 
-    def regen_mana(self, mana: float, apply_stats: bool) -> None:
-        mana_gain_mod = self._stat_to_multiplier(self.wis) if apply_stats else 1
-        self.current_mana = min(self.eff_max_mana, self.current_health + (mana * mana_gain_mod))
+    def regen_mana(self) -> None:
+        self.current_mana = min(self.eff_max_mana, self.current_health + self._stat_to_multiplier(self.wis))
 
-    def regen_energy(self, energy: float, apply_stats: bool) -> None:
-        energy_gain_mod = self._stat_to_multiplier(self.stam) if apply_stats else 1
-        self.current_energy = min(self.eff_max_energy, self.current_health + (energy * energy_gain_mod))
+    def regen_energy(self) -> None:
+        self.current_energy = min(self.eff_max_energy, self.current_health + self._stat_to_multiplier(self.stam))
 
     # Helper to deal damage with respect to stats 
     def apply_damage(self, damage: float) -> None:
@@ -111,6 +110,8 @@ class Character(Entity):
 
     
     def handle_character_updates(self, dt: float) -> bool:
+        self.apply_effects(dt)
+
         if self.current_health <= 0: 
             self.kill()
             return False
@@ -123,8 +124,10 @@ class Character(Entity):
 
 
     def _spawn_damage_number(self, num: int) -> None:
-        text_entity = DamageText(num, 120, self._base_trajectory, with_rng=True)
-        self.manager.add_entity(text_entity)
+        text_location = self.location.copy()
+        text_location.x += self.size.x / 2
+        text_entity = DamageText(self.location, num, 1200, self._base_trajectory, with_rng=True)
+        self.manager.queue_entity_addition(text_entity)
 
     def _start_damage_animation(self, amplitude=8, duration=30) -> None:
         self.damage_animation_frame = 0
@@ -203,7 +206,7 @@ class Character(Entity):
     
     @staticmethod
     def _base_trajectory(age: float) -> Coord:
-        return 12 * (-(((age - 60) / 60) ** 2) + 1)
+        return 12 * (-(((age - 600) / 600) ** 2) + 1)
     
 
     # ----------------------------------------------------- #
@@ -220,6 +223,10 @@ class Character(Entity):
             (self.shade_level(), self.location.x, self.location.y, self.location.z),
             location=self.location, size=self.size, mask=self.damage_mask
         )]
+
+    # Can override update for testing     
+    # def update(self, dt, onscreen=True):
+    #     if random.random() < 0.05: self._spawn_damage_number(-random.randint(1, 16))
 
     
 
