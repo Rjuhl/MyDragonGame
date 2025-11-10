@@ -8,6 +8,8 @@ from world.tile import Tile
 from collections import defaultdict
 from dataclasses import dataclass
 
+JobResult = Optional[Dict[Coord, Coord]]
+
 @dataclass
 class Node:
     cost: float
@@ -26,7 +28,7 @@ class AstarJob:
         self.nodes: Dict[Coord, Node] = defaultdict(lambda: Node(math.inf, False))
         self.nodes[start] = Node(0, False)
 
-        self.path: Optional[Dict[Coord, Coord]] = None
+        self.path: JobResult = None
 
     def search(self, cycles: int) -> None:
         while cycles > 0 and self.heap:
@@ -77,6 +79,7 @@ class AstarJob:
 
     def _reconstruct_path(self, node: Node) -> None:
         pass
+    
                               
 class AstarManager:
     def __init__(self, cycles_per_tick: int, map: Map):
@@ -95,4 +98,29 @@ class AstarManager:
         self.job_id += 1
         return self.job_id
 
+    def add_job(self, start: Coord, destination: Coord) -> int:
+        id = self._get_id()
+        self.jobs[id] = AstarJob(start, destination, self.map, self._default_is_blocked)
+        return id
 
+    def run_jobs(self) -> None:
+        total_jobs = len(self.jobs) - len(self.completed_jobs)
+        cycles_per_job = self.cpt // total_jobs
+
+        for id, job in self.jobs.items():
+            job.search(cycles_per_job)
+            if job.path: self.completed_jobs.add(id)
+
+    def get_job_result(self, job: int) -> JobResult:
+        if job not in self.completed_jobs: return None
+        
+        self.completed_jobs.remove(job)
+        result = self.jobs[job]
+        del self.jobs[job]
+        
+        self.recycled_ids.append(job)
+        return result
+
+    @staticmethod
+    def _default_is_blocked(tile: Tile) -> bool:
+        return tile.has_obsticle or tile.is_water
