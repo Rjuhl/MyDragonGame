@@ -13,9 +13,8 @@ from decorators import register_entity
 @register_entity 
 class Entity(BaseEntity):
     def __init__(self, location: Coord, size: Coord, img_id: int, render_offset: Coord, id: Optional[int] = None, solid: Optional[bool] = True): 
+        super().__init__(location, size)
         self.id = id if id is not None else id_generator.get_id()
-        self.location = location
-        self.size = size # Determines hitbox
         self.prev_location = location.copy()
         self.img_id = img_id
         self.render_offset = render_offset # Determines where to render

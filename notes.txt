@@ -1,0 +1,2 @@
+BUGS TO LOOK INTO
+1. There is bug when loading entity data in chunks (often comes after a crash or reloading a chunk)

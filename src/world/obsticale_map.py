@@ -34,7 +34,7 @@ class ObsiticleMap:
     def remove_chunk(self, location: Coord):
         del self._data[self._get_chunk_tuple(location)]
 
-    def isFree(self, location: Coord):
+    def is_free(self, location: Coord):
         chunk = self._get_chunk_tuple(location)
         return chunk in self._data and location not in self._data[chunk]
 

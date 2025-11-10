@@ -71,10 +71,8 @@ class Coord:
         loc = self.location / CHUNK_SIZE
         x = np.floor(loc[0]).astype(int)
         y = np.ceil(loc[1]).astype(int)
-        if len(loc) > 2:
-            z = np.floor(loc[2]).astype(int)
-            return np.array([x, y, z])
-        return np.array([x, y])
+        z = np.floor(loc[2]).astype(int)
+        return np.array([x, y, z])
 
     def update_as_world_coord(self, dx, dy, dz=0):
         delta = np.array([dx, dy, dz], dtype=np.float64)
@@ -135,6 +133,10 @@ class Coord:
     def norm_2D(self): return np.sqrt(self.x ** 2 + self.y ** 2)
     def dot_2D(self, other): return np.dot(self.location[:2], self._coerce(other)[:2])
     def cross_2D(self, other): return np.cross(self.location[:2], self._coerce(other)[:2])
+    def manhattan(self, other): return np.sum(np.abs(self.location - self._coerce(other))) 
+    def manhattan_2D(self, other): return np.sum(np.abs(self.location[:2] - self._coerce(other)[:2]))
+    def euclidean(self, other): return np.linalg.norm(self.location - self._coerce(other))
+    def euclidean_2D(self, other): return np.linalg.norm(self.location[:2] - self._coerce(other)[:2])
 
 
     # --- arithmetic (new object) ---

@@ -60,7 +60,8 @@ class Character(Entity):
         self.effects: Set[Tuple[float, Callable[[Self], None]]] = set() # Need a way to save this 
 
         self.damage_mask = None
-        self.damage_animation_frame = []
+        self.damage_animation_frame = 0
+        self.damage_animation_frames = []
         self.animation_offset = 0
         
 
@@ -124,14 +125,13 @@ class Character(Entity):
 
 
     def _spawn_damage_number(self, num: int) -> None:
-        text_location = self.location.copy()
-        text_location.x += self.size.x / 2
-        text_entity = DamageText(self.location, num, 1200, self._base_trajectory, with_rng=True)
+        text_location = self.location.copy().update_as_world_coord(self.size.x, self.size.y)
+        text_entity = DamageText(text_location, num, 1200, self._base_trajectory, with_rng=True)
         self.manager.queue_entity_addition(text_entity)
 
-    def _start_damage_animation(self, amplitude=8, duration=30) -> None:
+    def _start_damage_animation(self, amplitude=2, duration=10) -> None:
         self.damage_animation_frame = 0
-        self.mask = (238, 18, 66, 100)
+        self.damage_mask = (238, 18, 66, 100)
 
         period = duration // 2
         steps = np.linspace(0, period, duration)
@@ -142,6 +142,7 @@ class Character(Entity):
         if self.damage_animation_frame < len(self.damage_animation_frames):
             self.animation_offset = self.damage_animation_frames[self.damage_animation_frame]
             self.damage_animation_frame += 1
+        else: self.damage_mask = None
     
 
     def _terrain_spd_multiplier(self, terrain: Terrain):
@@ -215,8 +216,7 @@ class Character(Entity):
 
     def get_render_objs(self) -> List[RenderObj]:
         location = self.draw_location()
-        location.x += self.animation_offset
-
+        location[0] += self.animation_offset
         return [RenderObj(
             self.img_id,
             location,
@@ -225,8 +225,11 @@ class Character(Entity):
         )]
 
     # Can override update for testing     
-    # def update(self, dt, onscreen=True):
-    #     if random.random() < 0.05: self._spawn_damage_number(-random.randint(1, 16))
+    def update(self, dt, onscreen=True):
+        self._apply_damage_animation()
+        if random.random() < 0.02: 
+            self._spawn_damage_number(-1)
+            self._start_damage_animation()
 
     
 

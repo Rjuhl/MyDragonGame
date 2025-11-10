@@ -12,6 +12,8 @@ from system.entities.sprites.tree import Tree
 from system.game_clock import game_clock
 from system.entities.spawners.fox_burrow import FoxBurrow
 from system.entities.sprites.fox import Fox
+from world.tile import Tile
+from typing import Optional
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -108,7 +110,6 @@ class Map:
         for chunk in self.chunks:
             for entity in chunk.entities: self.entity_manager.add_entity(entity)
 
-
     def generate_loaded_chunks(self):
         for i, chunk in enumerate(self.chunks):
             neighbor_biomes = []
@@ -144,6 +145,9 @@ class Map:
     def get_entities_to_render(self):
         return self.entities_to_render
     
+    def get_tile(self, coord: Coord) -> Optional[Tile]:
+        for chunk in self.chunks:
+            if chunk.contains_coord(coord): return chunk.get_tile(coord)
 
     @staticmethod
     def check_dir_exists(x, y):

@@ -2,6 +2,7 @@ import pygame
 import numpy as np
 from pathlib import Path
 from utils.coords import Coord
+from utils.types.colors import RGBA
 from system.entities.physics.collisions import center_hit_box
 from world.tile import Tile
 from numpy.typing import NDArray
@@ -19,7 +20,7 @@ class AssetDrawer:
         
         self.sheet_manager = SheetManager(sprite_img_dir)
 
-    def draw_tile(self, tile: Tile, cam_offset: NDArray[np.float64], tint: pygame.typing.ColorLike, display=None):
+    def draw_tile(self, tile: Tile, cam_offset: NDArray[np.float64], tint: RGBA, display=None):
         working_display = self.display if display is None else display
         tile_img = self.tiles[tile.id]
 
@@ -31,15 +32,7 @@ class AssetDrawer:
             if tile_img.get_alpha() is None:
                 tile_img = tile_img.convert_alpha()
 
-            # Create a mask of non-black (visible) pixels
-            mask = pygame.mask.from_surface(tile_img)
-
-            # Create a surface with the tint color (fully opaque red)
-            mask_surface = mask.to_surface(setcolor=tint, unsetcolor=(0, 0, 0))
-            mask_surface.set_colorkey((0, 0, 0))  # ignore black (unset pixels)
-
-            # Blit the red-tinted mask on top of the tile
-            tinted_img.blit(mask_surface, (0, 0))
+            tinted_img = self._tint_surface(tinted_img, tint)
 
         else:
             tinted_img = tile_img
@@ -49,10 +42,13 @@ class AssetDrawer:
 
     def draw_sprite(self, sprite: RenderObj, cam_offset: NDArray[np.float64], display=None) -> None:
         working_display = self.display if display is None else display
-        working_display.blit(
-            self.sheet_manager.get_sprite(sprite.id, sprite.frame) if sprite.img is None else sprite.img, 
-            sprite.draw_location - cam_offset
-        )
+        sprite_surface = self.sheet_manager.get_sprite(sprite.id, sprite.frame) if sprite.img is None else sprite.img
+
+        # If mask color is set tint sprite
+        if sprite.mask:
+            sprite_surface = self._tint_surface(sprite_surface.copy(), sprite.mask)
+
+        working_display.blit(sprite_surface, sprite.draw_location - cam_offset)
 
     def blit_dot(self, world_location: Coord, cam_offset:  NDArray[np.float64], color=(255, 0, 0), radius=2, display=None) -> None:
         working_display = self.display if display is None else display
@@ -68,6 +64,13 @@ class AssetDrawer:
         self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)
         self.blit_dot(location + size, cam_offset, color, radius, display)
 
+
+    def _tint_surface(self, img: pygame.Surface, tint: RGBA):
+        mask = pygame.mask.from_surface(img)
+        mask_surface = mask.to_surface(setcolor=tint, unsetcolor=(0, 0, 0))
+        mask_surface.set_colorkey((0, 0, 0)) 
+        img.blit(mask_surface, (0, 0))
+        return img
 
     @staticmethod
     def load_assets(path):

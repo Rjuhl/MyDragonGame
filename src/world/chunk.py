@@ -22,7 +22,7 @@ class Chunk:
         self.id = id
         self.random_number_generator = random_number_generator
 
-        self.entities = []
+        self.entities = [] # This may need reworked to a use a set so entities that move can be added and removed easily
         self.generate()
     
     @classmethod
@@ -40,6 +40,9 @@ class Chunk:
         chunk = cls(biome=biome, location=location, size=size, id=chunk_id)
         chunk.tiles = tiles
         chunk.entities = entities
+
+        test = chunk.tiles[2023]
+        print(test.location, chunk.get_tile(test.location).location)
 
         return chunk
     
@@ -83,37 +86,17 @@ class Chunk:
             if entity: self.entities.append(entity)
         
     
-    # generate_tile -> Deprecated 
-    def generate_tile(self, x, y, neighbor_biomes, on_border, round_factor=100):
-        prefix_sum, ids = [], []
-        current_sum = 0
-        for id, weight in BIOME_TILE_WEIGHTS[self.biome]:
-            current_sum += weight * round_factor
-            ids.append(id)
-            prefix_sum.append(current_sum)
+    def get_tile(self, location: Coord) -> Tile | None:
+        if not self.contains_coord(location): return None
+        location = location.copy()
+        location -= Coord.chunk(*location.as_chunk_coord())
         
-        for b, biome in enumerate(neighbor_biomes):
-            if biome is None: continue
-            for id, weight in BIOME_TILE_WEIGHTS[biome]:
-                current_sum += math.floor(self.weight_decay(weight, self.get_distance(x, y, b)) * round_factor)
-                ids.append(id)
-                prefix_sum.append(current_sum)
+        x, y = int(location.x), int(location.y) % self.SIZE
+        return self.tiles[x * self.SIZE + (self.SIZE - y)]
 
-        random_tile = self.random_number_generator(0, math.floor(current_sum))
-        chunk_world_loc = self.location.as_world_coord()
-        location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
-        return Tile(ids[bisect_left(prefix_sum, random_tile)], location, on_border)
-    
-    def get_distance(self, x, y, biome):
-        if biome == 0: return x
-        if biome == 1: return self.SIZE - x 
-        if biome == 2: return y
-        if biome == 3: return self.SIZE - y
-        else: return 0
-    
+
     def contains_coord(self, coord):
-        new_coord = coord.copy()
-        new_coord.update_as_chunk_coord(1, -1)
+        new_coord = self.location.copy().update_as_chunk_coord(1, -1)
         return self.location.x <= coord.x <= new_coord.x and \
                new_coord.y <= coord.y <= self.location.x
 
