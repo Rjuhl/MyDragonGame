@@ -1,16 +1,23 @@
 from utils.coords import Coord
 from collections import deque
+from world.astar import AstarManager
+from decorators import singleton
+from constants import PATH_FINDER_CPT
 from typing import TYPE_CHECKING, Callable, Optional, List
+
 
 if TYPE_CHECKING:
     from world.map import Map
     from world.tile import Tile
 
-class PathFinder:
-    def __init__(self, map: Map):
-        self.map = map
+@singleton
+class PathFinder(AstarManager):
+    def __init__(self, cycles_per_tick: int):
+        super().__init__(cycles_per_tick)
 
     
+    def add_job(self, start, destination):
+        return super().add_job(start, self._get_closet_loaded_point(destination))
 
 
     def _get_closet_loaded_point(self, point: Coord) -> Optional[Coord]:
@@ -29,7 +36,6 @@ class PathFinder:
         if point.y > y_max: point.y = y_max
 
         return self._find_closest_unblocked_point(point, self._default_is_blocked)
-
 
 
     def _find_closest_unblocked_point(self, point: Coord, is_blocked: Callable[[Tile], bool]) -> Optional[Coord]:
@@ -52,12 +58,9 @@ class PathFinder:
                 if not is_blocked(tile): return tile.location
                 coord_queue.extend(get_next_points(tile.location, visted_coords))
 
-    
-    @staticmethod
-    def _default_is_blocked(tile: Tile) -> bool:
-        return tile.has_obsticle or tile.is_water
 
     @staticmethod
     def _in_bounds(point: Coord, x_max: float, x_min: float, y_max: float, y_min: float) -> bool:
         return x_min <= point.x <= x_max and y_min <= point.y <= y_max
 
+path_finder = PathFinder(PATH_FINDER_CPT)

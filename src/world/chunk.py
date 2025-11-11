@@ -41,9 +41,6 @@ class Chunk:
         chunk.tiles = tiles
         chunk.entities = entities
 
-        test = chunk.tiles[2023]
-        print(test.location, chunk.get_tile(test.location).location)
-
         return chunk
     
     def save(self):

@@ -34,5 +34,8 @@ MOVEMENT_MAP = {
     (-1, 1): (-1, 0)
 }
 
+# World constants
+PATH_FINDER_CPT = 1000
+
 # To moved later
 SEED = 1

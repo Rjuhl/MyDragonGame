@@ -74,16 +74,20 @@ class AstarJob:
         random.shuffle(neighbors)
 
         return neighbors
-
     
 
-    def _reconstruct_path(self, node: Node) -> None:
-        pass
+    def _reconstruct_path(self, coord: Coord) -> JobResult:
+        path = {}
+        while self.nodes[coord].parent:
+            path[self.nodes[coord].parent] = coord
+            coord = self.nodes[coord].parent
+        return path
+            
     
                               
 class AstarManager:
-    def __init__(self, cycles_per_tick: int, map: Map):
-        self.map = map
+    def __init__(self, cycles_per_tick: int):
+        self.map = None
         self.cpt = cycles_per_tick
     
         self.job_id = -1
@@ -97,8 +101,14 @@ class AstarManager:
         
         self.job_id += 1
         return self.job_id
+    
+    def _require_map(self) -> None:
+        if self.map is None:
+            raise ValueError("Map is required but not set.")
 
     def add_job(self, start: Coord, destination: Coord) -> int:
+        self._require_map()
+
         id = self._get_id()
         self.jobs[id] = AstarJob(start, destination, self.map, self._default_is_blocked)
         return id
@@ -120,6 +130,12 @@ class AstarManager:
         
         self.recycled_ids.append(job)
         return result
+
+    def bind_map(self, map: Map) -> None:
+        self.map = map
+    
+    def reset_map(self) -> None:
+        self.map = NotImplemented
 
     @staticmethod
     def _default_is_blocked(tile: Tile) -> bool:
