@@ -25,7 +25,7 @@ class Player(Entity):
 
     def init_human(self, location: Coord):
         size = Coord.math(.25, .25, 1.25)
-        render_offset = Coord.math(-8, -18, 0)
+        render_offset = Coord.math(0, -9, 0)
         img_id = 1
         super().__init__(location, size, img_id, render_offset)
 
@@ -53,8 +53,9 @@ class Player(Entity):
         return self.last_drawn_location + self.render_offset.location[:-1]
     
     def get_shadow(self) -> EllipseData:
+        x, y = self.last_drawn_location
         return EllipseData(
-            Coord.view(self.last_drawn_location[0], self.last_drawn_location[1], self.location.z),
+            Coord.view(x, y, self.location.z),
             0.5, 0.5, 0
         )
     

@@ -40,8 +40,11 @@ class Triangle:
         v1 = Coord.math(B.x - A.x, B.y - A.y, 0)  
         v2 = Coord.math(x - A.x, y - A.y, 0)
 
-        dot00 = v0.dot_2D(v0); dot01 = v0.dot_2D(v1); dot02 = v0.dot_2D(v2)
-        dot11 = v1.dot_2D(v1); dot12 = v1.dot_2D(v2)
+        dot00 = v0.dot_2D(v0)
+        dot01 = v0.dot_2D(v1)
+        dot02 = v0.dot_2D(v2)
+        dot11 = v1.dot_2D(v1) 
+        dot12 = v1.dot_2D(v2)
 
         denom = dot00 * dot11 - dot01 * dot01
         if abs(denom) < eps: return False
@@ -208,10 +211,11 @@ class Shadows:
                 occ = self._blur_surface(occ, passes=1)
                 shadow_surf.blit(occ, (0, 0), special_flags=pygame.BLEND_RGBA_SUB)
 
+            x, y = min_x + (max_x - min_x) / 2, min_y + (max_y - min_y) / 2
             render_obs.append(
                 RenderObj(
                     None,
-                    np.array([min_x, min_y]),
+                    np.array([x, y]),
                     (receiver.shade_level, centriod.x, centriod.y, receiver.ref_z),
                     isShadow=True,
                     img=shadow_surf,

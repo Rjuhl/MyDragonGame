@@ -19,7 +19,6 @@ class SheetManager:
         for file in paths:
             name = file.name[file.name.find('_')+1:file.name.find('.')]
             img = pygame.image.load(file).convert_alpha()
-            img.set_colorkey((0, 0, 0))
             self.sprites.append(SpriteSheet(img, name))
 
         next_id = len(self.sprites)
@@ -56,7 +55,7 @@ class SpriteSheet:
     
     def _get_frame(self, frame: int) -> pygame.Surface:
         x, y, w, h = self.data[frame]
-        sprite = pygame.Surface((w, h))
+        sprite = pygame.Surface((w, h), pygame.SRCALPHA)
         sprite.blit(self.img, (0, 0), (x, y, w, h))
         return sprite
 

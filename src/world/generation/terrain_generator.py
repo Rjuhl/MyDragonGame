@@ -112,7 +112,7 @@ class TerrainGenerator:
         if biome == Biome.DESERT: return
         noise_value = noise.pnoise2(x / 100, y / 100, **asdict(self.forest_noise))
         if noise_value < 0 and self.rng.random() < FOREST_DENSITY:
-            return Tree(Coord.world(x, y), snowy=(biome==Biome.TUNDRA))
+            return Tree(Coord.world(x - 0.5, y + 0.5), snowy=(biome==Biome.TUNDRA))
         
 
     def _biome_weights(self, x: int, y: int) -> Dict[Biome, float]:
@@ -152,6 +152,7 @@ class TerrainGenerator:
         tile = self._get_tile(x, y, biome_w, onborder)
         if self._is_water_tile(tile): return tile, None
         if tree := self._get_tree(x, y, biome):
+            tile.has_obsticle = True
             return tile, tree
         return tile, None
 

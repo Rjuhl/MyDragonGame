@@ -18,8 +18,9 @@ def generate_shadow_ellipse(length: float, width: float, fade: float, rotation: 
         fade=fade,
         color=(0, 0, 0)
     )
+    
 
-    if rotation is not None and rotation % 360 != 0: # Need to fix the rotation (or somehow pass data on where to blit from)
+    if rotation is not None and rotation % 360 != 0:
         shadow = pygame.transform.rotozoom(shadow, -rotation % 360, 1.0)
 
     return shadow

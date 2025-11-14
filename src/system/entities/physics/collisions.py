@@ -1,7 +1,7 @@
 from enum import Enum
 from system.entities.entity import Entity
 from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
-from system.entities.entity_types import EntityTypes
+from system.entities.types.entity_types import EntityTypes
 from typing import List, Dict
 from constants import MAX_COLLISION_PASSES
 from system.game_clock import game_clock
@@ -48,6 +48,7 @@ def center_hit_box(location, size):
     top_left = location.copy()
     top_left.x = top_left.x - size.x / 2
     top_left.y = top_left.y - size.y / 2
+    # top_left.x -= size.x
     return top_left, size
 
 def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Dict[Entity, float]:
@@ -72,7 +73,6 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
                 *center_hit_box(e1.location, e1.size), 
                 *center_hit_box(e2.location, e2.size)
             ): 
-                # print("collision")
                 e1.handle_collision(velocities[e1], e2, velocities[e2], timestep)
                 e2.handle_collision(velocities[e2], e1, velocities[e1], timestep)
                 stable = False
@@ -80,5 +80,4 @@ def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
         if stable:
             break
     
-    # print("no collision")
                 

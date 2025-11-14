@@ -73,11 +73,9 @@ def generate_shadow(
         if override_serve_shadow_entity:
            
             def serve_shadow(self):
-                draw_location = self.draw_location() - self.render_offset.location[:-1] + np.array([-length * Coord.BASIS[0, 0], -width * Coord.BASIS[1, 0]])
-                draw_location[1] -= np.floor(self.location.z * Coord.BASIS[1, 2])
                 return RenderObj(
                     self.SHADOW_ID + int(self.rotated),
-                    draw_location,
+                    self.draw_location() - self.render_offset.location[:-1],
                     (shade_level, self.location.x, self.location.y, self.location.z),
                     isShadow=True
                 )

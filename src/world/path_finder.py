@@ -1,13 +1,12 @@
 from utils.coords import Coord
 from collections import deque
 from world.astar import AstarManager
+from world.tile import Tile
 from decorators import singleton
 from constants import PATH_FINDER_CPT
 from typing import TYPE_CHECKING, Callable, Optional, List
 
-
 if TYPE_CHECKING:
-    from world.map import Map
     from world.tile import Tile
 
 @singleton

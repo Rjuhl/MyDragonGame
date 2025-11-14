@@ -1,7 +1,7 @@
 import random
 import math
 import numpy as np
-from typing import Callable, Self, Set, Tuple, List, Any
+from typing import Callable, Self, Set, Tuple, List, Any, Optional
 from utils.coords import Coord
 from system.render_obj import RenderObj
 from system.entities.entity import Entity
@@ -226,15 +226,10 @@ class Character(Entity):
 
     # Can override update for testing     
     def update(self, dt, onscreen=True):
+        return
         self._apply_damage_animation()
         if random.random() < 0.02: 
             self._spawn_damage_number(-1)
             self._start_damage_animation()
-
-    
-
-    
-    
-            
 
 

@@ -1,7 +1,7 @@
 import math
 import heapq
 import random
-from world.map import Map
+# from world.map import Map
 from utils.coords import Coord
 from typing import Dict, Self, Optional, List, Callable, Dict
 from world.tile import Tile
@@ -17,8 +17,10 @@ class Node:
     parent: Optional[Coord] = None
 
 
+# !!! Need to make this robust to different size entities !!!
+
 class AstarJob:
-    def __init__(self, start: Coord, destination: Coord, map: Map, is_blocked: Callable[[Tile], bool]):
+    def __init__(self, start: Coord, destination: Coord, map , is_blocked: Callable[[Tile], bool]):
         self.map = map
         self.start = start
         self.destination = destination
@@ -131,7 +133,7 @@ class AstarManager:
         self.recycled_ids.append(job)
         return result
 
-    def bind_map(self, map: Map) -> None:
+    def bind_map(self, map) -> None:
         self.map = map
     
     def reset_map(self) -> None:

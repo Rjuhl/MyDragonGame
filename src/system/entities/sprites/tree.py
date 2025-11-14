@@ -16,7 +16,7 @@ class Tree(Entity):
         self.trunk_img_id = 2
         self.canopy_img_id = 3 + int(snowy)
         size = Coord.world(0.5, 0.5, 3)
-        render_offset = Coord.math(-24, -76, 0) # Coord.math(-8, 48, 0)
+        render_offset = Coord.math(0, -36, 0) #Coord.math(-24, -76, 0) # Coord.math(-8, 48, 0)
         super().__init__(location, size, img_id, render_offset)
 
     def get_render_objs(self):
@@ -38,8 +38,8 @@ class Tree(Entity):
         p0 = self.location.copy()
 
         # parameter tunning
-        p0.x -= 0.45
-        p0.y += 0.35
+        p0.x -= 0.23
+        p0.y += 0.18
         p0.z = 4.15
         scale = 0.65
 

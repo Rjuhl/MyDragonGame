@@ -37,7 +37,8 @@ class AssetDrawer:
         else:
             tinted_img = tile_img
 
-        working_display.blit(tinted_img, tile.location.as_view_coord() - cam_offset)
+        tile_rect = tinted_img.get_rect(center=(tile.location.as_view_coord() - cam_offset))
+        working_display.blit(tinted_img, tile_rect)
 
 
     def draw_sprite(self, sprite: RenderObj, cam_offset: NDArray[np.float64], display=None) -> None:
@@ -48,7 +49,11 @@ class AssetDrawer:
         if sprite.mask:
             sprite_surface = self._tint_surface(sprite_surface.copy(), sprite.mask)
 
-        working_display.blit(sprite_surface, sprite.draw_location - cam_offset)
+        if sprite.id == 6:
+            sprite_surface.set_alpha(0)
+
+        sprite_rect = sprite_surface.get_rect(center=sprite.draw_location - cam_offset)
+        working_display.blit(sprite_surface, sprite_rect)
 
     def blit_dot(self, world_location: Coord, cam_offset:  NDArray[np.float64], color=(255, 0, 0), radius=2, display=None) -> None:
         working_display = self.display if display is None else display
@@ -63,6 +68,7 @@ class AssetDrawer:
         self.blit_dot(location + Coord.math(size.x, 0, 0), cam_offset, color, radius, display)
         self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)
         self.blit_dot(location + size, cam_offset, color, radius, display)
+        self.blit_dot(loc, cam_offset, (255, 0, 0), radius - 1, display)
 
 
     def _tint_surface(self, img: pygame.Surface, tint: RGBA):

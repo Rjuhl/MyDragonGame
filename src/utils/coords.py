@@ -137,6 +137,8 @@ class Coord:
     def manhattan_2D(self, other): return np.sum(np.abs(self.location[:2] - self._coerce(other)[:2]))
     def euclidean(self, other): return np.linalg.norm(self.location - self._coerce(other))
     def euclidean_2D(self, other): return np.linalg.norm(self.location[:2] - self._coerce(other)[:2])
+    def floor_world(self): return Coord(np.floor(self.location))
+    def floor_chunk(self): return Coord(np.floor(self.location /CHUNK_SIZE) * CHUNK_SIZE)
 
 
     # --- arithmetic (new object) ---
