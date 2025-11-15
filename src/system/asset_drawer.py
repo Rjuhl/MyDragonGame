@@ -48,10 +48,7 @@ class AssetDrawer:
         # If mask color is set tint sprite
         if sprite.mask:
             sprite_surface = self._tint_surface(sprite_surface.copy(), sprite.mask)
-
-        if sprite.id == 6:
-            sprite_surface.set_alpha(0)
-
+        
         sprite_rect = sprite_surface.get_rect(center=sprite.draw_location - cam_offset)
         working_display.blit(sprite_surface, sprite_rect)
 
@@ -62,13 +59,19 @@ class AssetDrawer:
         x, y = world_location.as_view_coord() - cam_offset
         working_display.blit(dot_surface, (x - radius, y - radius))
 
-    def mark_hitbox(self, loc, size, cam_offset, color=(255, 0, 0), radius=2, display=None):
+    def mark_hitbox(self, loc, size, cam_offset, color=(255, 0, 0), radius=2, display=None, show_upper=True):
         location, _ = center_hit_box(loc, size)
         self.blit_dot(location, cam_offset, color, radius, display)
         self.blit_dot(location + Coord.math(size.x, 0, 0), cam_offset, color, radius, display)
         self.blit_dot(location + Coord.math(0, size.y, 0), cam_offset, color, radius, display)
-        self.blit_dot(location + size, cam_offset, color, radius, display)
+        self.blit_dot(location + Coord.math(size.x, size.y, 0), cam_offset, color, radius, display)
         self.blit_dot(loc, cam_offset, (255, 0, 0), radius - 1, display)
+
+        if show_upper:
+            self.blit_dot(location + Coord.math(0, 0, size.z), cam_offset, (0, 0, 255), radius, display)
+            self.blit_dot(location + Coord.math(size.x, 0, size.z), cam_offset, (0, 0, 255), radius, display)
+            self.blit_dot(location + Coord.math(0, size.y, size.z), cam_offset, (0, 0, 255), radius, display)
+            self.blit_dot(location + size, cam_offset, (0, 0, 255), radius, display)
 
 
     def _tint_surface(self, img: pygame.Surface, tint: RGBA):

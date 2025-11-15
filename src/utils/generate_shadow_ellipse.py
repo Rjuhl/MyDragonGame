@@ -5,8 +5,7 @@ from utils.coords import Coord
 def generate_shadow_ellipse(length: float, width: float, fade: float, rotation: int | None = None) -> pygame.Surface:
     # Scale however you like; keeping your original idea:
     length_px = int(length * Coord.BASIS[0][0])
-    width_px  = int(width  * Coord.BASIS[1][0])
-    
+    width_px = int(width * Coord.BASIS[1][0])
 
     # Tune inner/outer alpha and number of steps
     shadow = make_gradient_ellipse(
@@ -21,7 +20,7 @@ def generate_shadow_ellipse(length: float, width: float, fade: float, rotation: 
     
 
     if rotation is not None and rotation % 360 != 0:
-        shadow = pygame.transform.rotozoom(shadow, -rotation % 360, 1.0)
+        shadow = pygame.transform.rotate(shadow, -rotation % 360)
 
     return shadow
 
@@ -57,4 +56,3 @@ def make_gradient_ellipse(
         rect.inflate_ip(-2, -2)
 
     return surf
-

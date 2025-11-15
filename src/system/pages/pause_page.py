@@ -4,7 +4,7 @@ from gui.container import Container
 from gui.types import ItemAlign, ItemAppend
 from gui.buttons.basic_button import BasicButton
 from system.page_context import PageContext
-from system.pages.null_page import NullPage
+from system.pages.main_menu import MainMenu
 
 
 @register_page
@@ -56,7 +56,7 @@ class PausePage(Page):
 
     @staticmethod
     def exit_callback(context: PageContext) -> None:
-        context["next_page"] = NullPage.__name__
+        context["next_page"] = MainMenu.__name__
 
 
 

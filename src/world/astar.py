@@ -18,6 +18,7 @@ class Node:
 
 
 # !!! Need to make this robust to different size entities !!!
+# Note: NPC will be size.(x/y) <= 1 for phase so this can be implemented later
 
 class AstarJob:
     def __init__(self, start: Coord, destination: Coord, map , is_blocked: Callable[[Tile], bool]):

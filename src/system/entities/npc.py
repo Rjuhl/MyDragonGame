@@ -3,13 +3,14 @@ from system.entities.types.facing_types import Facing
 from system.entities.character import Character
 from typing import List, Any, Optional, Callable, Dict
 from world.path_finder import path_finder
+from system.entities.spawner import Spawner
 
 
 JobResult = Optional[Dict[Coord, Coord]]
 
 class NPC(Character):
     def __init__(
-        self, entity_args: List[Any],
+        self, spawner: Optional[Spawner], entity_args: List[Any],
         health: int, mana: int, energy: int,
         stam: int, vit: int, wis: int, spd: int, att: int, deff: int,
         water_speed_mod: float, air_speed_mod: float, base_speed: float
@@ -20,6 +21,8 @@ class NPC(Character):
             stam, vit, wis, spd, att, deff,
             water_speed_mod, air_speed_mod, base_speed
         )
+
+        self.spawner = spawner
 
         # ------ Pathfinding Attr -------- # 
 
@@ -61,7 +64,13 @@ class NPC(Character):
         # Follow path
         max_movement = self.get_speed() * dt
 
-        
+    def _get_facing(self, movement_vec: Coord):
+        dx, dy, _ = movement_vec.location
+        if dx == dy == 0: return Facing.Idle
+        if dx < 0 and dy > 0: return Facing.Up
+        if dx > 0 and dy < 0: return Facing.Down
+        if dx < 0 and dy < 0: return Facing.Left
+        return Facing.Right
 
     def set_success_criteria(self, success_criteria_method: Optional[Callable[[], bool]]) -> None:
         self.success_criteria = success_criteria_method if success_criteria_method else self._default_success_criteria

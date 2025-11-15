@@ -35,7 +35,7 @@ class Map:
         self.init_map_chunks()
 
         # TEMP for testing
-        E = [Fox(Coord.world(1, 0))]
+        E = [Fox(Coord.world(1, 0), None)]
         for e in E: self.entity_manager.add_entity(e)
 
     def bind_player(self, player):
@@ -43,7 +43,6 @@ class Map:
         self.screen.anchor = player
         self.screen.center_anchor()
         self.entity_manager.add_entity(player)
-
 
 
     def unbind_player(self):

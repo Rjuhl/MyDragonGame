@@ -121,6 +121,9 @@ class Screen:
         self.coord = self.anchor.location.copy()
         self.coord.update_as_view_coord(-DISPLAY_SIZE[0] / 2, -DISPLAY_SIZE[1] / 2)
 
+        # Make sure this does not break game loop
+        self.cam_offset = np.floor(Coord.BASIS @ self.location())[:-1]
+
     def get_tracking_box(self, screen_axis=True):
         d1, d2 = DISPLAY_SIZE[0] * TRACKING_BOX_SCALE, DISPLAY_SIZE[1] * TRACKING_BOX_SCALE
         dx, dy = (1 - TRACKING_BOX_SCALE) * DISPLAY_SIZE[0] / 2, (1 - TRACKING_BOX_SCALE) * DISPLAY_SIZE[1] / 2
@@ -149,6 +152,10 @@ class Screen:
             self.check_point_in_square((location + Coord.math(0, size.y, 0)).as_view_coord(), screen_box),
             self.check_point_in_square((location + size).as_view_coord(), screen_box)
         ])
+    
+    def in_bounding_box(self, point: Coord):
+        min_x, max_x, min_y, max_y = self.get_bounding_box()
+        return min_x <= point.x <= max_x and min_y <= point.y <= max_y
 
     @staticmethod
     def check_point_in_square(point, square):

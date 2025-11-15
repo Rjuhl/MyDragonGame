@@ -125,7 +125,7 @@ class Character(Entity):
 
 
     def _spawn_damage_number(self, num: int) -> None:
-        text_location = self.location.copy().update_as_world_coord(self.size.x, self.size.y)
+        text_location = self.location.copy()
         text_entity = DamageText(text_location, num, 1200, self._base_trajectory, with_rng=True)
         self.manager.queue_entity_addition(text_entity)
 
@@ -226,7 +226,6 @@ class Character(Entity):
 
     # Can override update for testing     
     def update(self, dt, onscreen=True):
-        return
         self._apply_damage_animation()
         if random.random() < 0.02: 
             self._spawn_damage_number(-1)
