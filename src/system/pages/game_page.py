@@ -3,7 +3,7 @@ from gui.page import Page
 from system.pages.pause_page import PausePage
 
 
-@register_page(default=True)
+@register_page#(default=True)
 class GamePage(Page):
     def __init__(self, pageContext):
         super().__init__(pageContext)

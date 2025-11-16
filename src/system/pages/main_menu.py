@@ -1,10 +1,11 @@
+import math
 import random
 import numpy as np
 from gui.page import Page
 from gui.text import PixelText
 from gui.container import Container
 from gui.buttons.text_button import TextButton
-from gui.utils.callbacks import quit_game_callback
+from gui.utils.callbacks import *
 from gui.types import ItemAlign, ItemAppend
 from world.tile import Tile
 from world.chunk import Chunk
@@ -17,14 +18,20 @@ from system.screen import Screen
 from constants import CHUNK_SIZE
 from enum import Enum
 
-FALL_SPEED = 0.005
-TILE_PLACEMENT_SPEED = 10
+TREE_FALL_SPEED = 0.005
+TILE_PLACEMENT_SPEED = 64
 ENTITY_PLACEMENT_SPEED = 200
 CHUNK_MOVE_SPEED = 0.005
 DROP_HEIGHT = 10
 WAIT_PERIOD = 15_000
 DOMAIN = 1000
 RANGE = 1000
+
+TILE_DROP_HEIGHT = 54 #64
+MIN_SPEED = 0.1
+SPREAD = 4
+FALL_SPEED = 2
+DT_FACTOR = 100
 
 class MMState(Enum):
     Placement = 0
@@ -33,7 +40,7 @@ class MMState(Enum):
 
 
 # Will need to set as default page at somepoint
-@register_page#(default=True)
+@register_page(default=True)
 class MainMenu(Page):
     def __init__(self, pageContext):
         super().__init__(pageContext)        
@@ -46,7 +53,7 @@ class MainMenu(Page):
 
         self.tiles: List[Tile] = []
         self.entities: List[Entity] = []
-        self.tiles_to_render: List[Tile] = []
+        self.tiles_completed: int = 0
         self.entities_to_render: List[Entity] = []
 
         self.state = MMState.Placement
@@ -58,7 +65,7 @@ class MainMenu(Page):
         play_game_button = TextButton(
             PixelText("Start Game", 24, (238, 161, 88, 255), outline=1),
             PixelText("Start Game", 26, (238, 161, 88, 255), outline_color=(255, 255, 255, 255), outline=1),
-            "180", "20", lambda x: None
+            "180", "20", game_loop_callback
         )
 
         settings_button = TextButton(
@@ -124,9 +131,8 @@ class MainMenu(Page):
 
     def _handle_placement_state(self, dt: float):
         if self.state != MMState.Placement: return
-        self._place_next_tile(dt)
         self._place_next_entity(dt)
-        if len(self.tiles_to_render) == len(self.tiles) and len(self.entities_to_render) == len(self.entities):
+        if self.tiles_completed == len(self.tiles) and len(self.entities_to_render) == len(self.entities):
             self.state = self._get_next_state(self.state)
     
     def _handle_wait_state(self, dt):
@@ -139,27 +145,30 @@ class MainMenu(Page):
     
     def _handle_move_state(self, dt):
         if self.state != MMState.Move: return
-        self.screen.anchor.move(Coord.view(1, 1, 0), with_listeners=False)
+        self.screen.anchor.move(Coord.view(2, 2, 0), with_listeners=False)
         if len(self.chunk.get_tiles_in_chunk(*self.screen.get_bounding_box())) == 0:
             self.chunk = self._get_new_chunk()
             self._setup_scene()
 
             self.time_to_new_chunk = 0
             self.time_since_last_placement = 0
-            self.tiles_to_render = []
+            self.tiles_completed = 0
             self.entities_to_render = []
             self.state = self._get_next_state(self.state)
         self.screen.center_anchor()
-
+            
 
     def _render_items(self, dt: float) -> None:
-        for tile in sorted(self.tiles_to_render, key=lambda t: (t.location.x, -t.location.y, t.location.z)):
+        for tile in sorted(self.tiles, key=lambda t: (t.location.x, -t.location.y, t.location.z)):
             self.context.renderer.asset_drawer.draw_tile(tile, self.screen.cam_offset, None)
-            tile.location.z = max(0, tile.location.z - dt * FALL_SPEED) 
+
+            prev_z = tile.location.z
+            tile.location.z = min(0, tile.location.z + self._get_fall_speed(tile.location, dt))
+            if tile.location.z == 0 and prev_z < 0: self.tiles_completed += 1
         
         render_objs = []
         for entity in self.entities_to_render:
-            entity.location.z = max(0, entity.location.z - dt * FALL_SPEED)
+            entity.location.z = max(0, entity.location.z - dt * TREE_FALL_SPEED)
             render_objs.extend(entity.get_render_objs())
             if (shadow := entity.serve_shadow()): render_objs.append(shadow)
         
@@ -170,24 +179,8 @@ class MainMenu(Page):
         self.context.renderer.asset_drawer.blit_dot(self.chunk.location, self.screen.cam_offset)
 
 
-    def _place_next_tile(self, dt: float) -> None:
-        if len(self.tiles_to_render) == len(self.tiles): return
-
-        if self.time_since_last_tile_placement <= TILE_PLACEMENT_SPEED:
-            self.time_since_last_tile_placement += dt
-            return 
-        
-        tiles_to_place = min(self.time_since_last_tile_placement // TILE_PLACEMENT_SPEED, len(self.tiles) - len(self.tiles_to_render))
-        for _ in range(tiles_to_place):
-            tile = self.tiles[len(self.tiles_to_render)]
-            tile.location.z += DROP_HEIGHT
-            self.tiles_to_render.append(tile)
-        
-        self.time_since_last_tile_placement = 0
-
-
     def _place_next_entity(self, dt: float) -> None:
-        if len(self.tiles_to_render) < len(self.tiles) or len(self.entities_to_render) == len(self.entities): return
+        if self.tiles_completed < len(self.tiles) or len(self.entities_to_render) == len(self.entities): return
 
         if self.time_since_last_entity_placement <= ENTITY_PLACEMENT_SPEED:
             self.time_since_last_entity_placement += dt
@@ -210,7 +203,12 @@ class MainMenu(Page):
 
         self.tiles = self.chunk.get_tiles_in_chunk(*self.screen.get_bounding_box())
         self.entities = [e for e in self.chunk.entities if self.screen.in_bounding_box(e.location)]
-        random.shuffle(self.tiles)
+
+        for tile in self.tiles: tile.location.z -= TILE_DROP_HEIGHT
+        
+    def _get_fall_speed(self, point: Coord, dt: float) -> float:
+        distance = point.euclidean_2D(self.screen.anchor.location)
+        return MIN_SPEED + (math.exp(-distance / (2 * (SPREAD ** 2)))) * dt / DT_FACTOR * FALL_SPEED
 
     @staticmethod
     def _get_new_chunk() -> Chunk:
