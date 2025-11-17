@@ -4,7 +4,6 @@ from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY, PAGE_REGISTRY
 from system.entities.base_entity import BaseEntity
 from utils.coords import Coord
 from utils.types.shade_levels import ShadeLevel
-from gui.page import Page
 
 def singleton(cls):
     """Make a class a singleton."""
@@ -37,6 +36,7 @@ def register_entity(cls):
     return cls
 
 def register_page(_cls=None, *, default=False):
+    from gui.page import Page
     """
     Decorator to register Page subclasses.
     Supports both:

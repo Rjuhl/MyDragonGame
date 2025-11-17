@@ -96,16 +96,19 @@ class Component:
         # Scale background if needed
         if self.background:
             background_mask = pygame.mask.from_surface(self.background)
+            mask_w, mask_h = background_mask.get_size()
 
             # Convert global mouse pos to local (relative to surface top-left)
             rel_x = mx - self.x
             rel_y = my - self.y
-
+            
             # Check bounds first
-            if 0 <= rel_x < dx and 0 <= rel_y < dy:
+            if 0 <= rel_x < mask_w and 0 <= rel_y < mask_h:
                 if background_mask.get_at((rel_x, rel_y)):
                     return True
             return False
+        
+        
 
         # Fallback: bounding box
         return (self.x <= mx <= self.x + dx and self.y <= my <= self.y + dy)

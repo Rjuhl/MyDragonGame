@@ -5,12 +5,12 @@ from typing import Tuple, Dict, Any, List, Optional, Callable
 from pathlib import Path
 
 class BasicButton(Container):
-    def __init__(self, w: str, h: str, text: str, font_size: int, callback: Callable[[Dict[Any, Any]], None]):
+    def __init__(self, w: str, h: str, text: str, font_size: int, callback: Callable[[Dict[Any, Any]], None], varient=""):
         current_dir = Path(__file__).parent
         asset_dir = current_dir.parent.parent.parent / 'assets' / 'gui' / 'backgrounds'
 
-        backgrounds = [asset_dir / 'basic_button.png', asset_dir / 'basic_button_hovered.png']
-        text = PixelText(text, font_size, (79, 80, 112, 255))
+        backgrounds = [asset_dir / f'basic_button{varient}.png', asset_dir / f'basic_button{varient}_hovered.png']
+        text = PixelText(text, font_size, (79, 80, 112, 255), varient=1)
 
         self.callback = callback
 

@@ -3,10 +3,12 @@ from pathlib import Path
 from gui.component import Component
 
 class PixelText(Component):
-    FONT_FILE = Path(__file__).parent.parent.parent / 'assets' / 'gui' / 'fonts' / 'pixelated.ttf'
-    FONT_FILE_2 = Path(__file__).parent.parent.parent / 'assets' / 'gui' / 'fonts' / 'PixelGame.otf'
+    FONTS = {
+        0: Path(__file__).parent.parent.parent / 'assets' / 'gui' / 'fonts' / 'PixelGame.otf',
+        1: Path(__file__).parent.parent.parent / 'assets' / 'gui' / 'fonts' / 'pixelated.ttf',
+    } 
     
-    def __init__(self, text_content, font_size, font_color, bold=False, outline=0, outline_color=(0, 0, 0, 255)):
+    def __init__(self, text_content, font_size, font_color, bold=False, outline=0, outline_color=(0, 0, 0, 255), varient=0):
         self.text_content = text_content
         self.font_size = font_size
         self.font_color = font_color
@@ -14,7 +16,7 @@ class PixelText(Component):
         self.outline = outline
         self.outline_color = outline_color
 
-        self.font = pygame.font.Font(self.FONT_FILE_2.resolve(), font_size)
+        self.font = pygame.font.Font(self.FONTS[varient].resolve(), font_size)
         self.font.set_bold(bold)
 
         self.text = self.create_text_surface()

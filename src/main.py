@@ -6,6 +6,7 @@ from world.map import Map
 from system.renderer import Renderer
 from system.event_handler import EventHandler
 from system.game_clock import game_clock
+from system.input_handler import input_handler
 from pygame.locals import *
 from system.screen import Screen
 from system.entities.sprites.player import Player
@@ -41,10 +42,13 @@ def runGame(logger):
     page_manager = PageManager(page_context)
 
     map.bind_player(player)
+    input_handler.bind_displays(screen, display)
 
     while True:
-        game_clock.tick() 
+        game_clock.tick()
+        input_handler.update()
         display.fill((0,0,0))
+        event_handler.event_tick()
 
         if not page_manager.show_page(): event_handler.close_app()
         fps = game_clock.fps           

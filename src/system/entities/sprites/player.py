@@ -8,6 +8,7 @@ from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO
 from system.render_obj import RenderObj
 from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
+from system.input_handler import input_handler
 
 
 class Player(Entity):
@@ -35,12 +36,12 @@ class Player(Entity):
     def smooth_movement(self):
         # Update draw location 
         self.prev_drawn_location = self.last_drawn_location
-        dx, dy, _ = self.location.location - self.prev_location.location
+        dx, dy, dz = self.location.location - self.prev_location.location
         x, y = self.location.as_view_coord()
-        if bool(dx) ^ bool(dy):
+        if bool(dx) ^ bool(dy) and dz == 0:
             p1_x, p1_y = self.last_drawn_location
             ray_vector = math.copysign(GRID_RATIO[0], dy + dx), math.copysign(GRID_RATIO[1], -dy + dx)
-            self.last_drawn_location = self.find_closest_point_on_discrete_ray((x, y), (p1_x, p1_y), ray_vector, )
+            self.last_drawn_location = self.find_closest_point_on_discrete_ray((x, y), (p1_x, p1_y), ray_vector)
         else:
             self.last_drawn_location = self.location.as_view_coord()
 
@@ -66,15 +67,6 @@ class Player(Entity):
     
     @staticmethod
     def get_movement(dt: float):
-        pressed = pygame.key.get_pressed()
-        dx = int(pressed[K_d] or pressed[K_RIGHT]) - int(pressed[K_a] or pressed[K_LEFT])
-        dy = int(pressed[K_w] or pressed[K_UP]) - int(pressed[K_s] or pressed[K_DOWN])
-        dz = int(pressed[K_SPACE] - int(pressed[K_LSHIFT]))
-        
-        dx, dy = MOVEMENT_MAP[tuple([dx, dy])]
-
-        dx *= TEMP_MOVEMENT_FACTOR * (dt / 1000) 
-        dy *= TEMP_MOVEMENT_FACTOR * (dt / 1000)
-        dz *= TEMP_MOVEMENT_FACTOR * (dt / 1000)
-         
-        return Coord.math(dx, dy, dz)
+        movement = input_handler.get_player_movement()
+        movement *= TEMP_MOVEMENT_FACTOR * (dt / 1000)
+        return movement

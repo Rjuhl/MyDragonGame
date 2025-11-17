@@ -17,6 +17,6 @@ class SizeUnit(Enum):
 
 
 class ClickEvent(Enum):
-    Right = "Right"
-    Left = "Left"
-    Empty = "Empty"
+    Right = 2
+    Left = 1
+    Empty = 0

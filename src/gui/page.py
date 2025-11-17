@@ -5,6 +5,7 @@ from typing import Optional, List
 from system.page_context import PageContext
 from gui.types import ClickEvent
 from constants import SCREEN_INIT_SIZE
+from system.input_handler import input_handler
 
 # Might need to import all pages here to make sure they are regestered
 
@@ -25,10 +26,7 @@ class Page:
 
 
     def render(self) -> None:
-        click_event = None
-        for event in pygame.event.get():
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                click_event = ClickEvent.Left
+        click_event = ClickEvent.Left if input_handler.was_mouse_button_pressed(1) else None
         mouse_pos = self.get_mouse_pos()
         for container in self.containers: 
             container.reposition_children()
@@ -40,8 +38,4 @@ class Page:
         self.context["next_page"] = self.__class__.__name__
 
     def get_mouse_pos(self):
-        x, y = pygame.mouse.get_pos()
-        s_x, s_y = self.context.display.get_size()
-        d_x, d_y = SCREEN_INIT_SIZE # This can get updated so this will need changed later to be more resiliant
-
-        return round(x * (s_x / d_x)), round(y * (s_y / d_y))
+        return input_handler.get_mouse_pos()

@@ -20,7 +20,7 @@ from enum import Enum
 
 TREE_FALL_SPEED = 0.005
 TILE_PLACEMENT_SPEED = 64
-ENTITY_PLACEMENT_SPEED = 200
+ENTITY_PLACEMENT_SPEED = 300
 CHUNK_MOVE_SPEED = 0.005
 DROP_HEIGHT = 10
 WAIT_PERIOD = 15_000
@@ -46,8 +46,7 @@ class MainMenu(Page):
         super().__init__(pageContext)        
         self.chunk = self._get_new_chunk()
         self.time_to_new_chunk = 0
-        self.time_since_last_tile_placement = 0
-        self.time_since_last_entity_placement = 0
+        self.time_since_last_entity_placement = ENTITY_PLACEMENT_SPEED
         
         self.screen = Screen()
 
@@ -63,8 +62,14 @@ class MainMenu(Page):
         # --------- Page Setup --------- #
 
         play_game_button = TextButton(
-            PixelText("Start Game", 24, (238, 161, 88, 255), outline=1),
-            PixelText("Start Game", 26, (238, 161, 88, 255), outline_color=(255, 255, 255, 255), outline=1),
+            PixelText("Choose Game", 24, (238, 161, 88, 255), outline=1),
+            PixelText("Choose Game", 26, (238, 161, 88, 255), outline_color=(255, 255, 255, 255), outline=1),
+            "180", "20", game_loop_callback
+        )
+
+        create_game_button = TextButton(
+            PixelText("Create New Game", 24, (238, 161, 88, 255), outline=1),
+            PixelText("Create New Game", 26, (238, 161, 88, 255), outline_color=(255, 255, 255, 255), outline=1),
             "180", "20", game_loop_callback
         )
 
@@ -85,6 +90,7 @@ class MainMenu(Page):
             ItemAlign.Center, ItemAlign.First, ItemAppend.Below,
             children= [
                 play_game_button,
+                create_game_button,
                 settings_button,
                 quit_button
             ],
@@ -151,8 +157,8 @@ class MainMenu(Page):
             self._setup_scene()
 
             self.time_to_new_chunk = 0
-            self.time_since_last_placement = 0
             self.tiles_completed = 0
+            self.time_since_last_entity_placement = ENTITY_PLACEMENT_SPEED
             self.entities_to_render = []
             self.state = self._get_next_state(self.state)
         self.screen.center_anchor()
@@ -182,7 +188,7 @@ class MainMenu(Page):
     def _place_next_entity(self, dt: float) -> None:
         if self.tiles_completed < len(self.tiles) or len(self.entities_to_render) == len(self.entities): return
 
-        if self.time_since_last_entity_placement <= ENTITY_PLACEMENT_SPEED:
+        if self.time_since_last_entity_placement < ENTITY_PLACEMENT_SPEED:
             self.time_since_last_entity_placement += dt
             return 
 
