@@ -152,6 +152,10 @@ class InputHandler:
     def get_text_input(self) -> str:
         """All text characters typed this frame (for UI text fields)."""
         return self.text_input
+    
+    def was_backspace_pressed(self) -> bool:
+        """True only on the frame Backspace was pressed."""
+        return pygame.K_BACKSPACE in self.keys_down
 
     # ============================================================
     # Action mapping
@@ -261,5 +265,4 @@ class InputHandler:
         w, h = self.screen.get_size()
         pygame.mouse.set_pos((w // 2, h // 2))
 
-# Singleton instance
 input_handler = InputHandler()

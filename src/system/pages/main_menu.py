@@ -125,7 +125,6 @@ class MainMenu(Page):
     def update(self):
         dt = game_clock.dt
 
-
         self._handle_placement_state(dt)
         self._handle_wait_state(dt)
         self._handle_move_state(dt)

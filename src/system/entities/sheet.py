@@ -47,18 +47,19 @@ class SpriteSheet:
 
         current_dir = Path(__file__).parent
         data_path = current_dir.parent.parent.parent / 'assets' / 'sprites' / 'meta_data' / f'{name}.json'
-
-        if data_path.is_file():
-            json_data = json.loads(data_path.read_text(encoding="utf-8"))
-            for _, data in enumerate(json_data["frames"].items()):
-                self.data.append([*data[-1]["frame"].values()])
+        self._load_data(data_path)
     
     def _get_frame(self, frame: int) -> pygame.Surface:
         x, y, w, h = self.data[frame]
         sprite = pygame.Surface((w, h), pygame.SRCALPHA)
         sprite.blit(self.img, (0, 0), (x, y, w, h))
         return sprite
+    
+    def _load_data(self, data_path: Path):
+        if data_path.is_file():
+            json_data = json.loads(data_path.read_text(encoding="utf-8"))
+            for _, data in enumerate(json_data["frames"].items()):
+                self.data.append([*data[-1]["frame"].values()])
 
     def get_sprite(self, frame: Optional[int] = None):
         return self.img if frame is None else self._get_frame(frame)
-    
