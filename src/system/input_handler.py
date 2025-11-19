@@ -96,12 +96,18 @@ class InputHandler:
         if self.screen and self.display:
             sw, sh = self.screen.get_size()
             dw, dh = self.display.get_size()
-            raw_x, raw_y = self.mouse_pos
 
+            # Scale mouse_pos
+            raw_x, raw_y = self.mouse_pos
             disp_x = raw_x * dw / sw
             disp_y = raw_y * dh / sh
-
             self.mouse_pos = (int(disp_x), int(disp_y))
+
+            # Scale mouse_rel
+            rel_x, rel_y = self.mouse_rel
+            scaled_rel_x = rel_x * dw / sw
+            scaled_rel_y = rel_y * dh / sh
+            self.mouse_rel = (scaled_rel_x, scaled_rel_y)
 
     # ============================================================
     # Low-level convenience methods (keyboard)
