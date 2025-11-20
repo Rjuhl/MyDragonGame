@@ -17,6 +17,12 @@ class PausePage(Page):
             self.return_callback
         )
 
+        settings_button = BasicButton(
+            "100%", "30", 
+            "Settings", 24,
+            lambda x: x
+        )
+
         exit_button = BasicButton(
             "100%", "30", 
             "Exit to main menu", 24,
@@ -29,6 +35,7 @@ class PausePage(Page):
             ItemAlign.Center, ItemAlign.Center, ItemAppend.Below,
             children=[
                 return_button,
+                settings_button,
                 exit_button
             ],
             gap=20

@@ -3,7 +3,7 @@ import pygame
 from utils.coords import Coord
 from decorators import singleton
 from constants import MOVEMENT_MAP
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pathlib import Path
 
 
@@ -162,6 +162,50 @@ class InputHandler:
     def was_backspace_pressed(self) -> bool:
         """True only on the frame Backspace was pressed."""
         return pygame.K_BACKSPACE in self.keys_down
+    
+    def was_space_pressed(self) -> bool:
+        """True on the frame the spacebar was pressed."""
+        return pygame.K_SPACE in self.keys_down
+
+    def was_control_pressed(self) -> bool:
+        """True on the frame either LCTRL or RCTRL was pressed."""
+        return (pygame.K_LCTRL in self.keys_down or
+                pygame.K_RCTRL in self.keys_down)
+    
+    def was_shift_pressed(self) -> bool:
+        """True on the frame either LSHIFT or RSHIFT was pressed."""
+        return (pygame.K_LSHIFT in self.keys_down or
+                pygame.K_RSHIFT in self.keys_down)
+    
+    def was_any_key_pressed(self) -> bool:
+        """
+        True if any keyboard key was pressed this frame.
+        Includes all non-alphanumeric keys.
+        """
+        return len(self.keys_down) > 0
+    
+
+    def text_to_key(self, char: str) -> Optional[int]:
+        """Converts a character from TEXTINPUT into pygame int keycodes."""
+
+        if len(char) != 1: return
+        try:
+            return pygame.key.key_code(char)
+        except ValueError:
+            pass
+
+    def key_to_text(self, keycode: int) -> str:
+        """Converts keycodes to a string"""
+        name = pygame.key.name(keycode)
+        if len(name) == 1 and name.isalnum():
+            return name
+        if name == "space": return "SP"
+        if name == "left shift": return "LS"
+        if name == "right shift": return "RS"
+        if name == "left ctrl": return "LC"
+        if name == "right ctrl": return "RC"
+        return ""
+
 
     # ============================================================
     # Action mapping

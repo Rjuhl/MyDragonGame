@@ -39,7 +39,6 @@ class MMState(Enum):
     Move = 2
 
 
-# Will need to set as default page at somepoint
 @register_page(default=True)
 class MainMenu(Page):
     def __init__(self, pageContext):
