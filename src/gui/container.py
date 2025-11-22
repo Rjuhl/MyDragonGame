@@ -1,6 +1,7 @@
 import pygame
 from gui.types import ItemAlign, ItemAppend, ClickEvent
 from gui.component import Component
+from gui.utils.shapes import draw_rect_surface
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 
@@ -14,7 +15,7 @@ class Container(Component):
         *,
         children: List[Component] = [],
         backgrounds: Optional[List[Path]] = None,
-        padding: int = 0,
+        padding: tuple = (0, 0),
         gap: int = 0
     ):
         # Let Component set x, y, w, h, size units, and background
@@ -25,10 +26,16 @@ class Container(Component):
         self.stack_direction = stack_direction
         self.padding = padding
         self.gap = gap
-        self.children = children
+        self.children = []
+        for child in children: self.add_child(child)
     
     def add_child(self, child: Component):
+        child.bind_parent(self)
         self.children.append(child)
+
+    def remove_child(self, child: Component):
+        self.children.remove(child)
+        child.unbind()
 
     def handle_mouse_actions(self, mouse_pos: tuple[int, int], click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
         for child in self.children: 
@@ -37,8 +44,8 @@ class Container(Component):
     def reposition_children(self) -> None:
         # Container pixel size (depends on container's parent size)
         c_w, c_h = self.get_size()
-        inner_w = max(0, c_w - 2 * self.padding)
-        inner_h = max(0, c_h - 2 * self.padding)
+        inner_w = max(0, c_w - 2 * self.padding[0])
+        inner_h = max(0, c_h - 2 * self.padding[1])
 
         #  Resolve each child's size relative to container
         children_sizes = []
@@ -53,21 +60,21 @@ class Container(Component):
 
             # horizontal starting x based on alignment_x within inner width
             if self.alignment_x == ItemAlign.Center:
-                start_x = self.x + self.padding + max(0, (inner_w - total_w) // 2)
+                start_x = self.x + self.padding[0] + max(0, (inner_w - total_w) // 2)
             elif self.alignment_x == ItemAlign.Last:
-                start_x = self.x + self.padding + max(0, inner_w - total_w)
+                start_x = self.x + self.padding[0] + max(0, inner_w - total_w)
             else:  
-                start_x = self.x + self.padding
+                start_x = self.x + self.padding[0]
 
             x_cursor = start_x
             for child, (w, h) in zip(self.children, children_sizes):
                 # vertical placement per child height and alignment_y
                 if self.alignment_y == ItemAlign.Center:
-                    y_pos = self.y + self.padding + max(0, (inner_h - h) // 2)
+                    y_pos = self.y + self.padding[1] + max(0, (inner_h - h) // 2)
                 elif self.alignment_y == ItemAlign.Last:
-                    y_pos = self.y + self.padding + max(0, inner_h - h)
+                    y_pos = self.y + self.padding[1] + max(0, inner_h - h)
                 else:  
-                    y_pos = self.y + self.padding
+                    y_pos = self.y + self.padding[1]
 
                 child.x = x_cursor
                 child.y = y_pos
@@ -79,21 +86,21 @@ class Container(Component):
 
             # vertical starting y based on alignment_y within inner height
             if self.alignment_y == ItemAlign.Center:
-                start_y = self.y + self.padding + max(0, (inner_h - total_h) // 2)
+                start_y = self.y + self.padding[1] + max(0, (inner_h - total_h) // 2)
             elif self.alignment_y == ItemAlign.Last:
-                start_y = self.y + self.padding + max(0, inner_h - total_h)
+                start_y = self.y + self.padding[1] + max(0, inner_h - total_h)
             else:  # First
-                start_y = self.y + self.padding
+                start_y = self.y + self.padding[1]
 
             y_cursor = start_y
             for child, (w, h) in zip(self.children, children_sizes):
                 # horizontal placement per child width and alignment_x
                 if self.alignment_x == ItemAlign.Center:
-                    x_pos = self.x + self.padding + max(0, (inner_w - w) // 2)
+                    x_pos = self.x + self.padding[0] + max(0, (inner_w - w) // 2)
                 elif self.alignment_x == ItemAlign.Last:
-                    x_pos = self.x + self.padding + max(0, inner_w - w)
+                    x_pos = self.x + self.padding[0] + max(0, inner_w - w)
                 else:  # First
-                    x_pos = self.x + self.padding
+                    x_pos = self.x + self.padding[0]
 
                 child.x = x_pos
                 child.y = y_cursor
@@ -105,3 +112,7 @@ class Container(Component):
     def render(self, surface: pygame.Surface) -> None:
         if self.background: surface.blit(self.background, (self.x, self.y))
         for child in self.children: child.render(surface)
+        super().render(surface)
+        # surface.blit(draw_rect_surface((0, 0, 0, 0), (0, 0, 0, 255), 1, self.w, self.h), (self.x, self.y))
+        # for child in self.children:
+        #     surface.blit(draw_rect_surface((0, 0, 0, 0), (255, 255, 255, 255), 1, child.w, child.h), (child.x, child.y))

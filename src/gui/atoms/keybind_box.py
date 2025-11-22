@@ -17,7 +17,6 @@ class KeyBindBox(Container):
         w: str, h: str,
         font_size: int, 
         bind_field: str, 
-        current_bind: int,
         font_color: RGBA = (255, 255, 255, 255),
         background_color: RGBA = (125, 120, 154, 255),
         outline_color: RGBA = (66, 72, 97, 255),
@@ -44,6 +43,7 @@ class KeyBindBox(Container):
 
         self.bind_field = bind_field
 
+        current_bind = input_handler.action_bindings[self.bind_field][0]
         self.text = self._create_text(input_handler.key_to_text(current_bind))
         self.placeholder_text = self._create_text("_")
         self.current_placeholder = None

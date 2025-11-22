@@ -3,6 +3,8 @@ import pygame
 from gui.types import SizeUnit, ClickEvent
 from typing import Tuple, Dict, Any, List, Optional
 from pathlib import Path
+from gui.utils.shapes import draw_rect_surface
+from system.global_vars import game_globals
 
 
 class Component:
@@ -81,6 +83,13 @@ class Component:
     #                              METHODS
     # --------------------------------------------------------------------------
 
+    def bind_parent(self, parent) -> None:
+        self.parent_w = parent.w
+        self.parent_h = parent.h
+
+    def unbind(self) -> None:
+        pass
+
     def get_size(self) -> Tuple[int, int]:
         """Returns component size based on parent's size."""
         width = self.w if self._size_unit_w == SizeUnit.Absolute else math.floor(self.parent_w * (self.w / 100))
@@ -101,7 +110,7 @@ class Component:
             # Convert global mouse pos to local (relative to surface top-left)
             rel_x = mx - self.x
             rel_y = my - self.y
-            
+
             # Check bounds first
             if 0 <= rel_x < mask_w and 0 <= rel_y < mask_h:
                 if background_mask.get_at((rel_x, rel_y)):
@@ -136,4 +145,9 @@ class Component:
         pass
 
     def render(self, surface: pygame.Surface) -> None:
-        pass
+        if game_globals.show_hitboxes_on:
+            w, h = self.get_size()
+            color = (0, 0, 0, 255)
+            if w == 27 and h == 10: color = (255, 255, 255, 255)
+            surface.blit(draw_rect_surface((0, 0, 0, 0), color, 1, w, h), (self.x, self.y))
+

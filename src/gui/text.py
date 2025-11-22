@@ -21,7 +21,7 @@ class PixelText(Component):
 
         self.text = self.create_text_surface()
         self.text_rect = self.text.get_rect()
-        self.w, self.h = self.text_rect.width, self.text_rect.height
+        super().__init__(f"{self.text_rect.width}", f"{self.text_rect.height}")
 
     def create_outlined_text(self, base_surface, text_surface, outline_width):
         w, h = base_surface.get_size()
@@ -48,6 +48,5 @@ class PixelText(Component):
 
     def render(self, surface):
         surface.blit(self.text, (self.x, self.y))
+        super().render(surface)
     
-    def get_size(self):
-        return self.w, self.h

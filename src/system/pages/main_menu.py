@@ -17,6 +17,7 @@ from decorators import register_page
 from system.screen import Screen
 from constants import CHUNK_SIZE
 from enum import Enum
+from gui.utils.callbacks import settings_callback
 
 TREE_FALL_SPEED = 0.005
 TILE_PLACEMENT_SPEED = 64
@@ -75,7 +76,7 @@ class MainMenu(Page):
         settings_button = TextButton(
             PixelText("Settings", 24, (238, 161, 88, 255), outline=1),
             PixelText("Settings", 26, (238, 161, 88, 255), outline_color=(255, 255, 255, 255), outline=1),
-            "180", "20", lambda x: None
+            "180", "20", settings_callback
         )
 
         quit_button = TextButton(

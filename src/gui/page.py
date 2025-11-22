@@ -35,7 +35,8 @@ class Page:
 
     def update(self) -> None:
         self.render()
-        self.context["next_page"] = self.__class__.__name__
+        if "items_rendered" not in self.context.state: self.context.state["items_rendered"] = 0
+        self.context.state["next_page"] = self.__class__.__name__
 
     def get_mouse_pos(self):
         return input_handler.get_mouse_pos()

@@ -5,7 +5,7 @@ from gui.types import ItemAlign, ItemAppend
 from gui.buttons.basic_button import BasicButton
 from system.page_context import PageContext
 from system.pages.main_menu import MainMenu
-
+from gui.utils.callbacks import settings_callback
 
 @register_page
 class PausePage(Page):
@@ -20,7 +20,7 @@ class PausePage(Page):
         settings_button = BasicButton(
             "100%", "30", 
             "Settings", 24,
-            lambda x: x
+            settings_callback
         )
 
         exit_button = BasicButton(

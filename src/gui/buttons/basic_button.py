@@ -21,7 +21,6 @@ class BasicButton(Container):
             ItemAppend.Below, 
             children=[text], 
             backgrounds=backgrounds, 
-            padding=0, 
             gap=0
         )
 

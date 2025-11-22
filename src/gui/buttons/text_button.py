@@ -19,7 +19,6 @@ class TextButton(Container):
             ItemAlign.Center, ItemAlign.Center, 
             ItemAppend.Below, 
             children=[text], 
-            padding=0, 
             gap=0
         )
 

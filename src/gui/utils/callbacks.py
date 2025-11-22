@@ -1,9 +1,17 @@
 from system.page_context import PageContext
 
 def quit_game_callback(context: PageContext) -> None:
-        from system.pages.null_page import NullPage  # Local import to avoid circular import
-        context["next_page"] = NullPage.__name__ 
+    from system.pages.null_page import NullPage  # Local import to avoid circular import
+    context["next_page"] = NullPage.__name__
 
 def game_loop_callback(context: PageContext) -> None:
-        from system.pages.game_page import GamePage  # Local import to avoid circular import
-        context["next_page"] = GamePage.__name__
+    from system.pages.game_page import GamePage  # Local import to avoid circular import
+    context["next_page"] = GamePage.__name__
+
+def settings_callback(context: PageContext) -> None:
+    from system.pages.settings_page import SettingsPage  # Local import to avoid circular import
+    context["next_page"] = SettingsPage.__name__
+
+def previous_page_callback(context: PageContext) -> None:
+    if "prev_page" in context:
+        context["next_page"] = context["prev_page"]
