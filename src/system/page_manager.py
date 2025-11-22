@@ -3,7 +3,7 @@ from system.pages.null_page import NullPage
 from system.page_context import PageContext
 from regestries import PAGE_REGISTRY
 
-# import pages to make sure they are registerer
+# import pages to make sure they are registered
 from system.pages import *
 
 

@@ -12,7 +12,7 @@ class SliderInput(Container):
             id: str, w: str, h: str, 
             ticks: int, start_tick: int,
             line_color: RGBA = (0, 0, 0, 255), 
-            slider_color: RGBA = (152, 61, 187, 255), 
+            slider_color: RGBA = (125, 120, 154, 255), 
             active_color: RGBA = (255, 255, 255, 255),
             line_thickness = 1,
             outline_thickness = 1,
