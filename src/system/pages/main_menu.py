@@ -1,4 +1,5 @@
 import math
+import pygame
 import random
 import numpy as np
 from gui.page import Page
@@ -130,7 +131,7 @@ class MainMenu(Page):
         self._handle_move_state(dt)
         self._render_items(dt)
 
-        self.render()
+        self.render()        
         if "next_page" not in self.context.state: self.context.state["next_page"] = self.__class__.__name__
         self.context.state["items_rendered"] = len(self.tiles) + len(self.entities_to_render)
 

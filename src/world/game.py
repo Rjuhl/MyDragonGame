@@ -64,9 +64,10 @@ class Game:
             for tile in self.map.get_tiles_to_render(min_x, max_x, min_y, max_y):
                 self.drawer.draw_tile(tile, cam_offset, None)
             
+            self.map.update()
             for entity in self.map.get_entities_to_render():
-                self.drawer.asset_drawer.draw_sprite(entity, cam_offset)
-            
+                self.drawer.draw_sprite(entity, cam_offset)
+   
             pygame.image.save(banner_surface, str((self.PATH / self.name / 'banner.png')))
 
     def _check_spot(self, location: Coord) -> bool:
@@ -96,10 +97,8 @@ class Game:
     @classmethod
     def _load_player(cls, name: str) -> Player:
         path = cls.PATH / name / 'player'
-        print(path)
-        with path.open("r", encoding="utf-8") as f:
-            data = json.loads(f)
-            return Player.load(data)
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return Player.load(data)
 
     @staticmethod
     def load(name: str, screen: pygame.Surface):

@@ -76,7 +76,7 @@ class Player(Character):
     def load(data):
         player = Player(Coord.load(data["location"]), CharaterArgs())
         player.load_character_attrs(data)
-        return data
+        return player
     
     @staticmethod
     def get_movement(dt: float):

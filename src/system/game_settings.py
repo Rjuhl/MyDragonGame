@@ -13,8 +13,7 @@ class GameSettings:
         game_settings = {}
         path = cls.PATH / game_name / 'game_settings'
         if path.exists(): 
-            with path.open("r", encoding="utf-8") as f:
-                game_settings = json.loads(f)
+            game_settings = json.loads(path.read_text(encoding="utf-8"))
         return GameSettings(game_name, game_settings)
 
     def save(self):

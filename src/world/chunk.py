@@ -59,7 +59,6 @@ class Chunk:
         return {
             "id": self.id,
             "size": self.SIZE,
-            "biome": self.biome,
             "location": self.location.jsonify(),
             "tiles": [tile.jsonify() for tile in self.tiles],
             "entities": [e for entity in self.entities if (e := entity.jsonify())]

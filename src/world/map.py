@@ -98,7 +98,7 @@ class Map:
             if i not in chunks_not_to_save: 
                 # First remove entities from manager and add them to chunk to save
                 chunk.entities = list(self.entity_manager.get_and_removed_chunk_entities(chunk))
-                chunk.save()
+                chunk.save(self.game_name)
                
         self.chunks = chunks
  
@@ -122,7 +122,7 @@ class Map:
                 neighbor_biomes.append(self.chunks[i - 1].biome if i % 3 > 0 else None)
                 neighbor_biomes.append(self.chunks[i + 1].biome if i % 3 < 2 else None)
                 chunk.generate(neighbor_biomes)
-                chunk.save()
+                chunk.save(self.game_name)
 
     # For now randomly choose a biome
     def choose_biome(self):

@@ -5,15 +5,18 @@ MAIN TASKS LEFT
 4. Fox + Knight
 6. Pages (almost done)
 
-BUGS TO LOOK INTO
+KNOWN BUGS
 1. There is bug when loading entity data in chunks (often comes after a crash or reloading a chunk)
 2. Current Astar does not take into account size of entity
+3. Loading a game mutiple times in a session causes lots of lag (After doing this lag will persist through reloads)
+4. Deleting world that was loaded causes a crash
+5. 
 
 THINGS TO CONSIDER
 1. Animating the water
 2. Adding animated grass (can draw inspiration from dafluffypotato)
 3. Need to add swimming (at least for player)
-4. 
+4. Tweaking world settings to cause more of a change in world gen
 
 FUTURE SYSTEMS
 1. Items

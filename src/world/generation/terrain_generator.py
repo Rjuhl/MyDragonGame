@@ -183,18 +183,17 @@ class TerrainGenerator:
     
     def save(self, game_name: str):
         path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
-        if path.exists():
-           path.write_text(json.dumps(
-               {"data": [
-                   self.seed, self.water_level, self.forest_size, self.temperature
-               ]}, ensure_ascii=False, indent=2
-           ), encoding='utf-8') 
+        path.write_text(json.dumps(
+            {"data": [
+                self.seed, self.water_level, self.forest_size, self.temperature
+            ]}, ensure_ascii=False, indent=2
+        ), encoding='utf-8') 
 
     @staticmethod
     def load(game_name: str):
         path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
-        with path.open("r", encoding="utf-8") as f:
-            data = json.loads(f)
+        if path.is_file():
+            data = json.loads(path.read_text(encoding="utf-8"))
             return TerrainGenerator(*data["data"])
 
     
