@@ -190,7 +190,8 @@ class TerrainGenerator:
                ]}, ensure_ascii=False, indent=2
            ), encoding='utf-8') 
 
-    def load(self, game_name: str):
+    @staticmethod
+    def load(game_name: str):
         path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
         with path.open("r", encoding="utf-8") as f:
             data = json.loads(f)

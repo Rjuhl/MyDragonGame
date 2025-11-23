@@ -1,4 +1,24 @@
+MAIN TASKS LEFT 
+1. Sound system
+2. AI for NPCs (partially done)
+3. Combat
+4. Fox + Knight
+6. Pages (almost done)
+
 BUGS TO LOOK INTO
 1. There is bug when loading entity data in chunks (often comes after a crash or reloading a chunk)
 2. Current Astar does not take into account size of entity
-3. Posistion will break when non-square entities rotate since we track from top left (might need to rework entities to track from middle)
+
+THINGS TO CONSIDER
+1. Animating the water
+2. Adding animated grass (can draw inspiration from dafluffypotato)
+3. Need to add swimming (at least for player)
+4. 
+
+FUTURE SYSTEMS
+1. Items
+2. Breath weapon overhaul
+3. More NPCs
+4. Crafting
+5. Dialogue
+6. Bosses

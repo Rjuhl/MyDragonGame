@@ -20,6 +20,10 @@ def create_game_callback(context: PageContext) -> None:
     from system.pages.create_game_page import CreateGamePage  # Local import to avoid circular import
     context["next_page"] = CreateGamePage.__name__
 
+def choose_game_callback(context: PageContext) -> None:
+    from system.pages.choose_game_page import ChooseGamePage  # Local import to avoid circular import
+    context["next_page"] = ChooseGamePage.__name__
+
 def previous_page_callback(context: PageContext) -> None:
     if "prev_page" in context:
         context["next_page"] = context["prev_page"]

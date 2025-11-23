@@ -13,7 +13,7 @@ from system.entities.sprites.player import Player
 from system.page_manager import PageManager
 from system.page_context import PageContext
 from system.global_vars import set_base_globals
-from world.game import game_manager
+from world.game import GameManager
 
 
 def runGame(logger):
@@ -30,6 +30,8 @@ def runGame(logger):
     display = pygame.Surface(constants.DISPLAY_SIZE)
     screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF, vsync=1)
     screen_entity = Screen.load()
+
+    game_manager = GameManager()
     game_manager.bind_screen(screen_entity)
 
     renderer = Renderer(display)

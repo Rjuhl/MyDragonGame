@@ -6,7 +6,7 @@ from gui.buttons.basic_button import BasicButton
 from system.page_context import PageContext
 from system.pages.main_menu import MainMenu
 from gui.utils.callbacks import settings_callback
-from world.game import game_manager
+from world.game import GameManager
 
 @register_page
 class PausePage(Page):
@@ -54,6 +54,7 @@ class PausePage(Page):
 
 
     def update(self) -> None:
+        game_manager = GameManager()
         self.context.renderer.draw(game_manager.game.map, game_manager.screen)
         self.render()
 

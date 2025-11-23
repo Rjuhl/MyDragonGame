@@ -3,7 +3,7 @@ from decorators import register_page
 from gui.page import Page
 from system.pages.pause_page import PausePage
 from system.input_handler import input_handler
-from world.game import game_manager
+from world.game import GameManager
 
 
 @register_page
@@ -12,6 +12,7 @@ class GamePage(Page):
         super().__init__(pageContext)
 
     def update(self) -> None:
+        game_manager = GameManager()
         game_manager.game.map.update()
         items_rendered = self.context.renderer.draw(game_manager.game.map, game_manager.screen)
         self.context.state["items_rendered"] = items_rendered

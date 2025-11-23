@@ -1,4 +1,6 @@
+import math
 import json
+import shutil
 import pygame
 from pathlib import Path
 from system.entities.sprites.player import Player
@@ -9,6 +11,9 @@ from typing import Dict, Any, Optional
 from decorators import singleton
 from system.id_generator import id_generator
 from system.game_settings import GameSettings
+from system.asset_drawer import AssetDrawer
+from constants import BANNER_SIZE
+
 
 class Game:
     PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
@@ -19,10 +24,12 @@ class Game:
         water_level: Optional[int] = None, 
         forest_size: Optional[int] = None, 
         temperature: Optional[int] = None,
-        defer_load: bool = False
+        defer_load: bool = False,
+        drawer: Optional[AssetDrawer] = None,
     ):
         self.name = name
         self.screen = screen
+        self.drawer = drawer
         self.game_settings = GameSettings.load(self.name)
 
         self.terrain_generator = None
@@ -36,7 +43,31 @@ class Game:
 
             self.player = Player(self._find_load_spot())
             self.map = Map(self.name, self.screen, self.player, self.terrain_generator)
+            self._create_banner()
     
+    def _create_banner(self):
+        if self.drawer:
+            banner_surface = pygame.Surface((384, 32), pygame.SRCALPHA)
+            self.drawer.display = banner_surface
+            corners = [
+                self.player.location.as_world_coord(),
+                self.player.location.copy().update_as_view_coord(BANNER_SIZE[0], 0).as_world_coord(),
+                self.player.location.copy().update_as_view_coord(0, BANNER_SIZE[1]).as_world_coord(),
+                self.player.location.copy().update_as_view_coord(*BANNER_SIZE).as_world_coord(),
+            ]
+            min_x = math.floor(min(x for x, _, _ in corners)) - 1
+            max_x = math.ceil(max(x for x, _, _ in corners)) + 1
+            min_y = math.floor(min(y for _, y, _ in corners)) - 1
+            max_y = math.ceil(max(y for _, y, _ in corners)) + 1
+            
+            cam_offset = self.player.location.location[:-1]
+            for tile in self.map.get_tiles_to_render(min_x, max_x, min_y, max_y):
+                self.drawer.draw_tile(tile, cam_offset, None)
+            
+            for entity in self.map.get_entities_to_render():
+                self.drawer.asset_drawer.draw_sprite(entity, cam_offset)
+            
+            pygame.image.save(banner_surface, str((self.PATH / self.name / 'banner.png')))
 
     def _check_spot(self, location: Coord) -> bool:
         adj = [
@@ -97,6 +128,7 @@ class GameManager:
     def __init__(self) -> None:
         self.screen: pygame.Surface = None
         self.game: Game = None
+        self.drawer = AssetDrawer(pygame.Surface((1, 1), pygame.SRCALPHA))
     
     def save_game(self):
         if self.game: self.game.save()
@@ -123,12 +155,12 @@ class GameManager:
                 seed=seed,
                 water_level=water_level,
                 forest_size=forest_size,
-                temperature=temperature
+                temperature=temperature,
+                drawer=self.drawer
             )
 
 
     @classmethod
     def delete_game(cls, game_name: str):
-        pass
-
-game_manager = GameManager()
+        path = cls.PATH / game_name
+        if path.is_dir(): shutil.rmtree(path)

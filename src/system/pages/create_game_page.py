@@ -9,7 +9,7 @@ from gui.atoms.radio_input import RadioInput
 from gui.buttons.button import Button
 from gui.utils.callbacks import main_menu_callback, game_loop_callback
 from system.page_context import PageContext
-from world.game import game_manager
+from world.game import GameManager
 from decorators import register_page
 from typing import Optional, List, Tuple, Dict, Any
 from pathlib import Path
@@ -146,7 +146,7 @@ class CreateGamePage(Page):
         if self._world_name_is_valid() and "create_game_clicked" in self.context.state and self.context.state["create_game_clicked"]:
             seed = self.context.state["seed_value"]
             seed = 0 if len(seed) == 0 else int(seed)
-            game_manager.set_game(
+            GameManager().set_game(
                 self.context.state["world_name"],
                 seed=seed,
                 water_level=int(self.context.state["water_level"]),

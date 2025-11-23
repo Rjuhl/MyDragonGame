@@ -5,6 +5,7 @@ from typing import Tuple, Dict, Any, List, Optional, Callable
 from pathlib import Path
 from gui.utils.shapes import draw_rect_surface
 from utils.types.colors import RGBA
+from system.input_handler import input_handler
 
 class Button(Container):
     def __init__(
@@ -15,7 +16,8 @@ class Button(Container):
         outline_color: RGBA = (79, 80, 112, 255),
         hover_background_color: RGBA = (181, 166, 193, 255),
         hover_outline_color: RGBA = (255, 255, 255, 255),
-        outline_thickness: int = 1
+        outline_thickness: int = 1,
+        include_mouse_held = False
     ):
 
         text = PixelText(text, font_size, (79, 80, 112, 255), varient=1)
@@ -38,6 +40,7 @@ class Button(Container):
         self.outline_thickness = outline_thickness
 
         self.selected = False
+        self.include_mouse_held = include_mouse_held
 
     def _get_background(self, isHovered: bool):
         w, h = self.get_size()
@@ -48,5 +51,6 @@ class Button(Container):
     def handle_mouse_actions(self, mouse_pos: Tuple[int, int], click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
         isAbove = self.mouse_over(mouse_pos)
         self.background = self._get_background(isAbove)
-        if isAbove and click_event == ClickEvent.Left: 
+        trigger_mouse_held = (self.include_mouse_held and input_handler.is_mouse_button_held(1))
+        if isAbove and (click_event == ClickEvent.Left or trigger_mouse_held): 
             self.callback(state_dict)
