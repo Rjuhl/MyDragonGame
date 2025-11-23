@@ -21,6 +21,7 @@ class PageManager:
 
 
     
+    # Might want to partail context clear on page switch (or have pages handle it themselves)
     def show_page(self) -> bool:
         self.current_page.update()
         if self.current_page != self.pages[self.context.state["next_page"]]:

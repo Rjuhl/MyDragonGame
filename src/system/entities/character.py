@@ -8,34 +8,48 @@ from system.entities.entity import Entity
 from world.generation.types import Terrain
 from system.entities.damage_text_entity import DamageText
 from decorators import register_entity
+from dataclasses import dataclass
+from constants import TEMP_MOVEMENT_FACTOR
+
+@dataclass
+class CharaterArgs:
+    health: int = 100
+    mana: int = 100
+    energy: int = 1
+    stam: int = 1
+    vit: int = 1
+    wis: int = 1
+    spd: int = 1
+    att: int = 1
+    deff: int = 1
+    water_speed_mod: float = 0.5
+    air_speed_mod: float = 1.2
+    base_speed: float = TEMP_MOVEMENT_FACTOR
 
 
 @register_entity
 class Character(Entity):
-    def __init__(
-            self, entity_args: List[Any],
-            health: int, mana: int, energy: int,
-            stam: int, vit: int, wis: int, spd: int, att: int, deff: int,
-            water_speed_mod: float, air_speed_mod: float, base_speed: float
-        ):
-        super().__init__(*entity_args)
+    def __init__(self, entity_args: List[Any], charcter_args: CharaterArgs, id=None):
+        if id: super().__init__(*entity_args, id=id)
+        else: super().__init__(*entity_args)
+        
 
         # ------ Base stats -------- #
 
-        self.max_health = health
-        self.max_mana = mana
-        self.max_energy = energy
+        self.max_health = charcter_args.health
+        self.max_mana = charcter_args.mana
+        self.max_energy = charcter_args.energy
 
-        self.stam = stam
-        self.vit = vit
-        self.wis = wis
-        self.spd = spd
-        self.att = att
-        self.deff = deff
+        self.stam = charcter_args.stam
+        self.vit = charcter_args.vit
+        self.wis = charcter_args.wis
+        self.spd = charcter_args.spd
+        self.att = charcter_args.att
+        self.deff = charcter_args.deff
 
-        self.base_speed = base_speed
-        self.water_speed = water_speed_mod
-        self.air_speed = air_speed_mod
+        self.base_speed = charcter_args.base_speed
+        self.water_speed = charcter_args.water_speed_mod
+        self.air_speed = charcter_args.air_speed_mod
 
         # ------ Modified stats -------- # 
 
@@ -199,6 +213,19 @@ class Character(Entity):
         self.current_mana = data["current_mana"]
         self.current_energy = data["current_energy"]
 
+
+    @staticmethod
+    def load(data):
+        entity_args = [
+            Coord.load(data["location"]),
+            Coord.load(data["size"]),
+            data["img_id"],
+            Coord.load(data["render_offset"]),
+        ]
+    
+        character = Character(entity_args, CharaterArgs(), id=data["id"])
+        character.load_character_attrs(data)
+        return character
 
     # Subject to change but this a decent base to start with
     @staticmethod

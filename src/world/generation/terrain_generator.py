@@ -1,3 +1,4 @@
+import json
 import math
 import noise
 from dataclasses import dataclass, asdict
@@ -12,7 +13,8 @@ from system.entities.entity import Entity
 from system.entities.base_entity import BaseEntity
 from world.biome_tile_weights import TILE_WEIGHTS
 from bisect import bisect_left
-from decorators import singleton
+from world.generation.types import Degree
+from pathlib import Path
 
 
 FOREST_DENSITY = 0.03
@@ -34,11 +36,19 @@ class NoiseParams:
     base: float
        
 
-# Singleton for now, will need to upgrade potentially for multithreading and remove singleton
-@singleton
 class TerrainGenerator:
-    def __init__(self, seed, draw_noise=None):
+    def __init__(
+        self, 
+        seed, 
+        water_level: Degree, 
+        forest_size: Degree, 
+        temperature: Degree, 
+        draw_noise=None
+    ):
         self.seed = seed
+        self.water_level = water_level
+        self.forest_size = forest_size
+        self.temperature = temperature
         self.draw_noise = draw_noise
         self.boime_noise = NoiseParams(
             3, 0.5, 1.5, 10_000, 10_000, seed
@@ -52,9 +62,17 @@ class TerrainGenerator:
         self.nvs = []
         self.occupied_tiles = {}
 
+        self.forest_size_modifier = 100
+        if forest_size == Degree.Low: self.forest_size_modifier = 50
+        if forest_size == Degree.High: self.forest_size_modifier = 200
+
+        self.water_level_modifier = 100
+        if water_level == Degree.Low: self.water_level_modifier = 50
+        if water_level == Degree.High: self.water_level_modifier = 200
+
         self.rng = random.Random(seed) 
-        self._t_desert = -0.35
-        self._t_tundra =  0.25
+        self._t_desert = -0.35 + self.temperature * 0.1
+        self._t_tundra =  0.25 + self.temperature * 0.1
 
 
     def _get_biome_value(self, x: int, y: int):
@@ -66,7 +84,7 @@ class TerrainGenerator:
     def _get_water(self, x: int, y: int, biome_w: Dict[Biome, float], onborder: bool) -> Optional[Tile]:
         """ Uses lake perlin, biome values, and water weights to smoothly place water """
         
-        lake_noise = (noise.pnoise2(x / 100, y / 100, **asdict(self.lake_noise)) + 0.5)
+        lake_noise = (noise.pnoise2(x / self.water_level_modifier, y / self.water_level_modifier, **asdict(self.lake_noise)) + 0.5)
         blended_thresh = (
             biome_w[Biome.DESERT] * WATER_THRESHOLDS[Biome.DESERT] +
             biome_w[Biome.GRASSLAND] * WATER_THRESHOLDS[Biome.GRASSLAND] +
@@ -86,7 +104,7 @@ class TerrainGenerator:
             (15, math.floor(biome_w[Biome.DESERT] * 1000)),
         )
 
-        return Tile(self._get_id_from_weight(weights), Coord.world(x, y), is_chunk_border=onborder)
+        return Tile(self._get_id_from_weight(weights), Coord.world(x, y), is_chunk_border=onborder, is_water=True)
         
     
     def _get_id_from_weight(self, weights: Tuple[int, int]) -> int:
@@ -110,7 +128,7 @@ class TerrainGenerator:
         
     def _get_tree(self, x: int, y:int, biome: Biome) -> Optional[Tree]:
         if biome == Biome.DESERT: return
-        noise_value = noise.pnoise2(x / 100, y / 100, **asdict(self.forest_noise))
+        noise_value = noise.pnoise2(x / self.forest_size_modifier, y / self.forest_size_modifier, **asdict(self.forest_noise))
         if noise_value < 0 and self.rng.random() < FOREST_DENSITY:
             return Tree(Coord.world(x - 0.5, y + 0.5), snowy=(biome==Biome.TUNDRA))
         
@@ -162,7 +180,22 @@ class TerrainGenerator:
         """ Hermite smoothstep """
         t = max(0.0, min(1.0, (x - edge0) / (edge1 - edge0)))
         return t * t * (3 - 2 * t)
+    
+    def save(self, game_name: str):
+        path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
+        if path.exists():
+           path.write_text(json.dumps(
+               {"data": [
+                   self.seed, self.water_level, self.forest_size, self.temperature
+               ]}, ensure_ascii=False, indent=2
+           ), encoding='utf-8') 
+
+    def load(self, game_name: str):
+        path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
+        with path.open("r", encoding="utf-8") as f:
+            data = json.loads(f)
+            return TerrainGenerator(*data["data"])
 
     
-terrain_generator = TerrainGenerator(0)
+default_terrain_generator = TerrainGenerator(0, Degree.Medium, Degree.Medium, Degree.Medium)
 

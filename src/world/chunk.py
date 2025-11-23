@@ -10,42 +10,48 @@ from constants import CHUNK_SIZE, SEED
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
 from regestries import ENTITY_REGISTRY
-from world.generation.terrain_generator import terrain_generator
+from world.generation.terrain_generator import default_terrain_generator
 
 # Chunk Size will be 64 x 64 tiles
 class Chunk:
-    def __init__(self, biome, location, random_number_generator=random.randint, size=CHUNK_SIZE, id=id_generator.get_id()):
+    def __init__(
+        self, 
+        location, 
+        random_number_generator=random.randint, 
+        size=CHUNK_SIZE, 
+        id=id_generator.get_id(),
+        terrain_generator=default_terrain_generator
+    ):
         self.tiles = []
         self.SIZE = size
-        self.biome = biome
         self.location = location
         self.id = id
         self.random_number_generator = random_number_generator
+        self.terrain_generator = terrain_generator
 
         self.entities = [] # This may need reworked to a use a set so entities that move can be added and removed easily
         self.generate()
     
     @classmethod
-    def load(cls, x, y):
-        path = next(cls.get_data_path(x, y).iterdir())
+    def load(cls, x, y, game_name):
+        path = next(cls.get_data_path(x, y, game_name).iterdir())
         data = json.loads(path.read_text(encoding='utf-8'))
 
         chunk_id = data["id"]
-        biome = data["biome"]
         size = int(data["size"])
         location = Coord.load(data["location"])
         tiles = [Tile.load(d) for d in data["tiles"]]
         entities = [ENTITY_REGISTRY.get(e_data["classname"]).load(e_data) for e_data in data["entities"]]
 
-        chunk = cls(biome=biome, location=location, size=size, id=chunk_id)
+        chunk = cls(location=location, size=size, id=chunk_id)
         chunk.tiles = tiles
         chunk.entities = entities
 
         return chunk
     
-    def save(self):
+    def save(self, game_name: str):
         x, y, _ = self.location.as_chunk_coord()
-        path = self.get_data_path(x, y)
+        path = self.get_data_path(x, y, game_name)
         file_path = path / f"{self.id}.chunk"
         file_path.write_text(json.dumps(self.jsonify(), ensure_ascii=False, indent=2), encoding='utf-8')
 
@@ -78,7 +84,7 @@ class Chunk:
             x, y = i // self.SIZE, i % self.SIZE
             onborder = (x == 0 or x == self.SIZE - 1 or y == 0 or y == self.SIZE - 1)
             location = Coord.world(chunk_world_loc[0] + x, chunk_world_loc[1] - y)
-            tile, entity = terrain_generator.generate_tile(location.x, location.y, onborder)
+            tile, entity = self.terrain_generator.generate_tile(location.x, location.y, onborder)
             self.tiles.append(tile)
             if entity: self.entities.append(entity)
         
@@ -140,9 +146,9 @@ class Chunk:
     
 
     @staticmethod
-    def get_data_path(x, y):
+    def get_data_path(x, y, game_name: str):
         current_dir = Path(__file__).parent
-        full_path = current_dir.parent.parent / 'data' / 'chunks' / f'{x}' / f'{y}'
+        full_path = current_dir.parent.parent / 'data' / 'games' / game_name / 'chunks' / f'{x}' / f'{y}'
         full_path.mkdir(parents=True, exist_ok=True)
         return full_path
 

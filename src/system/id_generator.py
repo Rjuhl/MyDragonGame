@@ -4,11 +4,16 @@ from typing import List
 
 @singleton
 class IdGenerator:
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'idstart'
+    PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
     def __init__(self):
         self.current_id = 0
-        if self.PATH.exists():
-            self.current_id = int(self.PATH.read_text(encoding='utf-8'))
+        self.current_game = None
+
+    def load_game(self, game_name):
+        self.current_id = 0
+        self.current_game = game_name
+        path = self.PATH / self.current_game / 'idstart'
+        if path.exists(): self.current_id = int(path.read_text(encoding='utf-8'))
     
     def get_id(self) -> int:
         id = self.current_id
@@ -21,6 +26,8 @@ class IdGenerator:
         return [self.current_id - i for i in range(1, num_ids + 1)]
     
     def save(self) -> None:
-        self.PATH.write_text(str(self.current_id), encoding='utf-8')
+        if self.current_game:
+            path = self.PATH / self.current_game / 'idstart'
+            path.write_text(str(self.current_id), encoding='utf-8')
 
 id_generator = IdGenerator()

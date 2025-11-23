@@ -89,12 +89,15 @@ class EntityManager:
 
         return render_objs
     
-    def get_and_removed_chunk_entities(self, chunk: Chunk) -> List[Entity]:
+    def get_and_removed_chunk_entities(self, chunk: Chunk) -> set[Entity]:
         x, y, _ = chunk.location.location
-        removed_entities = self.spatial_hash_grid.get_and_delete(x, y, chunk.SIZE, chunk.SIZE)
+        removed_entities = self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE, remove_entities=True)
         self.entities.difference_update(removed_entities)
         return removed_entities
 
+    def get_chunk_entities(self, chunk: Chunk) -> set[Entity]:
+        x, y, _ = chunk.location.location
+        return self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE)
 
 class EntityManagerSubscriber:
     def recieve_death_event(entity: Entity):

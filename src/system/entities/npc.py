@@ -1,6 +1,6 @@
 from utils.coords import Coord
 from system.entities.types.facing_types import Facing
-from system.entities.character import Character
+from system.entities.character import Character, CharaterArgs
 from typing import List, Any, Optional, Callable, Dict
 from world.path_finder import path_finder
 from system.entities.spawner import Spawner
@@ -10,17 +10,9 @@ JobResult = Optional[Dict[Coord, Coord]]
 
 class NPC(Character):
     def __init__(
-        self, spawner: Optional[Spawner], entity_args: List[Any],
-        health: int, mana: int, energy: int,
-        stam: int, vit: int, wis: int, spd: int, att: int, deff: int,
-        water_speed_mod: float, air_speed_mod: float, base_speed: float
+        self, spawner: Optional[Spawner], entity_args: List[Any], character_args: CharaterArgs
     ):
-        super().__init__(
-            entity_args,
-            health, mana, energy,
-            stam, vit, wis, spd, att, deff,
-            water_speed_mod, air_speed_mod, base_speed
-        )
+        super().__init__(entity_args, character_args)
 
         self.spawner = spawner
 

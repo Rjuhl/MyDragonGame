@@ -17,7 +17,7 @@ from decorators import register_page
 from system.screen import Screen
 from constants import CHUNK_SIZE
 from enum import Enum
-from gui.utils.callbacks import settings_callback
+from gui.utils.callbacks import settings_callback, create_game_callback
 
 TREE_FALL_SPEED = 0.005
 TILE_PLACEMENT_SPEED = 64
@@ -70,7 +70,7 @@ class MainMenu(Page):
         create_game_button = TextButton(
             PixelText("Create New Game", 24, (238, 161, 88, 255), outline=1),
             PixelText("Create New Game", 26, (238, 161, 88, 255), outline_color=(255, 255, 255, 255), outline=1),
-            "180", "20", game_loop_callback
+            "180", "20", create_game_callback
         )
 
         settings_button = TextButton(
@@ -218,7 +218,6 @@ class MainMenu(Page):
     @staticmethod
     def _get_new_chunk() -> Chunk:
         return Chunk(
-            "main_menu",
             Coord.chunk(random.randint(0, DOMAIN), random.randint(0, RANGE)),
             id = -1
         )

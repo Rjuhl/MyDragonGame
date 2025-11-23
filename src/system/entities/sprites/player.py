@@ -2,6 +2,7 @@ import math
 import pygame
 from pygame.locals import *
 from system.entities.entity import Entity
+from system.entities.character import Character, CharaterArgs
 from typing import List, Dict
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO
@@ -10,11 +11,11 @@ from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
 from system.input_handler import input_handler
 
-
-class Player(Entity):
-    def __init__(self, location: Coord) -> None:
+# Update with character class
+class Player(Character):
+    def __init__(self, location: Coord, character_args=CharaterArgs()) -> None:
         is_human = True
-        self.init_human(location) if is_human else self.init_dragon(location)
+        self.init_human(location, character_args) if is_human else self.init_dragon(location)
 
         self.last_drawn_location = self.location.as_view_coord()
         self.prev_drawn_location = self.location.as_view_coord()
@@ -24,11 +25,12 @@ class Player(Entity):
         self.move(self.get_movement(dt))
         return self
 
-    def init_human(self, location: Coord):
+    def init_human(self, location: Coord, character_args: CharaterArgs):
         size = Coord.math(.25, .25, 1.25)
         render_offset = Coord.math(0, -9, 0)
         img_id = 1
-        super().__init__(location, size, img_id, render_offset)
+        entity_args = [location, size, img_id, render_offset]
+        super().__init__(entity_args, character_args)
 
     def init_dragon(self, location: Coord) -> None:
         pass
@@ -64,6 +66,17 @@ class Player(Entity):
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         self.move(self_velocity * -timestep)
 
+    # def jsonify(self):
+    #     json = super().jsonify()
+    #     json["last_drawn_location"] = self.last_drawn_location.tolist()
+    #     json["prev_drawn_location"] = self.prev_drawn_location.tolist()
+    #     return json
+    
+    @staticmethod
+    def load(data):
+        player = Player(Coord.load(data["location"]), CharaterArgs())
+        player.load_character_attrs(data)
+        return data
     
     @staticmethod
     def get_movement(dt: float):

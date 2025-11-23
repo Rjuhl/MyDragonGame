@@ -3,13 +3,12 @@ from gui.page import Page
 from gui.text import PixelText
 from gui.atoms.slider_input import SliderInput
 from gui.atoms.keybind_box import KeyBindBox
-from gui.buttons.basic_button import BasicButton
+from gui.buttons.button import Button
 from gui.container import Container
 from gui.types import ItemAlign, ItemAppend
 from gui.utils.callbacks import previous_page_callback
 from decorators import register_page
-from system.input_handler import input_handler
-from typing import Any, Dict
+
 
 @register_page
 class SettingsPage(Page):
@@ -52,11 +51,10 @@ class SettingsPage(Page):
             "100%", "95%",
             ItemAlign.Center, ItemAlign.Last, ItemAppend.Right,
             children=[
-                BasicButton("300", "20", "Return", 18, previous_page_callback)
+                Button("300", "20", "RETURN", 18, previous_page_callback)
             ],
             gap=20
         )
-
 
         self.base_container = Container(
             "100%", "100%",

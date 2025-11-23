@@ -68,7 +68,7 @@ class SpatialHashGrid(EntitySubscriber):
     def convert_to_key(self, x, y):
         return tuple([x // self.partition, y // self.partition])
     
-    def get_and_delete(self, x, y, dx, dy, exception=Player):
+    def get_entities_in_range(self, x, y, dx, dy, exception=Player, remove_entities=False):
         entities = set()
         for i in range((dx // self.partition) + 1):
             for j in range((dy // self.partition) + 1):
@@ -79,7 +79,6 @@ class SpatialHashGrid(EntitySubscriber):
                 for entity in self.location_to_entity_map[key]:
                     if not isinstance(entity, exception):
                         entities.add(entity)
-                        self.remove_entity(entity)
+                        if remove_entities: self.remove_entity(entity)
 
         return entities
-    

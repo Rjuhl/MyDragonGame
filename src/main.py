@@ -13,6 +13,8 @@ from system.entities.sprites.player import Player
 from system.page_manager import PageManager
 from system.page_context import PageContext
 from system.global_vars import set_base_globals
+from world.game import game_manager
+
 
 def runGame(logger):
     # Load and set icon image 
@@ -28,20 +30,16 @@ def runGame(logger):
     display = pygame.Surface(constants.DISPLAY_SIZE)
     screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF, vsync=1)
     screen_entity = Screen.load()
-    
-    player = Player(Coord.world(0, 0))
+    game_manager.bind_screen(screen_entity)
 
-    map = Map(screen_entity)
     renderer = Renderer(display)
     event_handler = EventHandler()
 
     page_context = PageContext(
-        display, player, map, event_handler, renderer, screen_entity
+        display, event_handler, renderer, screen_entity
     )
 
     page_manager = PageManager(page_context)
-
-    map.bind_player(player)
     input_handler.bind_displays(screen, display)
 
     while True:

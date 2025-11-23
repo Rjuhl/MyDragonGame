@@ -62,6 +62,12 @@ class RadioInput(Container):
             state_dict[self.id] = index
             self.index_selected = index
         return callback
+    
+
+    def handle_mouse_actions(self, mouse_pos: Tuple[int, int], click_event: ClickEvent, state_dict: Dict[Any, Any]) -> None:
+        super().handle_mouse_actions(mouse_pos, click_event, state_dict)
+        state_dict[self.id] = self.index_selected
+
 
     def render(self, surface: pygame.Surface) -> None:
         for i, child in enumerate(self.children):

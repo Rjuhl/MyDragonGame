@@ -1,7 +1,7 @@
 import math
 
 # Game system constants
-GAME_NAME = "My Game [Change Name Later]"
+GAME_NAME = "My Dragon Game"
 SCREEN_INIT_SIZE = (1280, 960)
 FRAME_CAP = 60
 TEMP_MOVEMENT_FACTOR = 6 

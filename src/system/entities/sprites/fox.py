@@ -3,6 +3,7 @@ import random
 from utils.coords import Coord
 from system.entities.npc import NPC
 from system.entities.spawner import Spawner
+from system.entities.character import CharaterArgs
 from utils.types.shade_levels import ShadeLevel
 from decorators import register_entity, generate_shadow
 from typing import Optional
@@ -16,12 +17,13 @@ class Fox(NPC):
             location, Coord.math(0.25, 0.25, 0.25), 6, Coord.math(0, -5, 0)
         ]
 
-        super().__init__(
-            home, entity_args,
+        character_args = CharaterArgs(
             20 + random.randint(0, 8), 0, + random.randint(0, 8), 
             30 + random.randint(0, 10), 15, 15, 30 + random.randint(0, 10), 20, 15,
             0.5, 0, 1.25
         )
+
+        super().__init__(home, entity_args, character_args)
 
         self.rotated = False
         self.frame = 0

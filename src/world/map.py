@@ -14,6 +14,7 @@ from system.entities.spawners.fox_burrow import FoxBurrow
 from system.entities.sprites.fox import Fox
 from world.tile import Tile
 from typing import Optional
+from pathlib import Path
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -23,13 +24,16 @@ from typing import Optional
 
 
 class Map:
-
-    def __init__(self, screen):
+    def __init__(self, game_name, screen, player, terrain_generator):
+        self.game_name = game_name
         self.chunks = []
         self.player = None
         self.screen = screen
         self.entity_manager = EntityManager(self.screen)
         self.entities_to_render = []
+        self.terrain_generator = terrain_generator
+
+        self.bind_player(player)
 
         self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
         self.init_map_chunks()
@@ -85,7 +89,7 @@ class Map:
                 chunks_not_to_save.append(index - 1)
 
             else:
-                chunk = Chunk.load(x, y) if self.check_dir_exists(x, y) else Chunk(self.choose_biome(), Coord.chunk(x, y))
+                chunk = Chunk.load(x, y, self.game_name) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator)
                 chunks.append(chunk)
                 for entity in chunk.entities: 
                     self.entity_manager.add_entity(entity)
@@ -93,7 +97,7 @@ class Map:
         for i, chunk in enumerate(self.chunks):
             if i not in chunks_not_to_save: 
                 # First remove entities from manager and add them to chunk to save
-                chunk.entities = self.entity_manager.get_and_removed_chunk_entities(chunk)
+                chunk.entities = list(self.entity_manager.get_and_removed_chunk_entities(chunk))
                 chunk.save()
                
         self.chunks = chunks
@@ -102,7 +106,7 @@ class Map:
     def init_map_chunks(self):
         chunk_locations = self.get_chunk_locations()
         self.chunks = [
-            Chunk.load(x, y) if self.check_dir_exists(x, y) else Chunk(self.choose_biome(), Coord.chunk(x, y))
+            Chunk.load(x, y, self.game_name) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator)
             for x, y in chunk_locations
         ]
 
@@ -147,10 +151,16 @@ class Map:
     def get_tile(self, coord: Coord) -> Optional[Tile]:
         for chunk in self.chunks:
             if chunk.contains_coord(coord): return chunk.get_tile(coord)
+        
 
-    @staticmethod
-    def check_dir_exists(x, y):
-        path = Chunk.get_data_path(x, y)
+    def save(self):
+        for chunk in self.chunks: 
+            chunk.entities = list(self.entity_manager.get_chunk_entities(chunk))
+            chunk.save(self.game_name)
+            
+
+    def check_dir_exists(self, x, y):
+        path = Chunk.get_data_path(x, y, self.game_name)
         return path.is_dir() and any(path.iterdir())
     
     @staticmethod

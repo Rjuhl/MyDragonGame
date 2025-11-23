@@ -113,6 +113,3 @@ class Container(Component):
         if self.background: surface.blit(self.background, (self.x, self.y))
         for child in self.children: child.render(surface)
         super().render(surface)
-        # surface.blit(draw_rect_surface((0, 0, 0, 0), (0, 0, 0, 255), 1, self.w, self.h), (self.x, self.y))
-        # for child in self.children:
-        #     surface.blit(draw_rect_surface((0, 0, 0, 0), (255, 255, 255, 255), 1, child.w, child.h), (child.x, child.y))

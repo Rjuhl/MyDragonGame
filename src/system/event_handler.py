@@ -6,7 +6,7 @@ from constants import TEMP_MOVEMENT_FACTOR
 from system.id_generator import id_generator
 from system.global_vars import game_globals
 from system.input_handler import input_handler
-import time
+from world.game import game_manager
 
 class EventHandler:
     def __init__(self):
@@ -25,6 +25,7 @@ class EventHandler:
             game_globals.render_debug = not game_globals.render_debug
 
     def close_app(self):
+        game_manager.save_game()
         id_generator.save()
         input_handler.save()
         pygame.quit()

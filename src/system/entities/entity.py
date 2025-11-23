@@ -86,7 +86,8 @@ class Entity(BaseEntity):
             "lifespan": self.lifespan
         }
 
-    def load(self, data):
+    @staticmethod
+    def load(data):
         entity = Entity(
             Coord.load(data["location"]),
             Coord.load(data["size"]),
