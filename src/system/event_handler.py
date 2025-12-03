@@ -26,7 +26,6 @@ class EventHandler:
 
     def close_app(self):
         GameManager().save_game()
-        id_generator.save()
         input_handler.save()
         pygame.quit()
         sys.exit()

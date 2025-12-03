@@ -100,7 +100,7 @@ class Chunk:
     def contains_coord(self, coord):
         new_coord = self.location.copy().update_as_chunk_coord(1, -1)
         return self.location.x <= coord.x <= new_coord.x and \
-               new_coord.y <= coord.y <= self.location.x
+               new_coord.y <= coord.y <= self.location.y
 
 
     def get_tiles(self):

@@ -1,10 +1,13 @@
+import math
 from collections import defaultdict
 from itertools import combinations
 from constants import SPATIAL_GRID_PARITION_SIZE
 from utils.coords import Coord
 from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
 from system.entities.sprites.player import Player
+from system.entities.sprites.tree import Tree
 from system.entities.entity import EntitySubscriber
+from system.entities.physics.collisions import center_hit_box
 
 
 class SpatialHashGrid(EntitySubscriber):
@@ -42,11 +45,13 @@ class SpatialHashGrid(EntitySubscriber):
                 del self.location_to_entity_map[location]
     
     def convert_location_to_keys(self, location, size):
+        # Not that entity location represent centers we first need to get top_left to get box 
+        location, _ = center_hit_box(location, size)
         return {
             self.convert_to_key(location.x, location.y),
             self.convert_to_key(location.x + size.x, location.y),
-            self.convert_to_key(location.x, location.y - size.y),
-            self.convert_to_key(location.x + size.x, location.y - size.y),
+            self.convert_to_key(location.x, location.y + size.y),
+            self.convert_to_key(location.x + size.x, location.y + size.y),
         }
 
 
@@ -68,17 +73,35 @@ class SpatialHashGrid(EntitySubscriber):
     def convert_to_key(self, x, y):
         return tuple([x // self.partition, y // self.partition])
     
-    def get_entities_in_range(self, x, y, dx, dy, exception=Player, remove_entities=False):
+    def get_entities_in_range(self, x, y, dx, dy, exception=Player, strict=True, remove_entities=False):
+        """ Getting all entities in range (x, y) to (x + dx, y - dy) """
         entities = set()
-        for i in range((dx // self.partition) + 1):
-            for j in range((dy // self.partition) + 1):
-                key = next(iter(self.convert_location_to_keys(
-                    Coord.math(x + (i * (dx // self.partition)), y - (j * (dy // self.partition)), 0), 
+        for i in range(-self.partition, dx + self.partition, self.partition):
+            for j in range(-self.partition, dy + self.partition, self.partition):
+                keys = self.convert_location_to_keys(
+                    Coord.math(x + i, y - j, 0), 
                     Coord.math(0, 0, 0)
-                )))
-                for entity in self.location_to_entity_map[key]:
+                )
+
+                # Note len(keys) == 1 should always be true
+                first_key = next(iter(keys))
+                for entity in self.location_to_entity_map[first_key]:
+
+                    # If strict, count entity location as single location point instead of 
+                    # the space it occupies and must be with in (x, y) to (x + dx, y - dy)
+                    if strict:      
+                        ex, ey, _ = entity.location.location
+
+                        # Tree are placed offset from the gensis, so there is an exception for them
+                        delta = 0.5 if isinstance(entity, Tree) else 0
+                        if not (x - delta <= ex < x + dx - delta) or not (y - dy + delta < ey <= y + delta): 
+                            continue
+
                     if not isinstance(entity, exception):
                         entities.add(entity)
-                        if remove_entities: self.remove_entity(entity)
+        
+        if remove_entities: 
+            for entity in entities: self.remove_entity(entity)
 
         return entities
+    

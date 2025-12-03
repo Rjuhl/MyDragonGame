@@ -136,14 +136,20 @@ class GameManager:
         self.screen = screen
 
     def set_game(
-        self, name: str,
+        self, name: Optional[str],
         seed: Optional[int] = None, 
         water_level: Optional[int] = None, 
         forest_size: Optional[int] = None, 
         temperature: Optional[int] = None,
     ):
+        
         self.save_game()
         id_generator.save()
+        
+        if name is None:
+            self.game = None
+            return
+
         id_generator.load_game(name)
 
         if (self.PATH / name).is_dir():
@@ -159,7 +165,7 @@ class GameManager:
             )
 
 
-    @classmethod
-    def delete_game(cls, game_name: str):
-        path = cls.PATH / game_name
+    def delete_game(self, game_name: str):
+        if self.game and self.game.name == game_name: self.set_game(None)
+        path = self.PATH / game_name
         if path.is_dir(): shutil.rmtree(path)

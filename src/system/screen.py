@@ -119,6 +119,9 @@ class Screen:
     
     def center_anchor(self):
         self.coord = self.anchor.location.copy()
+
+        # Center based on 2D location (centers better and prevent terrain loading bugs)
+        self.coord.z = 0
         self.coord.update_as_view_coord(-DISPLAY_SIZE[0] / 2, -DISPLAY_SIZE[1] / 2)
 
         # Make sure this does not break game loop

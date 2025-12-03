@@ -92,7 +92,7 @@ class EntityManager:
     def get_and_removed_chunk_entities(self, chunk: Chunk) -> set[Entity]:
         x, y, _ = chunk.location.location
         removed_entities = self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE, remove_entities=True)
-        self.entities.difference_update(removed_entities)
+        self.entities -= removed_entities 
         return removed_entities
 
     def get_chunk_entities(self, chunk: Chunk) -> set[Entity]:
