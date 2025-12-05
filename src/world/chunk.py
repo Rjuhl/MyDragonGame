@@ -9,7 +9,7 @@ from utils.coords import Coord
 from constants import CHUNK_SIZE, SEED
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
-from regestries import ENTITY_REGISTRY
+from regestries import ENTITY_REGISTRY, ChunkSpawnerRegistry
 from world.generation.terrain_generator import default_terrain_generator
 
 # Chunk Size will be 64 x 64 tiles
@@ -28,6 +28,8 @@ class Chunk:
         self.id = id
         self.random_number_generator = random_number_generator
         self.terrain_generator = terrain_generator
+        
+        self.chunk_spawn_chances = ChunkSpawnerRegistry()
 
         self.entities = [] # This may need reworked to a use a set so entities that move can be added and removed easily
         self.generate()
@@ -87,20 +89,36 @@ class Chunk:
             self.tiles.append(tile)
             if entity: self.entities.append(entity)
         
+        self._generate_chunk_spawners()
     
     def get_tile(self, location: Coord) -> Tile | None:
         if not self.contains_coord(location): return None
         location = location.copy()
         location -= Coord.chunk(*location.as_chunk_coord())
-        
-        x, y = int(location.x), int(location.y) % self.SIZE
-        return self.tiles[x * self.SIZE + (self.SIZE - y)]
+
+        x, y = int(location.x), int(abs(location.y)) % self.SIZE
+        return self.tiles[x * self.SIZE + y]
+    
+
+    def _generate_chunk_spawners(self) -> None:
+        entities_spawned = 0
+        for tile in self.tiles:
+            if (e_type := self.chunk_spawn_chances.choose_random_type()):
+                tiles_to_check = [
+                    self.get_tile(tile.location.copy().update_as_world_coord(x, -y))
+                    for x in range(int(e_type.SIZE.x))
+                    for y in range(int(e_type.SIZE.y))
+                ]
+                if all([tile is not None and e_type.CAN_SPAWN_SPAWNER(tile) for tile in tiles_to_check]):
+                    self.entities.append(e_type(tile))
+                    entities_spawned += 1
+                    for tile in tiles_to_check: tile.has_obsticle = True
 
 
     def contains_coord(self, coord):
         new_coord = self.location.copy().update_as_chunk_coord(1, -1)
-        return self.location.x <= coord.x <= new_coord.x and \
-               new_coord.y <= coord.y <= self.location.y
+        return self.location.x <= coord.x < new_coord.x and \
+               new_coord.y < coord.y <= self.location.y
 
 
     def get_tiles(self):

@@ -46,10 +46,12 @@ class Map:
         self.player = player
         self.screen.anchor = player
         self.screen.center_anchor()
+        self.entity_manager.set_player(player)
         self.entity_manager.add_entity(player)
 
 
     def unbind_player(self):
+        self.entity_manager.set_player(None)
         self.entity_manager.remove_entity(self.player)
         self.player = None
         self.screen.anchor = Entity.dummy()
@@ -111,7 +113,8 @@ class Map:
         ]
 
         for chunk in self.chunks:
-            for entity in chunk.entities: self.entity_manager.add_entity(entity)
+            for entity in chunk.entities: 
+                self.entity_manager.add_entity(entity)
 
     def generate_loaded_chunks(self):
         for i, chunk in enumerate(self.chunks):

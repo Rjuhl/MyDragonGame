@@ -1,6 +1,6 @@
 import numpy as np
 from functools import wraps
-from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY, PAGE_REGISTRY
+from regestries import ENTITY_REGISTRY, SHADOW_ENTITY_REGISTRY, PAGE_REGISTRY, CHUNK_SPAWNER_REGISTRY
 from system.entities.base_entity import BaseEntity
 from utils.coords import Coord
 from utils.types.shade_levels import ShadeLevel
@@ -54,6 +54,22 @@ def register_page(_cls=None, *, default=False):
         return _decorate
     
     return _decorate(_cls)
+
+
+def spawn_with_chunk_creation(size, spawn_probability, can_spawn_spawner):
+    """Adds cls to regestry and append key attrs to class to allow it be generated later"""
+    def decorator(cls):
+        from system.entities.spawner import Entity
+        if not issubclass(cls, Entity):
+            raise TypeError("Only classes that inherit from Spawner can use spawn_with_chunk_creation")
+        
+        cls.SIZE = size
+        cls.SPAWN_WEIGHT = spawn_probability
+        cls.CAN_SPAWN_SPAWNER = can_spawn_spawner
+        CHUNK_SPAWNER_REGISTRY.append(cls)
+
+        return cls
+    return decorator
 
 
 def generate_shadow(

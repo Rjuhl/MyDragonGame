@@ -1,32 +1,35 @@
 from system.entities.entity import Entity
 from system.game_clock import game_clock
 from system.entities.entity_manager import EntityManagerSubscriber
-from utils.math import distance_between_coords
-from typing import List, Dict, Callable
+from utils.coords import Coord
+from world.tile import Tile
+from typing import List, Dict, Callable, Any
 from dataclasses import dataclass
 
 
 @dataclass
 class SpawnerArgs:
     spawn_limit: int
-    probabilty: float
     recharge_time: float 
     vicinity_to_player: float
-    entity_to_spawn: Entity
-    spawn_entity: Callable[[], Entity]
-
     
 class Spawner(Entity, EntityManagerSubscriber):
+    SIZE: Coord = Coord.math(0, 0, 0)
+    SPAWN_PROBABLITY: float = 0
+    CAN_SPAWN_SPAWNER: Callable[[Tile], None] = lambda _: False
+
     def __init__(self, location, size, img_id, render_offset, spawner_args):
         super().__init__(location, size, img_id, render_offset)
         self.spawn_limit = spawner_args.spawn_limit
-        self.probabilty = spawner_args.probabilty
         self.recharge_time = spawner_args.recharge_time
         self.vicinity_to_player = spawner_args.vicinity_to_player
-        self.spawn_entity = spawner_args.spawn_entity
 
         self.last_spawn_time = float('inf')
-        self.alive_entities_spawned = 0
+        self.entities: set[int] = set()
+
+    def bind_to_manager(self, manager):
+        super().bind_to_manager(manager)
+        self.manager.add_kill_listener_subscriber(self)
     
     def update(self, dt, _):
         self.last_spawn_time += dt
@@ -36,24 +39,40 @@ class Spawner(Entity, EntityManagerSubscriber):
            and self.within_spawn_limit(): self.spawn_entity()
     
     def spawn_entity(self):
-        entity = self.spawn_entity()
+        entity = self.create_entitiy()
         self.manager.add_entity(entity)
-        self.manager.add_kill_listener_subscriber(self)
-
+        self.entities.add(entity.id)
         self.last_spawn_time = 0
-        self.alive_entities_spawned += 1
 
     def within_spawn_cooltime_period(self):
         return self.last_spawn_time < self.recharge_time
 
     def within_spawn_limit(self):
-        return self.alive_entities_spawned < self.spawn_limit
+        return len(self.entities) < self.spawn_limit
     
     def within_player_spawn_distance(self):
         if self.manager.player is None: return False
-        return distance_between_coords(self.location, self.manager.player) < self.vicinity_to_player
+        return self.location.euclidean_2D(self.manager.player.location) < self.vicinity_to_player
 
-    def recieve_death_event(self):
-        self.alive_entities_spawned -= 1
-     
-    # Need to work out loading and unloading and making sure we are still tracking the entities we spawned
+    def recieve_death_event(self, entity: Entity):
+        if entity.id in self.entities: self.entities.remove(id)
+    
+
+    def jsonify(self):
+        data = super().jsonify()
+        data["bound_entitites"] = list(self.entities)
+        data["last_spawn_time"] = self.last_spawn_time
+        return data
+    
+
+    def set_spawner_data(self, data):
+        self.entities = set(data["bound_entitites"])
+        self.last_spawn_time = data["last_spawn_time"] 
+
+    # ---------------------------------------------------- #
+    # -----    Abstract Methods (Need Overwrite)    ------ #
+    # ---------------------------------------------------- #
+    def create_entity() -> Entity:
+        pass
+
+       

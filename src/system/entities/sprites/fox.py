@@ -12,7 +12,7 @@ from typing import Optional
 @register_entity
 @generate_shadow(0.65, 0.5, fade=0.5)
 class Fox(NPC):
-    def __init__(self, location: Coord, home: Optional[Spawner]):
+    def __init__(self, location: Coord, home: Optional[int]):
         entity_args = [
             location, Coord.math(0.25, 0.25, 0.25), 6, Coord.math(0, -5, 0)
         ]
@@ -43,3 +43,7 @@ class Fox(NPC):
         for i in range(10):
             if keys[pygame.K_0 + i]:
                 self._set_frame((i - 1) * 2)
+
+    @classmethod
+    def load(cls, data):
+        return Fox(Coord.load[data["location"]], data["spawner_id"])

@@ -139,6 +139,7 @@ class Coord:
     def euclidean_2D(self, other): return np.linalg.norm(self.location[:2] - self._coerce(other)[:2])
     def floor_world(self): return Coord(np.floor(self.location))
     def floor_chunk(self): return Coord(np.floor(self.location /CHUNK_SIZE) * CHUNK_SIZE)
+    def tile_center(self): return self.floor_world() + Coord.world(0.5, 0.5)
 
 
     # --- arithmetic (new object) ---

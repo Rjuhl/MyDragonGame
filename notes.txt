@@ -3,14 +3,12 @@ MAIN TASKS LEFT
 2. AI for NPCs (partially done)
 3. Combat
 4. Fox + Knight
-6. Pages (almost done)
+6. Pages (basically done)
 
 KNOWN BUGS
 1. There is bug when loading entity data in chunks (often comes after a crash or reloading a chunk)
 2. Current Astar does not take into account size of entity
-3. Loading a game mutiple times in a session causes lots of lag (After doing this lag will persist through reloads)
-4. Deleting world that was loaded causes a crash
-5. 
+3. Deleting world that was loaded causes a crash
 
 THINGS TO CONSIDER
 1. Animating the water

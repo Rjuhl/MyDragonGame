@@ -73,7 +73,7 @@ class Screen:
         faces.append(Triangle((poly[0].copy(), poly[1].copy(), poly[2].copy())))
         faces.append(Triangle((poly[0].copy(), poly[2].copy(), poly[3].copy())))
 
-        return Receiver(faces, poly, ShadeLevel.GROUND)
+        return Receiver(faces, poly, ShadeLevel.BASE_SHADOWS)
 
     
     def get_bounding_box(self, padding=PADDING):

@@ -32,6 +32,9 @@ class AstarJob:
         self.nodes[start] = Node(0, False)
 
         self.path: JobResult = None
+        
+        self.path_preference = [i for i in range(4)]
+        random.shuffle(self.path_preference)
 
     def search(self, cycles: int) -> None:
         while cycles > 0 and self.heap:
@@ -62,22 +65,39 @@ class AstarJob:
 
     def _get_neighbors(self, coord: Coord) -> List[Coord]:
         coords = [
-            coord.copy().update_as_world_coord(-1, 0),
-            coord.copy().update_as_world_coord(1, 0),
-            coord.copy().update_as_world_coord(0, -1),
-            coord.copy().update_as_world_coord(0, 1)
+            (
+                coord.copy().update_as_world_coord(-1, -1),
+                self._is_path_unblocked(coord, -1, -1)
+            ),
+            (
+                coord.copy().update_as_world_coord(1, 1),
+                self._is_path_unblocked(coord, 1, 1)
+            ),
+            (
+                coord.copy().update_as_world_coord(1, -1),
+                self._is_path_unblocked(coord, 1, -1)
+            ),
+            (
+                coord.copy().update_as_world_coord(-1, 1),
+                self._is_path_unblocked(coord, -1, 1)
+            ),
         ]
 
-        neighbors = []
-        for c in coords:
-            if (tile := self.map.get_tile(c)):
-                if not tile.has_obsticle and not tile.is_water:
-                    neighbors.append(tile.location.copy())
+        coords = [coords[i] for i in self.path_preference]
 
-        random.shuffle(neighbors)
-
-        return neighbors
+        return [loc for loc, valid in coords if valid]
     
+    def _is_path_unblocked(self, base: Coord, x: int, y: int):
+        return (
+            self._location_is_valid(base.copy().update_as_world_coord(x, y)) 
+            and self._location_is_valid(base.copy().update_as_world_coord(x, 0)) 
+            and self._location_is_valid(base.copy().update_as_world_coord(0, y)) 
+        )
+    
+    def _location_is_valid(self, location: Coord):
+        if tile := self.map.get_tile(location):
+            return not tile.has_obsticle and not tile.is_water
+        return False
 
     def _reconstruct_path(self, coord: Coord) -> JobResult:
         path = {}
@@ -109,6 +129,7 @@ class AstarManager:
         if self.map is None:
             raise ValueError("Map is required but not set.")
 
+    # Start is expected to be the center of a tile
     def add_job(self, start: Coord, destination: Coord) -> int:
         self._require_map()
 

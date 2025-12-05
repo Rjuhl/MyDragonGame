@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Dict
+from typing import List, Optional, Callable
 from system.game_clock import game_clock
 from system.entities.physics.collisions import check_collision, resolve_collisions
 from system.entities.physics.spatial_hash_grid import SpatialHashGrid
@@ -7,11 +7,11 @@ from system.screen import Screen
 from system.entities.entity import Entity
 from system.render_obj import RenderObj
 from world.chunk import Chunk
+from utils.coords import Coord
 from utils.types.shade_levels import ShadeLevel
 from system.entities.sprites.player import Player
 from system.entities.physics.shadows import EllipseData, Receiver, Shadows
 from constants import TILE_SIZE, DISPLAY_SIZE, WORLD_HEIGHT
-
 
 class EntityManager:
     def __init__(self, screen: Screen):
@@ -26,6 +26,9 @@ class EntityManager:
         self.queued_additions = set()
         self.queued_removals = set()
     
+    def set_player(self, player: Optional[Player]) -> None:
+        self.player = player
+
     def queue_entity_addition(self, entity: Entity) -> None:
         self.queued_additions.add(entity)
 
@@ -60,7 +63,7 @@ class EntityManager:
 
         self.shadows.add_receiver(self.screen.get_screen_reciever())
         for entity in self.entities:
-            onscreen = check_collision(entity.location, entity.size, screen_location, screen_size)
+            onscreen = check_collision(entity.location, entity.size + Coord.math(0, 0, 1), screen_location, screen_size)
             entity.update(dt, onscreen)
             if onscreen: 
                 self.entities_on_screen.append(entity)
@@ -98,6 +101,14 @@ class EntityManager:
     def get_chunk_entities(self, chunk: Chunk) -> set[Entity]:
         x, y, _ = chunk.location.location
         return self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE)
+    
+    def get_entities_in_range(self, base_location: Coord, radius: int, filter: Callable[[Entity], bool] = lambda _: True) -> set[Entity]:
+        x, y, _ = base_location.copy().update_as_world_coord(-radius, radius).location
+        entities = self.spatial_hash_grid.get_entities_in_range(x, y, radius * 2, radius * 2, strict=False)
+        return {
+            entity for entity in entities if filter(entity) and base_location.euclidean_2D(entity.location)
+        }
+
 
 class EntityManagerSubscriber:
     def recieve_death_event(entity: Entity):

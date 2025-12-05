@@ -10,7 +10,7 @@ JobResult = Optional[Dict[Coord, Coord]]
 
 class NPC(Character):
     def __init__(
-        self, spawner: Optional[Spawner], entity_args: List[Any], character_args: CharaterArgs
+        self, spawner: Optional[int], entity_args: List[Any], character_args: CharaterArgs
     ):
         super().__init__(entity_args, character_args)
 
@@ -22,6 +22,14 @@ class NPC(Character):
         self.path: JobResult = None
         self.destination: Optional[Coord] = None
         self.success_criteria: Callable[[], bool] = self._default_success_criteria
+
+    def set_spawner(self, spawner: int):
+        self.spawner = spawner
+
+    def jsonify(self):
+        data = super().jsonify()
+        data["spawner_id"] = self.spawner
+        return data
     
     # ----------------------------------------------------- #
     # -------------        AI helpers        -------------- #
@@ -38,8 +46,13 @@ class NPC(Character):
 
         # If no job is running and there is no path to follow, find path
         if self.job_id is None and self.path is None:
-            self.job_id = path_finder.add_job(self.location.floor_world(), self.destination.floor_world())
-            return Facing.Idle
+            start = self.location.tile_center()
+            self.job_id = path_finder.add_job(start, self.destination.tile_center())
+
+            movemement = self.location - start
+            self.move(movemement)
+            
+            return self._get_facing(movemement)
         
         # We have a job but it hasnt finished
         elif self.path is None:
@@ -48,13 +61,23 @@ class NPC(Character):
                 self.job_id = None
         
         # If location is not in path we need to find another path
-        if self.location.floor_world() not in self.path:
+        if self.location.tile_center() not in self.path:
+            # TODO: Check if we are close to a path and try to get back on it (Could give nice performance gains)
+
+
+            # Search for new path if not close to path
             self.path = None
             self.job_id = path_finder.add_job(self.location.floor_world(), self.destination.floor_world())
             return Facing.Idle
         
         # Follow path
+        current_location = self.location
+        last_movement = Coord.math(0, 0, 0)
         max_movement = self.get_speed() * dt
+        while max_movement > 0:
+            # Check if 
+            pass
+
 
     def _get_facing(self, movement_vec: Coord):
         dx, dy, _ = movement_vec.location

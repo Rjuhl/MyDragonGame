@@ -42,10 +42,11 @@ class Entity(BaseEntity):
     def serve_shadow(self): 
         return None
 
-    def move(self, movement_vec: Coord, with_listeners: bool = True) -> Self:
+    def move(self, movement: Coord, with_listeners: bool = True, is_vector: bool = True) -> Self:
         # Need to update prev location to use for collisions in the future
         self.prev_location = self.location.copy()
-        self.location += movement_vec
+
+        self.location = self.location + movement if is_vector else movement
 
         # Clamp z axis movement 
         self.location.z = np.clip(self.location.z, 0, WORLD_HEIGHT / TILE_SIZE)
@@ -55,6 +56,7 @@ class Entity(BaseEntity):
                 movement_subscriber.receive_movement_event(self)
 
         return self
+        
     
     def bind_to_manager(self, manager):
         self.manager = manager
