@@ -24,7 +24,7 @@ class Spawner(Entity, EntityManagerSubscriber):
         self.recharge_time = spawner_args.recharge_time
         self.vicinity_to_player = spawner_args.vicinity_to_player
 
-        self.last_spawn_time = float('inf')
+        self.last_spawn_time = self.recharge_time
         self.entities: set[int] = set()
 
     def bind_to_manager(self, manager):
@@ -39,13 +39,13 @@ class Spawner(Entity, EntityManagerSubscriber):
            and self.within_spawn_limit(): self.spawn_entity()
     
     def spawn_entity(self):
-        entity = self.create_entitiy()
-        self.manager.add_entity(entity)
+        entity = self.create_entity()
+        self.manager.queue_entity_addition(entity)
         self.entities.add(entity.id)
         self.last_spawn_time = 0
 
     def within_spawn_cooltime_period(self):
-        return self.last_spawn_time < self.recharge_time
+        return self.last_spawn_time > self.recharge_time
 
     def within_spawn_limit(self):
         return len(self.entities) < self.spawn_limit
@@ -67,7 +67,7 @@ class Spawner(Entity, EntityManagerSubscriber):
 
     def set_spawner_data(self, data):
         self.entities = set(data["bound_entitites"])
-        self.last_spawn_time = data["last_spawn_time"] 
+        self.last_spawn_time = data["last_spawn_time"]         
 
     # ---------------------------------------------------- #
     # -----    Abstract Methods (Need Overwrite)    ------ #

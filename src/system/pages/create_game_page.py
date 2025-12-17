@@ -21,8 +21,12 @@ class CreateGamePage(Page):
     def __init__(self, pageContext):
         super().__init__(pageContext)
 
-        self.world_name_input = TextInput("world_name", "40%", "20", 16, variant=1)
-        self.world_name_input.text = "ENTER WORLD NAME HERE"
+        self.world_name_input = TextInput(
+            "world_name", "40%", "20", 16, 
+            variant=1,
+            clear_on_click=True,
+            default_text="ENTER WORLD NAME HERE"
+        )
 
         world_name_container = Container(
             "80%", "20",

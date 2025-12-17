@@ -6,6 +6,7 @@ from world.map import Map
 from system.screen import Screen
 from numpy.typing import NDArray
 
+
 class Renderer:
     def __init__(self, display: pygame.Surface):
         self.display = display
@@ -17,6 +18,8 @@ class Renderer:
         for tile in tiles_to_render:
             # Set tile color to red if on chunk border and chunk borders on has been toggled on
             tint = (255, 0, 0) if game_globals.chunk_borders_on and tile.is_chunk_border else None
+            #tint = (0, 0, 255, 128) if tile.location == map.player.location.floor_world() else None
+
             self.asset_drawer.draw_tile(tile, cam_screen_i, tint)
 
         for entity in map.get_entities_to_render():
@@ -30,6 +33,9 @@ class Renderer:
         # If debug mode is on render debug elements
         if game_globals.render_debug:
             self._render_dubug_elements(map, screen, cam_screen_i)
+
+        # self.asset_drawer.draw_fox_path(cam_screen_i)
+        # self.asset_drawer.draw_coords_and_centers(cam_screen_i)
 
         return len(tiles_to_render)
     

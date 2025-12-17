@@ -1,0 +1,47 @@
+from world.tile import Tile
+from utils.coords import Coord
+from system.render_obj import RenderObj
+from utils.types.shade_levels import ShadeLevel
+from system.entities.spawner import Spawner, SpawnerArgs
+from decorators import register_entity, spawn_with_chunk_creation
+from constants import WORLD_HEIGHT, TILE_SIZE, OUTPOST_WEIGHT
+from typing import List
+
+
+OUTPOST_SIZE = Coord.math(2, 2, 1 + WORLD_HEIGHT // TILE_SIZE)
+def _op_valid_spawner_location(tile: Tile) -> bool:
+    return not tile.has_obsticle and not tile.is_water
+
+
+@register_entity
+@spawn_with_chunk_creation(
+    OUTPOST_SIZE, 
+    OUTPOST_WEIGHT,
+    _op_valid_spawner_location
+)
+class Outpost(Spawner):
+    IMG_ID = 9
+    def __init__(self, tile: Tile):
+        render_offset = Coord.math(0, -32, 0)
+        spawner_args = SpawnerArgs(0, 60 * 1000, 160) # Change first arg to start spawning (prolly to ~6)
+        super().__init__(tile.location, Coord.math(2.5,  2.5, 6), self.IMG_ID, render_offset, spawner_args)
+
+    
+    def create_entity(self):
+        pass
+
+
+    def get_render_objs(self) -> List[RenderObj]:
+        return [RenderObj(
+            self.img_id,
+            self.draw_location(),
+            (self.shade_level(), self.location.x, self.location.y, self.location.z),
+            location=self.location, size=self.size
+        )]
+
+    @classmethod
+    def load(cls, data):
+        tile = Tile(0, Coord.load(data["location"]))
+        outpost = Outpost(tile)
+        outpost.set_spawner_data(data)
+        return outpost

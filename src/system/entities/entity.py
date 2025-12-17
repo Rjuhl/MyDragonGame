@@ -25,6 +25,7 @@ class Entity(BaseEntity):
 
         self.rotated = False
         self.solid = True
+        self.collided = False
 
     
     @classmethod
@@ -74,6 +75,7 @@ class Entity(BaseEntity):
         return self
     
     def update(self, dt, onscreen=True):
+        self.collided = False
         self.lifespan += dt
         return self
 
@@ -104,7 +106,7 @@ class Entity(BaseEntity):
         return entity
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
-        pass
+        self.collided = True
 
     def shade_level(self):
         return ShadeLevel.SPRITE

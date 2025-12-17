@@ -253,9 +253,10 @@ class Character(Entity):
 
     # Can override update for testing     
     def update(self, dt, onscreen=True):
-        self._apply_damage_animation()
-        if random.random() < 0.02: 
-            self._spawn_damage_number(-1)
-            self._start_damage_animation()
+        super().update(dt, onscreen)
+        # self._apply_damage_animation()
+        # if random.random() < 0.02: 
+        #     self._spawn_damage_number(-1)
+        #     self._start_damage_animation()
 
 

@@ -15,6 +15,9 @@ from system.entities.sprites.fox import Fox
 from world.tile import Tile
 from typing import Optional
 from pathlib import Path
+from world.path_finder import path_finder
+
+from functools import lru_cache
 
 # Updates chunk list based on player location
 # Chunk ordering:
@@ -38,6 +41,8 @@ class Map:
         self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
         self.init_map_chunks()
 
+        path_finder.bind_map(self)
+
         # TEMP for testing
         # E = [Fox(Coord.world(1, 0), None)]
         # for e in E: self.entity_manager.add_entity(e)
@@ -59,10 +64,12 @@ class Map:
         
     def update(self):
         self.handle_chunk_loading()
+        path_finder.run_jobs()
         self.entity_manager.update_entities()
         self.player.smooth_movement()
         self.screen.update()
         self.entities_to_render = self.entity_manager.get_entity_render_objs(self.player)
+        
 
     def get_tiles_to_render(self, min_x, max_x, min_y, max_y):
 
@@ -103,6 +110,7 @@ class Map:
                 chunk.save(self.game_name)
                
         self.chunks = chunks
+        path_finder.clear_cache()
  
     # setups map with a chunk grid based on location
     def init_map_chunks(self):

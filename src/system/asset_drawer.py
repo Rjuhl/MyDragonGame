@@ -9,6 +9,8 @@ from numpy.typing import NDArray
 from system.render_obj import RenderObj
 from system.entities.sheet import SheetManager
 
+from system.global_vars import game_globals
+
 class AssetDrawer:
     def __init__(self, display: pygame.Surface):
         current_dir = Path(__file__).parent
@@ -74,12 +76,45 @@ class AssetDrawer:
             self.blit_dot(location + size, cam_offset, (0, 0, 255), radius, display)
 
 
+
     def _tint_surface(self, img: pygame.Surface, tint: RGBA):
         mask = pygame.mask.from_surface(img)
         mask_surface = mask.to_surface(setcolor=tint, unsetcolor=(0, 0, 0))
         mask_surface.set_colorkey((0, 0, 0)) 
         img.blit(mask_surface, (0, 0))
         return img
+
+
+    # def draw_fox_path(self, cam_offset):
+    #     if "fox_start" in game_globals.debug_data:
+    #         self.blit_dot(game_globals.debug_data["fox_start"], cam_offset, color=(0, 255, 0), radius=4)
+    #     if "fox_end" in game_globals.debug_data:
+    #         self.blit_dot(game_globals.debug_data["fox_end"], cam_offset, color=(0, 0, 255), radius=4)
+    #     if "fox_path" in game_globals.debug_data:
+    #         for step in game_globals.debug_data["fox_path"]:
+    #             self.blit_dot(step, cam_offset, color=(255, 0, 0), radius=2)
+
+    #     if "fstart" in game_globals.debug_data and isinstance(game_globals.debug_data["fstart"], Coord):
+    #         self.blit_dot(game_globals.debug_data["fstart"], cam_offset, color=(0, 0, 0), radius=4)
+        
+    #     if "fend" in game_globals.debug_data and isinstance(game_globals.debug_data["fend"], Coord):
+    #         self.blit_dot(game_globals.debug_data["fend"], cam_offset, color=(0, 0, 0), radius=4)
+
+    
+    def draw_coords_and_centers(self, cam_offset):
+        coords = [
+            Coord.math(0, 0, 0),
+            Coord.math(1, 1, 0),
+            Coord.math(-1, -1, 0),
+            Coord.math(-1, 1, 0),
+            Coord.math(1, -1, 0),
+        ]
+
+        for coord in coords:
+            self.blit_dot(coord, cam_offset, color=(255, 0, 0))
+            self.blit_dot(coord.floor_world(), cam_offset, color=(0, 255, 0))
+            self.blit_dot(coord.tile_center(), cam_offset, color=(0, 0, 255))
+                
 
     @staticmethod
     def load_assets(path):

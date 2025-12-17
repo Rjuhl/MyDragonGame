@@ -59,7 +59,10 @@ class Coord:
         )
 
     def as_world_coord(self):
-        return np.floor(self.location).astype(int)
+        x = np.ceil(self.location[0]).astype(int)
+        y = np.floor(self.location[1]).astype(int)
+        z = np.floor(self.location[2]).astype(int)
+        return np.array([x, y, z])
 
     def as_view_coord(self):
         screen_pos = Coord.BASIS @ self.location
@@ -114,6 +117,9 @@ class Coord:
         loc_x, loc_y, loc_z = self.location.tolist()
         return f"({loc_x}, {loc_y}, {loc_z})"
 
+    def __repr__(self):
+        return self.__str__()
+
    # --- helpers for arithmetic ---
     @staticmethod
     def _coerce(other) -> np.ndarray:
@@ -137,9 +143,9 @@ class Coord:
     def manhattan_2D(self, other): return np.sum(np.abs(self.location[:2] - self._coerce(other)[:2]))
     def euclidean(self, other): return np.linalg.norm(self.location - self._coerce(other))
     def euclidean_2D(self, other): return np.linalg.norm(self.location[:2] - self._coerce(other)[:2])
-    def floor_world(self): return Coord(np.floor(self.location))
-    def floor_chunk(self): return Coord(np.floor(self.location /CHUNK_SIZE) * CHUNK_SIZE)
-    def tile_center(self): return self.floor_world() + Coord.world(0.5, 0.5)
+    def floor_world(self): return Coord(self.as_world_coord())
+    def floor_chunk(self): return Coord(np.trunc(self.location / CHUNK_SIZE) * CHUNK_SIZE)
+    def tile_center(self): return self.floor_world() + Coord.world(-0.5, 0.5)
 
 
     # --- arithmetic (new object) ---
@@ -165,4 +171,5 @@ class Coord:
         try:
             return bool(np.allclose(self.location, self._coerce(other)))
         except TypeError:
+
             return NotImplemented

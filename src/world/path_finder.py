@@ -23,8 +23,8 @@ class PathFinder(AstarManager):
         point = point.copy()
 
         # Get loaded boundry from corner chunks 1 and 9
-        x_min, y_max, _ = self.map.chunks[0].tiles[0].location
-        x_max, y_min, _ = self.map.chunks[-1].tiles[-1].location
+        x_min, y_max, _ = self.map.chunks[0].tiles[0].location.location
+        x_max, y_min, _ = self.map.chunks[-1].tiles[-1].location.location
 
         if self._in_bounds(point, x_max, x_min, y_max, y_min): 
             return self._find_closest_unblocked_point(point, self._default_is_blocked)
@@ -34,7 +34,7 @@ class PathFinder(AstarManager):
         if point.y < y_min: point.y = y_min
         if point.y > y_max: point.y = y_max
 
-        return self._find_closest_unblocked_point(point, self._default_is_blocked)
+        return self._find_closest_unblocked_point(point.tile_center(), self._default_is_blocked)
 
 
     def _find_closest_unblocked_point(self, point: Coord, is_blocked: Callable[[Tile], bool]) -> Optional[Coord]:
@@ -50,10 +50,10 @@ class PathFinder(AstarManager):
             visted.update(coords)
             return coords
 
-        visted_coords = set(point)
+        visted_coords = {point}
         coord_queue = deque([point])
         while coord_queue:
-            if (tile := self.map.get_tile(coord_queue.popleft())):
+            if (tile := self.map.get_tile(coord_queue.popleft().floor_world())):
                 if not is_blocked(tile): return tile.location
                 coord_queue.extend(get_next_points(tile.location, visted_coords))
 

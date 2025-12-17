@@ -22,11 +22,14 @@ class FoxBurrow(Spawner):
         
         render_offset = Coord.world(-1, 0)
         img_id = 7 + int(6 <= tile.id <= 11)
-        spawner_args = SpawnerArgs(4, 60 * 1000, 40)
+        spawner_args = SpawnerArgs(2, 60 * 1000, 40)
         super().__init__(tile.location, FOX_BURROW_SIZE, img_id, render_offset, spawner_args)
 
     def shade_level(self):
         return ShadeLevel.GROUND_MASK
+    
+    def create_entity(self):
+        return Fox(self.location, home=self.id)
 
     @classmethod
     def load(cls, data):

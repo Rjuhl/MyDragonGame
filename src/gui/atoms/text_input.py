@@ -16,6 +16,8 @@ class TextInput(Container):
         background_color: Optional[RGBA] = (152, 139, 171, 128),
         outline_thickness: int = 1, variant: int = 0, char_limit: int = 40,
         verifier: Callable[[str], bool] = lambda s: True,
+        clear_on_click: bool = False, 
+        default_text: Optional[str] = None,
         **kwargs
     ):
         super().__init__(
@@ -27,7 +29,9 @@ class TextInput(Container):
 
         self.id = id
 
-        self.text = ""
+        self.text = "" if default_text is None else default_text
+        self.clear_on_click = clear_on_click
+        self.default_text = default_text
         self.char_limit = char_limit
         self.verifier = verifier
 
@@ -75,6 +79,8 @@ class TextInput(Container):
         self.mouse_above = is_above
         if click_event == ClickEvent.Left:
             self.selected = is_above
+            if self.selected and self.default_text is not None and self.clear_on_click and self.text == self.default_text:
+                self.text = ""
 
     def render(self, surface: pygame.Surface) -> None:
         self._update_text()
