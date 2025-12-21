@@ -134,6 +134,7 @@ class Coord:
         return a
     
     # --- vector math ---
+    def is_null(self): return self.x == 0 and self.y == 0 and self.z == 0
     def norm(self): return np.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
     def dot(self, other): return np.dot(self.location, self._coerce(other))
     def cross(self, other): return Coord(np.cross(self.location, self._coerce(other)))

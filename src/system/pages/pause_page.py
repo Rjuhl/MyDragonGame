@@ -5,7 +5,7 @@ from gui.types import ItemAlign, ItemAppend
 from gui.buttons.basic_button import BasicButton
 from system.page_context import PageContext
 from system.pages.main_menu import MainMenu
-from gui.utils.callbacks import settings_callback
+from gui.utils.callbacks import settings_callback, main_menu_callback, game_loop_callback
 from world.game import GameManager
 
 @register_page
@@ -15,7 +15,7 @@ class PausePage(Page):
         return_button = BasicButton(
             "100%", "30", 
             "Continue", 24,
-            self.return_callback
+            game_loop_callback
         )
 
         settings_button = BasicButton(
@@ -27,7 +27,7 @@ class PausePage(Page):
         exit_button = BasicButton(
             "100%", "30", 
             "Exit to main menu", 24,
-            self.exit_callback
+            main_menu_callback
         )
 
 
@@ -58,14 +58,6 @@ class PausePage(Page):
         self.context.renderer.draw(game_manager.game.map, game_manager.screen)
         self.render()
 
-    @staticmethod
-    def return_callback(context: PageContext) -> None:
-        from system.pages.game_page import GamePage  # Local import to avoid circular import
-        context["next_page"] = GamePage.__name__
-
-    @staticmethod
-    def exit_callback(context: PageContext) -> None:
-        context["next_page"] = MainMenu.__name__
 
 
 

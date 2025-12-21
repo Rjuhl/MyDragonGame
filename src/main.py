@@ -13,7 +13,7 @@ from system.entities.sprites.player import Player
 from system.page_manager import PageManager
 from system.page_context import PageContext
 from system.global_vars import set_base_globals
-from system.sound import SoundMixer
+from system.sound import SoundMixer, Sound
 from utils.close_app import close_app
 from world.game import GameManager
 
@@ -47,6 +47,7 @@ def runGame(logger):
     input_handler.bind_displays(screen, display)
 
     sound_mixer = SoundMixer()
+    sound_mixer.play_music(Sound.MAIN_TRACK)
 
     while True:
         game_clock.tick()

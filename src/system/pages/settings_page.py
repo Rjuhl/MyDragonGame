@@ -17,7 +17,6 @@ class SettingsPage(Page):
     def __init__(self, pageContext):
         super().__init__(pageContext)
 
-
         self.volume = global_settings.get("volume")
         self.setting_text = PixelText("Settings", 48, (255, 255, 255, 255), bold=True, outline=1)
 

@@ -1,6 +1,8 @@
 from gui.text import PixelText
 from gui.container import Container
 from gui.types import ItemAlign, ItemAppend, ClickEvent
+from system.sound import SoundMixer, SoundInstance, Sound
+from constants import DEFAULT_BUTTON_COOLDOWN
 from typing import Tuple, Dict, Any, List, Optional, Callable
 from pathlib import Path
 from gui.utils.shapes import draw_rect_surface
@@ -17,7 +19,11 @@ class Button(Container):
         hover_background_color: RGBA = (181, 166, 193, 255),
         hover_outline_color: RGBA = (255, 255, 255, 255),
         outline_thickness: int = 1,
-        include_mouse_held = False
+        include_mouse_held = False,
+        sound_instance: Optional[SoundInstance] = SoundInstance(
+            Sound.BUTTON_CLICK,
+            time_restricted=DEFAULT_BUTTON_COOLDOWN
+        )
     ):
 
         text = PixelText(text, font_size, (79, 80, 112, 255), varient=1)
@@ -42,6 +48,8 @@ class Button(Container):
         self.selected = False
         self.include_mouse_held = include_mouse_held
 
+        self.sound_instance = sound_instance
+
     def _get_background(self, isHovered: bool):
         w, h = self.get_size()
         if isHovered or self.selected: 
@@ -52,5 +60,7 @@ class Button(Container):
         isAbove = self.mouse_over(mouse_pos)
         self.background = self._get_background(isAbove)
         trigger_mouse_held = (self.include_mouse_held and input_handler.is_mouse_button_held(1))
-        if isAbove and (click_event == ClickEvent.Left or trigger_mouse_held): 
+        if isAbove and (click_event == ClickEvent.Left or trigger_mouse_held):
+            if self.sound_instance: SoundMixer().add_sound_effect(self.sound_instance)
             self.callback(state_dict)
+            

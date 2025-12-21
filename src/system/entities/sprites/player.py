@@ -1,5 +1,6 @@
 import math
 import pygame
+import random
 from pygame.locals import *
 from system.entities.entity import Entity
 from system.entities.character import Character, CharaterArgs
@@ -10,6 +11,7 @@ from system.render_obj import RenderObj
 from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
 from system.input_handler import input_handler
+from system.sound import SoundMixer, SoundInstance, Sound
 
 # Update with character class
 class Player(Character):
@@ -22,7 +24,9 @@ class Player(Character):
 
     def update(self, dt, onscreen=True):
         super().update(dt, onscreen)
-        self.move(self.get_movement(dt))
+        movement = self.get_movement(dt)
+        self.move(movement)
+        self._play_sounds(movement)
         return self
 
     def init_human(self, location: Coord, character_args: CharaterArgs):
@@ -72,6 +76,15 @@ class Player(Character):
     #     json["prev_drawn_location"] = self.prev_drawn_location.tolist()
     #     return json
     
+    def _play_sounds(self, movement: Coord):
+        if not movement.is_null() and self.location.z == 0:
+            SoundMixer().add_sound_effect(SoundInstance(
+                random.choice([Sound.GRASS_1, Sound.GRASS_2]),
+                id=self.id,
+                time_restricted=500
+            ))
+
+
     @staticmethod
     def load(data):
         player = Player(Coord.load(data["location"]), CharaterArgs())
@@ -83,3 +96,4 @@ class Player(Character):
         movement = input_handler.get_player_movement()
         movement *= TEMP_MOVEMENT_FACTOR * (dt / 1000)
         return movement
+    
