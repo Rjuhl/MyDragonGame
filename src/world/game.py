@@ -10,8 +10,9 @@ from utils.coords import Coord
 from typing import Dict, Any, Optional
 from decorators import singleton
 from system.id_generator import id_generator
-from system.game_settings import GameSettings
+from system.settings import GameSettings
 from system.asset_drawer import AssetDrawer
+from system.sound import SoundMixer
 from constants import BANNER_SIZE
 
 
@@ -163,6 +164,8 @@ class GameManager:
                 temperature=temperature,
                 drawer=self.drawer
             )
+        
+        SoundMixer().bind_player(self.game.player)
 
 
     def delete_game(self, game_name: str):

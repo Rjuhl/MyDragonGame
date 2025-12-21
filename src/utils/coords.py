@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from constants import CHUNK_SIZE
 
@@ -146,6 +147,19 @@ class Coord:
     def floor_world(self): return Coord(self.as_world_coord())
     def floor_chunk(self): return Coord(np.trunc(self.location / CHUNK_SIZE) * CHUNK_SIZE)
     def tile_center(self): return self.floor_world() + Coord.world(-0.5, 0.5)
+
+    def get_angle_2D(self, other, deg=True, signed=True):
+        value = None
+        if signed: 
+            cross = (self.location[0] * other.location[1]) - (self.location[1] * other.location[0])
+            dot = (self.location[0] * other.location[0]) + (self.location[1] * other.location[1])
+            value = math.atan2(cross, dot)
+        else: 
+            dot = self.dot_2D(other)
+            norms = self.norm_2D() * other.norm_2D()
+            value = math.acos(dot / norms)
+        
+        return (math.degrees(value) + 360) % 360 if deg else value
 
 
     # --- arithmetic (new object) ---

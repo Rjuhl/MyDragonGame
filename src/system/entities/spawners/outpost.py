@@ -30,15 +30,6 @@ class Outpost(Spawner):
     def create_entity(self):
         pass
 
-
-    def get_render_objs(self) -> List[RenderObj]:
-        return [RenderObj(
-            self.img_id,
-            self.draw_location(),
-            (self.shade_level(), self.location.x, self.location.y, self.location.z),
-            location=self.location, size=self.size
-        )]
-
     @classmethod
     def load(cls, data):
         tile = Tile(0, Coord.load(data["location"]))

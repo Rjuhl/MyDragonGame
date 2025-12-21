@@ -5,6 +5,7 @@ from decorators import singleton
 from constants import MOVEMENT_MAP
 from typing import Dict, List, Optional
 from pathlib import Path
+from system.event_handler import EventHandler
 
 
 @singleton
@@ -59,7 +60,7 @@ class InputHandler:
         self.quit_requested = False
 
         # --- 1) Handle discrete events (edges) ---
-        for event in pygame.event.get():
+        for event in EventHandler().events():
             if event.type == pygame.QUIT:
                 self.quit_requested = True
 

@@ -1,4 +1,6 @@
 import pygame
+from system.sound import SoundMixer
+from system.settings import global_settings
 from gui.page import Page
 from gui.text import PixelText
 from gui.atoms.slider_input import SliderInput
@@ -15,9 +17,8 @@ class SettingsPage(Page):
     def __init__(self, pageContext):
         super().__init__(pageContext)
 
-        # Placeholder until sound is setup
-        self.volume = 20
 
+        self.volume = global_settings.get("volume")
         self.setting_text = PixelText("Settings", 48, (255, 255, 255, 255), bold=True, outline=1)
 
         # Will need to be updated inside container to reflect slider changes on update
@@ -116,6 +117,9 @@ class SettingsPage(Page):
             self.current_volume_text = self._get_volume_text()
             self.volume_container.add_child(self.current_volume_text)
             self.volume_container.reposition_children()
+
+            global_settings.set("volume", self.volume)
+            SoundMixer().set_volume(self.volume / 100)
 
     
     def update(self):

@@ -1,31 +1,32 @@
-import math
 import pygame, sys
 from pygame.locals import *
-from system.game_clock import game_clock
-from constants import TEMP_MOVEMENT_FACTOR
-from system.id_generator import id_generator
 from system.global_vars import game_globals
-from system.input_handler import input_handler
-from world.game import GameManager
+from utils.close_app import close_app
+from decorators import singleton
 
+
+@singleton
 class EventHandler:
     def __init__(self):
-        pass
+
+        from system.input_handler import input_handler
+        self.stored_events = []
+        self.input_handler = input_handler
+
+    def store_events(self):
+        self.stored_events = pygame.event.get()
+    
+    def events(self):
+        return self.stored_events
 
     def event_tick(self):
-        if input_handler.quit_requested: self.close_app()
+        if self.input_handler.quit_requested: close_app()
 
-        if input_handler.was_key_pressed(K_c):
+        if self.input_handler.was_key_pressed(K_c):
             game_globals.chunk_borders_on = not game_globals.chunk_borders_on
         
-        if input_handler.was_key_pressed(K_h):
+        if self.input_handler.was_key_pressed(K_h):
             game_globals.show_hitboxes_on = not game_globals.show_hitboxes_on
         
-        if input_handler.was_key_pressed(K_z):
+        if self.input_handler.was_key_pressed(K_z):
             game_globals.render_debug = not game_globals.render_debug
-
-    def close_app(self):
-        GameManager().save_game()
-        input_handler.save()
-        pygame.quit()
-        sys.exit()

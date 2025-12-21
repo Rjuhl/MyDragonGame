@@ -157,6 +157,7 @@ class CreateGamePage(Page):
                 forest_size=int(self.context.state["forest_size"]),
                 temperature=int(self.context.state["climate"]),
             )
+            GameManager().game.game_settings.set("difficulty", self.context.state["difficulty"])
             game_loop_callback(self.context.state)
 
         self.context.state["create_game_clicked"] = False

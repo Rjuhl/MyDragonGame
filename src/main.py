@@ -13,6 +13,8 @@ from system.entities.sprites.player import Player
 from system.page_manager import PageManager
 from system.page_context import PageContext
 from system.global_vars import set_base_globals
+from system.sound import SoundMixer
+from utils.close_app import close_app
 from world.game import GameManager
 
 
@@ -44,13 +46,18 @@ def runGame(logger):
     page_manager = PageManager(page_context)
     input_handler.bind_displays(screen, display)
 
+    sound_mixer = SoundMixer()
+
     while True:
         game_clock.tick()
+        event_handler.store_events()
         input_handler.update()
+        sound_mixer.update()
+
         display.fill((0,0,0))
         event_handler.event_tick()
 
-        if not page_manager.show_page(): event_handler.close_app()
+        if not page_manager.show_page(): close_app()
         fps = game_clock.fps           
         fps_text = font.render(f"FPS: {fps:.1f}", True, (0, 0, 255))
         tiles_text = font.render(f"Tiles Rendered: {page_context.state["items_rendered"]}", True, (0, 0, 255))
