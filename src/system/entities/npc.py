@@ -6,7 +6,6 @@ from world.path_finder import path_finder
 from system.entities.spawner import Spawner
 from world.generation.types import Terrain
 
-from system.global_vars import game_globals
 
 JobResult = Optional[Dict[Coord, Coord]]
 

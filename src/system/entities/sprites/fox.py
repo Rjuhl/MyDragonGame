@@ -85,8 +85,6 @@ class Fox(NPC):
         self._wander(dt)
         self._idle()
         self._set_frame()
-        game_globals.debug_data["fstart"] = self.location.tile_center()
-        game_globals.debug_data["fend"] = self.destination
         self.current_step = self.incrementer.tick()
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):

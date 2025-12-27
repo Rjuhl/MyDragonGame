@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Dict
 from system.game_clock import game_clock
 from system.entities.physics.collisions import check_collision, resolve_collisions
 from system.entities.physics.spatial_hash_grid import SpatialHashGrid
@@ -18,7 +18,7 @@ class EntityManager:
         self.screen = screen
         self.shadows = Shadows()
         self.spatial_hash_grid = SpatialHashGrid()
-        self.entities = set()
+        self.entities: Dict[int, Entity] = {}
         self.player = None
 
         self.kill_listener_subscribers = []
@@ -37,12 +37,12 @@ class EntityManager:
 
     def add_entity(self, entity: Entity) -> None:
         entity.bind_to_manager(self)
-        self.entities.add(entity)
+        self.entities[entity.id] = entity
         if entity.solid: self.spatial_hash_grid.add_entity(entity)
 
     def remove_entity(self, entity: Entity) -> None:
         # kill entity
-        self.entities.remove(entity)
+        del self.entities[entity.id]
         if entity.solid: self.spatial_hash_grid.remove_entity(entity)
 
         # Notify subscribers
@@ -62,7 +62,7 @@ class EntityManager:
         self.shadows.reset_receivers()
 
         self.shadows.add_receiver(self.screen.get_screen_reciever())
-        for entity in self.entities:
+        for entity in self.entities.values():
             onscreen = check_collision(entity.location, entity.size + Coord.math(0, 0, 1), screen_location, screen_size)
             entity.update(dt, onscreen)
             if onscreen: 
@@ -95,7 +95,7 @@ class EntityManager:
     def get_and_removed_chunk_entities(self, chunk: Chunk) -> set[Entity]:
         x, y, _ = chunk.location.location
         removed_entities = self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE, remove_entities=True)
-        self.entities -= removed_entities 
+        for entity in removed_entities: del self.entities[entity.id]
         return removed_entities
 
     def get_chunk_entities(self, chunk: Chunk) -> set[Entity]:

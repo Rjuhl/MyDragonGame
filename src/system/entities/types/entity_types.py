@@ -6,7 +6,7 @@ class EntityTypes(Enum):
     PROJECTILE = 3
     NONE = 4
 
-class NPCStates(Enum):
+class NPCState(Enum):
     HOME = "Home"
     WANDER = "Wander"
     FIGHT = "Fight"
@@ -17,6 +17,6 @@ class FoxExtraStates(Enum):
     STEAL = "Steal"
 
 FoxStates = Enum('FoxStates', {
-    **NPCStates.__members__,
+    **NPCState.__members__,
     **FoxExtraStates.__members__
 })

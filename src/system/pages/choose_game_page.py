@@ -94,7 +94,7 @@ class ChooseGamePage(Page):
         delete_button = Button(
             "50%", "100%", "DELETE", 
             16, self._get_delete_button_callback(game_name),
-            include_mouse_held=True
+            include_mouse_held=True, sound_instance=None
         )
         self.context.state[f"delete_{game_name}"] = 0
         self.delete_buttons[game_name] = delete_button

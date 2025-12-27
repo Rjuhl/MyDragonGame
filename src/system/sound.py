@@ -20,13 +20,13 @@ class SoundEvents(int, Enum):
 
 
 """
-
     When a new sound is added assets/sounds add it here as well with 
     enum_name = file_name so that it will be loaded. Also add the 
     volume of the sound [0, 1] to SOUND_TO_VOLUMES to set the correct
     sound level or let it default to 1. 
 
 """
+
 class Sound(str, Enum):
     MAIN_TRACK = "pixel_dreams.wav"
     GAME_TRACK_1 = "alkacrab_track_1.wav"

@@ -1,17 +1,20 @@
 MAIN TASKS LEFT 
-1. Sound system
+1. Sound system (mostly done)
 2. AI for NPCs (mostly done)
 3. Combat
-4. Fox + Knight
+4. Fox + Knight (mostly done)
 5. Pages (basically done)
 6. Executable + cleanup
 7. Improved tile rendering (lump tiles together)
+8. Player
 
 KNOWN BUGS
 1. There is bug when loading entity data in chunks (often comes after a crash or reloading a chunk)
 2. Current Astar does not take into account size of entity
 3. Deleting world that was loaded causes a crash
 4. Setting seed value
+5. Sound levels arent always set properly on launch 
+6. Outpost overlaps weird with trees that are very close
 
 THINGS TO CONSIDER
 1. Animating the water
