@@ -1,7 +1,7 @@
 from gui.text import PixelText
 from gui.container import Container
 from gui.types import ItemAlign, ItemAppend, ClickEvent
-from system.sound import SoundMixer, SoundInstance, Sound
+from system.sound import SoundMixer, SoundRequest, Sound
 from constants import DEFAULT_BUTTON_COOLDOWN
 from typing import Tuple, Dict, Any, List, Optional, Callable
 from pathlib import Path
@@ -20,7 +20,7 @@ class Button(Container):
         hover_outline_color: RGBA = (255, 255, 255, 255),
         outline_thickness: int = 1,
         include_mouse_held = False,
-        sound_instance: Optional[SoundInstance] = SoundInstance(
+        sound_instance: Optional[SoundRequest] = SoundRequest(
             Sound.BUTTON_CLICK,
             time_restricted=DEFAULT_BUTTON_COOLDOWN
         )

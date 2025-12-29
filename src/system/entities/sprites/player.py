@@ -11,7 +11,7 @@ from system.render_obj import RenderObj
 from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
 from system.input_handler import input_handler
-from system.sound import SoundMixer, SoundInstance, Sound
+from system.sound import SoundMixer, SoundRequest, Sound
 
 # Update with character class
 class Player(Character):
@@ -78,7 +78,7 @@ class Player(Character):
     
     def _play_sounds(self, movement: Coord):
         if not movement.is_null() and self.location.z == 0:
-            SoundMixer().add_sound_effect(SoundInstance(
+            SoundMixer().add_sound_effect(SoundRequest(
                 random.choice([Sound.GRASS_1, Sound.GRASS_2]),
                 id=self.id,
                 time_restricted=500

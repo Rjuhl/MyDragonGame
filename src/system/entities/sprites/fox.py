@@ -10,7 +10,7 @@ from utils.types.shade_levels import ShadeLevel
 from decorators import register_entity, generate_shadow
 from typing import Optional, Self
 from system.entities.frame_incrementer import FrameIncrementer
-from system.sound import SoundMixer, Sound, SoundInstance
+from system.sound import SoundMixer, Sound, SoundRequest
 
 
 @register_entity
@@ -64,7 +64,7 @@ class Fox(NPC):
         self.facing = self.head_to_destination(dt)
 
     def move(self, movement: Coord, with_listeners: bool = True, is_vector: bool = True) -> Self:
-        SoundMixer().add_locational_sound_effect(SoundInstance(
+        SoundMixer().add_locational_sound_effect(SoundRequest(
             random.choice([Sound.GRASS_1, Sound.GRASS_2]),
             id=self.id,
             time_restricted=500,

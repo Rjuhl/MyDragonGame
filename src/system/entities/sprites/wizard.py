@@ -6,7 +6,7 @@ from system.entities.types.entity_types import NPCState
 from system.entities.types.facing_types import Facing
 from system.entities.frame_incrementer import FrameIncrementer
 from system.render_obj import RenderObj
-from system.sound import SoundMixer, Sound, SoundInstance
+from system.sound import SoundMixer, Sound, SoundRequest
 from decorators import register_entity, generate_shadow
 from typing import Optional, List, Self
 
@@ -101,7 +101,7 @@ class Wizard(NPC):
         self.move(self.prev_location, is_vector=False)
 
     def move(self, movement: Coord, with_listeners: bool = True, is_vector: bool = True) -> Self:
-        SoundMixer().add_locational_sound_effect(SoundInstance(
+        SoundMixer().add_locational_sound_effect(SoundRequest(
             random.choice([Sound.GRASS_1, Sound.GRASS_2]),
             id=self.id,
             time_restricted=500,

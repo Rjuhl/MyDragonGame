@@ -51,14 +51,10 @@ class Node:
 
 class AstarJob:
     """
-       This class ensapsulates a single pathfindering job which is run through Astar.
+        Encapsulates a single pathfinding request executed via A*.
 
-       For efficancy gains this class does moves away from the coord class in favor
-       of basic types
-
-        This class works from the assumption that the start is in the center and
-        destination is in the center of tile. To use integers these values are
-        multiplied by 2 and the final path is only converted back at the end
+        For performance, this job uses integer tuples (x2 coords) internally rather than Coord.
+        It assumes the start/destination are centered in their tiles.
     """
 
 
@@ -88,7 +84,9 @@ class AstarJob:
             Find a path with:
             1) minimum steps
             2) among those, minimum turns (direction changes)
+
             Processes at most `cycles` pops per call.
+            Sets self.path to a dict (success), {} (failure), or keeps None (in progress).
         """
 
         EPS = 1e-6  # tiny bias; doesn't change distance meaningfully, just ordering
@@ -187,8 +185,7 @@ class AstarJob:
         x2, y2 = point2
         dx = abs(x1 - x2)
         dy = abs(y1 - y2)
-        return max(dx, dy)
-            
+        return max(dx, dy)         
     
                             
 class AstarManager:

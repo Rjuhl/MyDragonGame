@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, Callable, Optional, List
 if TYPE_CHECKING:
     from world.tile import Tile
 
+
 @singleton
 class PathFinder(AstarManager):
     """
@@ -54,7 +55,6 @@ class PathFinder(AstarManager):
     def _find_closest_unblocked_point(self, point: Coord, is_blocked: Callable[[Tile], bool]) -> Optional[Coord]:
         """
             Breadth-first search from `start` (in world coords) to find the closest unblocked tile.
-
             Uses 4-neighborhood movement (N/S/E/W) in world-tile space.
         """
 
