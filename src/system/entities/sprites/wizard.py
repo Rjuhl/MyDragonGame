@@ -6,14 +6,15 @@ from system.entities.types.entity_types import NPCState
 from system.entities.types.facing_types import Facing
 from system.entities.frame_incrementer import FrameIncrementer
 from system.render_obj import RenderObj
+from system.sound import SoundMixer, Sound, SoundInstance
 from decorators import register_entity, generate_shadow
-from typing import Optional, List
+from typing import Optional, List, Self
 
 
 @register_entity
-@generate_shadow(0.75, 0.75, fade=0.5)
+@generate_shadow(0.6, 0.6, fade=0.5)
 class Wizard(NPC):
-    def __init__(self, location: Coord, home: Optional[int]):
+    def __init__(self, location: Coord, home: Optional[int], id: Optional[int] = None):
         entity_args = [
             location, Coord.math(0.25, 0.25, 1), 10, Coord.math(-2, -12, 0)
         ]
@@ -24,7 +25,7 @@ class Wizard(NPC):
             0.5, 0, 1.25
         )
 
-        super().__init__(home, entity_args, character_args)
+        super().__init__(home, entity_args, character_args, id=id)
 
 
         self.rotated = False
@@ -78,8 +79,9 @@ class Wizard(NPC):
 
     def _pick_and_set_destination(self) -> None:
         if (home := self.manager.entities.get(self.spawner)):
-            dx, dy = 5 * (-1 * random.randint(0, 1)), 5 * (-1 * random.randint(0, 1))
-            self.set_destination(home.location + Coord.world(dx, dy))
+            axis, sign = random.randint(0, 1), 1 - (2 * random.randint(0, 1))
+            dx, dy = axis * sign * 5, (1 - axis) * sign * 5
+            self.set_destination(home.location + Coord.math(dx, dy, 0))
             self.set_success_criteria(None)
 
     def update(self, dt: float, onscreen: bool) -> None:
@@ -97,3 +99,32 @@ class Wizard(NPC):
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         super().handle_collision(self_velocity, other_entity, other_velocity, timestep)
         self.move(self.prev_location, is_vector=False)
+
+    def move(self, movement: Coord, with_listeners: bool = True, is_vector: bool = True) -> Self:
+        SoundMixer().add_locational_sound_effect(SoundInstance(
+            random.choice([Sound.GRASS_1, Sound.GRASS_2]),
+            id=self.id,
+            time_restricted=500,
+            get_location=lambda: self.location,
+        ))
+        return super().move(movement, with_listeners=with_listeners, is_vector=is_vector)
+    
+
+    def _load_wizard(self, data):
+        self.state = NPCState[data["state"]]
+
+    def jsonify(self):
+        data =  super().jsonify()
+        data["state"] = self.state.name
+        return data
+
+
+    def close_to_player(self):
+        return self.manager.player.location.euclidean(self.location) < 3
+
+    @classmethod
+    def load(cls, data):
+        wizard = Wizard(Coord.load(data["location"]), data["spawner_id"], id=data["id"])
+        wizard.load_npc(data)
+        wizard._load_wizard(data)
+        return wizard

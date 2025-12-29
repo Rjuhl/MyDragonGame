@@ -31,7 +31,7 @@ class Chunk:
         
         self.chunk_spawn_chances = ChunkSpawnerRegistry()
 
-        self.entities = [] # This may need reworked to a use a set so entities that move can be added and removed easily
+        self.entities = []
         self.generate()
     
     @classmethod

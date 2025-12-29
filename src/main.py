@@ -16,6 +16,7 @@ from system.global_vars import set_base_globals
 from system.sound import SoundMixer, Sound
 from utils.close_app import close_app
 from world.game import GameManager
+from system.id_generator import id_generator
 
 
 def runGame(logger):

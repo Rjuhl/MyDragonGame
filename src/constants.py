@@ -3,6 +3,7 @@ import math
 # Game system constants
 GAME_NAME = "My Dragon Game"
 SCREEN_INIT_SIZE = (1280, 960)
+SCREEN_INIT_SIZE = (1280 / 2, 960 / 2)
 FRAME_CAP = 60
 TEMP_MOVEMENT_FACTOR = 6 #* 4
 DISPLAY_SIZE = (640, 360)
@@ -46,7 +47,7 @@ SEED = 1
 # Spawn Weights
 BLANK_WEIGHT = 100_000
 FOX_BURROW_WIEGHT = 15
-OUTPOST_WEIGHT = 8
+OUTPOST_WEIGHT = 8 * 3
 
 # Sound Constants
 MAX_SOUND_DISTANCE = 40

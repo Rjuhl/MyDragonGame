@@ -11,6 +11,7 @@ from pathlib import Path
 from dataclasses import dataclass
 from typing import Callable, Optional, Dict, Tuple
 
+
 MUSIC_CHANNELS = 8
 MIXER_CHANNELS = 48
 FADE_OUT_TIME = 1200
@@ -84,6 +85,7 @@ class SoundMixer:
 
         self._load_sounds()
         self._load_music()
+        self.set_volume(self.current_volume)
 
 
     def _load_sounds(self):
@@ -194,7 +196,7 @@ class SoundMixer:
         if sound_location is not None and self.player is not None:
             direction = sound_location - self.player.location
             angle = self.base_sound_vect.get_angle_2D(direction)
-            return angle, direction.norm()
+            return angle, direction.norm() * (255 / MAX_SOUND_DISTANCE)
         return 0, 0
 
     def set_volume(self, volume: float) -> None:

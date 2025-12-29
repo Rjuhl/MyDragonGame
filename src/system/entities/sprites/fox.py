@@ -8,15 +8,15 @@ from system.entities.types.entity_types import FoxStates
 from system.entities.types.facing_types import Facing
 from utils.types.shade_levels import ShadeLevel
 from decorators import register_entity, generate_shadow
-from typing import Optional
+from typing import Optional, Self
 from system.entities.frame_incrementer import FrameIncrementer
+from system.sound import SoundMixer, Sound, SoundInstance
 
-from system.global_vars import game_globals
 
 @register_entity
 @generate_shadow(0.65, 0.5, fade=0.5)
 class Fox(NPC):
-    def __init__(self, location: Coord, home: Optional[int]):
+    def __init__(self, location: Coord, home: Optional[int], id: Optional[int] = None):
         entity_args = [
             location, Coord.math(0.25, 0.25, 0.25), 6, Coord.math(0, -5, 0)
         ]
@@ -63,6 +63,15 @@ class Fox(NPC):
         
         self.facing = self.head_to_destination(dt)
 
+    def move(self, movement: Coord, with_listeners: bool = True, is_vector: bool = True) -> Self:
+        SoundMixer().add_locational_sound_effect(SoundInstance(
+            random.choice([Sound.GRASS_1, Sound.GRASS_2]),
+            id=self.id,
+            time_restricted=500,
+            get_location=lambda: self.location,
+        ))
+        return super().move(movement, with_listeners=with_listeners, is_vector=is_vector)
+
     def _idle(self) -> None:
         if self.state != FoxStates.IDLE: return
         self.facing = Facing.Idle
@@ -90,8 +99,21 @@ class Fox(NPC):
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         super().handle_collision(self_velocity, other_entity, other_velocity, timestep)
         self.move(self.prev_location, is_vector=False)
+        
+    
+    def jsonify(self):
+        data = super().jsonify()
+        data["state"] = self.state.name
+        return data
+    
+
+    def _load_fox(self, data):
+        self.state = FoxStates[data["state"]]
 
     @classmethod
     def load(cls, data):
-        return Fox(Coord.load(data["location"]), data["spawner_id"])
+        fox = Fox(Coord.load(data["location"]), data["spawner_id"], id=data["id"])
+        fox.load_npc(data)
+        fox._load_fox(data)
+        return fox
     

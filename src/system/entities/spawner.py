@@ -18,8 +18,8 @@ class Spawner(Entity, EntityManagerSubscriber):
     SPAWN_PROBABLITY: float = 0
     CAN_SPAWN_SPAWNER: Callable[[Tile], None] = lambda _: False
 
-    def __init__(self, location, size, img_id, render_offset, spawner_args):
-        super().__init__(location, size, img_id, render_offset)
+    def __init__(self, location, size, img_id, render_offset, spawner_args, id=None):
+        super().__init__(location, size, img_id, render_offset, id=id)
         self.spawn_limit = spawner_args.spawn_limit
         self.recharge_time = spawner_args.recharge_time
         self.vicinity_to_player = spawner_args.vicinity_to_player

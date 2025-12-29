@@ -11,9 +11,12 @@ JobResult = Optional[Dict[Coord, Coord]]
 
 class NPC(Character):
     def __init__(
-        self, spawner: Optional[int], entity_args: List[Any], character_args: CharaterArgs
+        self, spawner: Optional[int], 
+        entity_args: List[Any], 
+        character_args: CharaterArgs, 
+        id: Optional[int] = None
     ):
-        super().__init__(entity_args, character_args)
+        super().__init__(entity_args, character_args, id=id)
 
         self.spawner = spawner
 
@@ -31,8 +34,33 @@ class NPC(Character):
     def jsonify(self):
         data = super().jsonify()
         data["spawner_id"] = self.spawner
+        data["job_id"] = self.job_id
+        data["path"] = self._jsonify_path(self.path)
+        data["destination"] = None if self.destination is None else self.destination.jsonify()
         return data
     
+    def load_npc(self, data):
+        self.spawner = data["spawner_id"]
+        self.job_id = data["job_id"]
+        self.path = self._load_path(data["path"])
+        self.destination = None if data["destination"] is None else Coord.load(data["destination"])
+
+    @staticmethod
+    def _jsonify_path(path: JobResult):
+        if path is None: return None
+        return [
+            [c1.jsonify(), c2.jsonify()]
+            for c1, c2 in path.items()
+        ]
+    
+    @staticmethod
+    def _load_path(path):
+        if path is None: return None
+        return {
+            Coord.load(c1): Coord.load(c2)
+            for (c1, c2) in path
+        }
+
     # ----------------------------------------------------- #
     # -------------        AI helpers        -------------- #
     # ----------------------------------------------------- #
