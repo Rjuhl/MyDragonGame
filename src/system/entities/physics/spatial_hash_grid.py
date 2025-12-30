@@ -1,34 +1,62 @@
-import math
 from collections import defaultdict
 from itertools import combinations
-from constants import SPATIAL_GRID_PARITION_SIZE
-from utils.coords import Coord
-from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
-from system.entities.sprites.player import Player
-from system.entities.sprites.tree import Tree
-from system.entities.entity import EntitySubscriber
-from system.entities.physics.collisions import center_hit_box
+from typing import Tuple, Self, Set, Dict
 
+from utils.coords import Coord
+from system.entities.sprites.tree import Tree
+from system.entities.sprites.player import Player
+from system.entities.entity import Entity, EntitySubscriber
+
+from constants import SPATIAL_GRID_PARITION_SIZE
+from system.entities.physics.collisions import center_hit_box
+from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
+
+
+# Grid key type: (cell_x, cell_y)
+GridKey = Tuple[int, int]
+
+# Dict containing possiable collisions between entities  
+CollisionPairs = Dict[str, Tuple[Entity]]
 
 class SpatialHashGrid(EntitySubscriber):
+    """
+        Spatial hash grid for broad-phase collision / proximity queries.
+
+        Entities are bucketed into square cells of size `partition` (world units).
+        For each entity we insert up to 4 keys corresponding to the corners of its hitbox.
+        This is a fast broad-phase filter; exact collision should be checked elsewhere.
+    """
+
     def __init__(self, partition=SPATIAL_GRID_PARITION_SIZE):
         self.partition = partition
+
+        # Map grid cell -> list of entities whose hitbox overlaps that cell.
         self.location_to_entity_map = defaultdict(list)
     
-    def add_entity(self, entity):
+    # -------------------------------------------------------------------------
+    # Entity lifecycle
+    # -------------------------------------------------------------------------
+
+    def add_entity(self, entity: Entity) -> Self:
+        """ Add entity to all relevant grid cells and subscribe to movement updates """
         entity.add_movement_subscriber(self)
         for location in self.convert_location_to_keys(entity.location, entity.size):
             self.location_to_entity_map[location].append(entity)
         return self
 
-    def remove_entity(self, entity):
+    def remove_entity(self, entity: Entity) -> Self:
+        """ Remove entity from all relevant grid cells """
         location_keys = self.convert_location_to_keys(entity.location, entity.size)
         for location in location_keys:
             self.location_to_entity_map[location].remove(entity)
         self.clean_grid_location(location_keys)
         return self
 
-    def receive_movement_event(self, entity):
+    def receive_movement_event(self, entity: Entity) -> None:
+        """
+        Movement subscriber hook. Updates which grid cells the entity occupies.
+        Only updates when the set of keys changes to avoid unnecessary churn.
+        """
         prev_location = self.convert_location_to_keys(entity.prev_location, entity.size)
         curr_location = self.convert_location_to_keys(entity.location, entity.size)
         if prev_location != curr_location:
@@ -38,31 +66,25 @@ class SpatialHashGrid(EntitySubscriber):
                 self.location_to_entity_map[location].append(entity)
             self.clean_grid_location(prev_location)
 
-    def clean_grid_location(self, location_keys):
-        # Clean up Grid to keep mem footprint small and looping over it quicker
-        for location in location_keys:
-            if len(self.location_to_entity_map[location]) == 0:
-                del self.location_to_entity_map[location]
-    
-    def convert_location_to_keys(self, location, size):
-        # Not that entity location represent centers we first need to get top_left to get box 
-        location, _ = center_hit_box(location, size)
-        return {
-            self.convert_to_key(location.x, location.y),
-            self.convert_to_key(location.x + size.x, location.y),
-            self.convert_to_key(location.x, location.y + size.y),
-            self.convert_to_key(location.x + size.x, location.y + size.y),
-        }
+    # -------------------------------------------------------------------------
+    # Broad-phase collision pairing
+    # -------------------------------------------------------------------------
 
+    def get_possible_onscreen_collisions(self, min_x: int, max_x: int, min_y: int, max_y: int) -> CollisionPairs:
+        """
+        Return a dict of unique entity pairs that *might* collide on screen
 
-    def get_possible_onscreen_collisions(self, min_x, max_x, min_y, max_y):
+        We iterate over cells in and around the viewport and create all pairs
+        within each cell. Dedup is done via generate_unique_entity_pair_string()
+        """
         unique_collision_pairs = {}
         for x in range(min_x - self.partition, max_x + self.partition, self.partition):
             for y in range(min_y - self.partition, max_y + self.partition, self.partition):
                 self.add_pairs_from_grid(x, y, unique_collision_pairs)
         return unique_collision_pairs
-
-    def add_pairs_from_grid(self, x, y, unique_collision_pairs):
+    
+    def add_pairs_from_grid(self, x: int, y: int, unique_collision_pairs: CollisionPairs) -> None:
+        """ Add all unique pairs from the single grid cell containing (x, y) """
         key = self.convert_to_key(x, y)
         entities = self.location_to_entity_map[key]
         if len(entities) == 0: del self.location_to_entity_map[key]
@@ -70,12 +92,40 @@ class SpatialHashGrid(EntitySubscriber):
             key = generate_unique_entity_pair_string(e1, e2)
             unique_collision_pairs[key] = [e1, e2]
 
-    def convert_to_key(self, x, y):
-        return tuple([x // self.partition, y // self.partition])
-    
-    def get_entities_in_range(self, x, y, dx, dy, exception=Player, strict=True, remove_entities=False):
-        """ Getting all entities in range (x, y) to (x + dx, y - dy) """
+    # -------------------------------------------------------------------------
+    # Range query
+    # -------------------------------------------------------------------------
+
+    def get_entities_in_range(
+        self, 
+        x: int, y: int, 
+        dx: int, dy: int, 
+        exception: type = Player, 
+        strict: bool = True, 
+        remove_entities: bool = False
+    ) -> Set[Entity]:
+        """
+            Return entities in the axis-aligned query rectangle.
+
+            Rectangle is defined as:
+                left   = x
+                right  = x + dx
+                top    = y
+                bottom = y - dy
+
+            Parameters
+            ----------
+            exception:
+                Entities of this type are excluded from results (defaults to Player).
+            strict:
+                If True, entities are filtered by their *center location* being within the rectangle,
+                rather than by whether their occupied grid cells overlap it.
+            remove_entities:
+                If True, all returned entities are removed from the grid.
+        """
         entities = set()
+
+        # Iterate candidate cells overlapping the rectangle, padded by 1 cell.
         for i in range(-self.partition, dx + self.partition, self.partition):
             for j in range(-self.partition, dy + self.partition, self.partition):
                 keys = self.convert_location_to_keys(
@@ -104,4 +154,28 @@ class SpatialHashGrid(EntitySubscriber):
             for entity in entities: self.remove_entity(entity)
 
         return entities
+    
+    # -------------------------------------------------------------------------
+    # Keying helpers
+    # -------------------------------------------------------------------------
+
+    def clean_grid_location(self, location_keys: Set[GridKey]) -> None:
+        """ Remove any empty cell lists to keep memory footprint small """
+        for location in location_keys:
+            if len(self.location_to_entity_map[location]) == 0:
+                del self.location_to_entity_map[location]
+    
+    def convert_location_to_keys(self, location: Coord, size: Coord) -> Set[GridKey]:
+        """ Convert an entity's center location + size into the set of occupied grid cell keys """
+        location, _ = center_hit_box(location, size)
+        return {
+            self.convert_to_key(location.x, location.y),
+            self.convert_to_key(location.x + size.x, location.y),
+            self.convert_to_key(location.x, location.y + size.y),
+            self.convert_to_key(location.x + size.x, location.y + size.y),
+        }
+
+    def convert_to_key(self, x: float, y: float) -> GridKey:
+        """ Convert world coordinates to grid cell coordinate """
+        return tuple([x // self.partition, y // self.partition])
     

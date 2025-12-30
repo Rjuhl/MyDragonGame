@@ -1,15 +1,31 @@
 import math
 import pygame
 import numpy as np
-import pygame.gfxdraw as gfx
 from dataclasses import dataclass
 from typing import Optional, List, Tuple
+
 from utils.coords import Coord
 from utils.types.shade_levels import ShadeLevel
 from system.render_obj import RenderObj
 
-@dataclass
+
+# Move shadow lower to make it clear it is below caster
+SHADOW_CLAMP = 0.5
+
+
+# -----------------------------------------------------------------------------
+# Geometry data
+# -----------------------------------------------------------------------------
+
+@dataclass(frozen=True)
 class EllipseData:
+    """
+        Defines the (world-space) ellipse used as the "shadow footprint" for a caster.
+
+        center: world-space center of ellipse (x, y, z)
+        rx, ry: radii in world units
+        rotation: rotation in radians (CCW in XY plane)
+    """
     center: Coord
     rx: float
     ry: float
@@ -17,7 +33,13 @@ class EllipseData:
 
 
 class Triangle:
-    """ Represents a plane in 3D space bounded by a triangle """
+    """
+        Represents a plane in 3D space bounded by a triangle.
+
+        This is used to:
+        - test whether an (x,y) lies inside the triangle's 2D projection
+        - compute the corresponding z on the plane for that (x,y)
+    """
     def __init__(self, points = List[Coord]):
         if len(points) != 3: raise ValueError("Triangle can only be initlized with 3 points")
 
@@ -34,7 +56,12 @@ class Triangle:
         self.min_z = min(self.p0.z, self.p1.z, self.p2.z)
     
     def within_2d_proj(self, x: float, y: float, eps: float = 1e-6) -> bool:
-        """ Check if point lies with proj of triangle using barycentric coords """
+        """
+            Check if (x, y) lies within the triangle's projection onto XY.
+
+            Uses barycentric coordinates. Works regardless of triangle orientation in 3D,
+            as long as its projection is non-degenerate.
+        """
         A, B, C = self.p0, self.p1, self.p2
         v0 = Coord.math(C.x - A.x, C.y - A.y, 0)   
         v1 = Coord.math(B.x - A.x, B.y - A.y, 0)  
@@ -56,21 +83,27 @@ class Triangle:
         return (u >= -eps) and (v >= -eps) and (u + v <= 1.0 + eps)
 
     def z_at(self,x: float, y: float) -> float:
-        """ Use the normal/d to find the z value for an xy on the plane """
-        # Solve n.x*x + n.y*y + n.z*z + d = 0  =>  z = -(d + n.x*x + n.y*y)/n.z
+        """ Compute z on the plane at XY = (x, y). """
         if abs(self.n.z) < 1e-8:
             raise ValueError("Normal z must be greater than 0")
         return (-(self.d + self.n.x*x + self.n.y*y) / self.n.z)
 
     def project_to_world(self, x: float, y: float) -> Coord:
-        """ Generate a 3D coord from using an xy and the receiver planes """
+        """ Lift a 2D XY point to a 3D world point that lies on this triangle's plane. """
         z = self.z_at(x, y)
         return Coord.math(x, y, z)
 
 
 
 class Receiver:
-    """ A polygon to intersect with shadows and faces to find heights from 2D intersections """
+    """
+        A polygon that can receive shadows.
+
+        A receiver has:
+        - one or more triangular faces (for computing height z at a given XY)
+        - a 2D polygon boundary in world XY (must be CCW for clipping)
+        - a shade level used later by rendering
+    """
     def __init__(self, faces: List[Triangle], polygon: List[Coord], shade_level: ShadeLevel, id: int | None = None):
         self.faces = faces
         self.polygon = self._ensure_ccw(polygon)  
@@ -81,25 +114,19 @@ class Receiver:
         self.id = id
 
     def z_at(self, x: float, y: float) -> float:
+        """ Find the z-height of this receiver at (x, y) by testing which face contains it. """
         for face in self.faces:
             if face.within_2d_proj(x, y): return face.z_at(x, y)
         return 0
 
     def project_to_world(self, x: float, y: float) -> Coord:
+        """Lift (x, y) onto this receiver surface."""
         z = self.z_at(x, y)
         return Coord.math(x, y, z)
-    
-    @staticmethod
-    def _signed_area_ccw(poly: List[Coord]) -> float:
-        a = 0.0
-        for i in range(len(poly)):
-            x1, y1 = poly[i].x, poly[i].y
-            x2, y2 = poly[(i+1) % len(poly)].x, poly[(i+1) % len(poly)].y
-            a += x1 * y2 - x2 * y1
-        return 0.5 * a
 
     @staticmethod
     def _ensure_ccw(poly: List[Coord]) -> List[Coord]:
+        """ Ensure polygon winding is CCW (required for Sutherland–Hodgman clipping). """
         area = 0.0
         for i in range(len(poly)):
             x1, y1 = poly[i].x, poly[i].y
@@ -108,24 +135,44 @@ class Receiver:
         return poly if area > 0 else list(reversed(poly))
 
 
+# -----------------------------------------------------------------------------
+# Shadow builder
+# -----------------------------------------------------------------------------
+
 class Shadows:
-    """ Builds a 3D world representation to cast noon shadows onto reciever surfaces"""
+    """
+        Builds a lightweight 3D world representation and casts "noon" shadows.
+
+        High-level approach:
+        1) Approximate the caster's shadow footprint as an ellipse polygon in XY.
+        2) For each receiver (sorted high -> low):
+        - intersect ellipse polygon with receiver polygon = base shadow region
+        - subtract holes created by higher receivers that overlap this region
+        - project resulting polygons to screen space using receiver height function
+        - rasterize into a small per-shadow surface and return as RenderObj
+    """
 
     def __init__(self, ellipse_samples: int = 16):
         self.receivers = []
         self.ellipse_samples = ellipse_samples
 
     def add_receiver(self, receiver: Receiver) -> None:
-        """ Adds a triangle or horizonatal plane to receivers """
+        """ Register a surface that can receive shadows. """
         self.receivers.append(receiver)
 
     def reset_receivers(self) -> None:
         self.receivers = []
 
     def update(self) -> None:
+        """ Maintain high-to-low ordering for occlusion logic. """
         self.receivers.sort(key=lambda r: r.ref_z, reverse=True)
 
     def get_shadow_objs(self, ellipse: EllipseData) -> List[RenderObj]:
+        """
+            Build RenderObj shadow sprites for the given ellipse caster.
+            Returns a list of RenderObj, one per receiver that receives shadow.
+        """
+
         render_obs: List[RenderObj] = []
 
         higher = []
@@ -166,7 +213,7 @@ class Shadows:
             # Construct shadow poly in view coords that hits reciever
             for point in region_in_shadow:
                 point_3d = receiver.project_to_world(point.x, point.y)
-                point_3d.z = min(point_3d.z, max(ellipse.center.z - 0.5, 1)) # The 0.5 numbner migt need tweeking in the future
+                point_3d.z = min(point_3d.z, max(ellipse.center.z - SHADOW_CLAMP, 1)) # Keeps shadows from being above player
                 px, py = point_3d.as_view_coord()
                 base_screen.append((px, py))
                 min_x, max_x, min_y, max_y = min(min_x, px), max(max_x, px), min(min_y, py), max(max_y, py)
@@ -202,7 +249,7 @@ class Shadows:
             shadow_surf = pygame.Surface((s_w, s_h), pygame.SRCALPHA)
             pygame.draw.polygon(shadow_surf, (0, 0, 0, alpha), self._get_local_poly(offset_x, offset_y, base_screen))
 
-            # Single occluder mask to punch holes 
+            # Punch holes by drawing them into a mask and subtracting
             if holes_screen:
                 occ = pygame.Surface((s_w, s_h), pygame.SRCALPHA)
                 for hole in holes_screen:
@@ -211,6 +258,7 @@ class Shadows:
                 occ = self._blur_surface(occ, passes=1)
                 shadow_surf.blit(occ, (0, 0), special_flags=pygame.BLEND_RGBA_SUB)
 
+            # Place the shadow sprite at the center of its bounding box
             x, y = min_x + (max_x - min_x) / 2, min_y + (max_y - min_y) / 2
             render_obs.append(
                 RenderObj(
@@ -225,14 +273,25 @@ class Shadows:
         return render_obs
     
 
+    # -------------------------------------------------------------------------
+    # Helpers
+    # -------------------------------------------------------------------------
+    
+
     @staticmethod
     def _get_local_poly(offset_x: int, offset_y: int, poly: List[Coord]) -> List[Coord]:
+        """Convert screen-space points into local surface pixel coordinates."""
         return [(int(round(x - offset_x)), int(round(y - offset_y))) for (x, y) in poly]
 
     @staticmethod
     def get_alpha(height: float) -> int:
+        """Map a height gap to alpha (0..255)."""
         t = max(0.0, min(1.0, height / 8.0))
         return int(120 * (1.0 - t) + 50 * t)
+    
+    # -------------------------------------------------------------------------
+    #  Polygon clipping (Sutherland–Hodgman)
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def side(p: Coord, a: Coord, b: Coord) -> float:
@@ -281,6 +340,9 @@ class Shadows:
 
         return out
 
+    # -------------------------------------------------------------------------
+    # Ellipse sampling
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def generate_ellipse_poly(
@@ -317,6 +379,10 @@ class Shadows:
             pts.append(Coord.math(x, y, height))
         
         return pts
+    
+    # -------------------------------------------------------------------------
+    # Misc geometry
+    # -------------------------------------------------------------------------
 
     @staticmethod
     def poly_centroid(poly: List[Coord]) -> Optional[Coord]:

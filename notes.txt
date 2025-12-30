@@ -4,7 +4,7 @@ MAIN TASKS LEFT
 3. Combat
 4. Fox + Knight (mostly done)
 5. Pages (basically done)
-6. Executable + cleanup
+6. Executable + cleanup (started)
 7. Improved tile rendering (lump tiles together)
 8. Player
 

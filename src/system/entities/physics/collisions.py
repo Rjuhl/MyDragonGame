@@ -27,8 +27,6 @@ def check_collision(
     bx1, by1, bz1 = e2_location.x, e2_location.y, e2_location.z
     bx2, by2, bz2 = bx1 + e2_size.x, by1 + e2_size.y, bz1 + e2_size.z
 
-    
-
     # Ensure correct ordering in case size components are negative
     ax1, ax2 = (ax1, ax2) if ax1 <= ax2 else (ax2, ax1)
     ay1, ay2 = (ay1, ay2) if ay1 <= ay2 else (ay2, ay1)
@@ -48,7 +46,6 @@ def center_hit_box(location, size):
     top_left = location.copy()
     top_left.x = top_left.x - size.x / 2
     top_left.y = top_left.y - size.y / 2
-    # top_left.x -= size.x
     return top_left, size
 
 def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Dict[Entity, float]:
