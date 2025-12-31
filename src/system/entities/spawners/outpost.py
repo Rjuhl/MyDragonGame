@@ -27,6 +27,9 @@ class Outpost(Spawner):
         spawner_args = SpawnerArgs(1, 30 * 1000, 160) # Change first arg to start spawning (prolly to ~6)
         super().__init__(tile.location, Coord.math(2.5,  2.5, 6), self.IMG_ID, render_offset, spawner_args, id=id)
 
+    # Need to workin shade level and art (may need to split it up and remove shadow and add shadow decorator instead)
+    # def shade_level(self):
+    #     return ShadeLevel.CANOPY_END
     
     def create_entity(self):
         return Wizard(self.location + Coord.math(2, 0, 0), home=self.id)

@@ -1,19 +1,31 @@
-import numpy as np
 from typing import List, Optional, Callable, Dict
-from system.game_clock import game_clock
-from system.entities.physics.collisions import check_collision, resolve_collisions
-from system.entities.physics.spatial_hash_grid import SpatialHashGrid
-from system.screen import Screen
-from system.entities.entity import Entity
-from system.render_obj import RenderObj
+
 from world.chunk import Chunk
 from utils.coords import Coord
-from utils.types.shade_levels import ShadeLevel
+from system.screen import Screen
+from system.render_obj import RenderObj
+from system.entities.entity import Entity
 from system.entities.sprites.player import Player
-from system.entities.physics.shadows import EllipseData, Receiver, Shadows
-from constants import TILE_SIZE, DISPLAY_SIZE, WORLD_HEIGHT
+from system.entities.physics.shadows import Shadows
+from system.entities.physics.spatial_hash_grid import SpatialHashGrid
+
+from system.game_clock import game_clock
+from system.entities.physics.collisions import check_collision, resolve_collisions
+
 
 class EntityManager:
+    """
+        Owns and updates all entities in the world.
+
+        Responsibilities
+        - Stores entities by id
+        - Updates entities and collects "on-screen" entities for rendering
+        - Runs broad-phase + narrow-phase collision resolution via SpatialHashGrid + resolve_collisions
+        - Manages receiver surfaces and builds shadow RenderObjs
+        - Supports safe add/remove during update via queueing
+        - Notifies subscribers when an entity is killed/removed
+    """
+
     def __init__(self, screen: Screen):
         self.screen = screen
         self.shadows = Shadows()
@@ -25,22 +37,45 @@ class EntityManager:
         self.entities_on_screen = []
         self.queued_additions = set()
         self.queued_removals = set()
+
+    # -------------------------------------------------------------------------
+    # Basic configuration
+    # -------------------------------------------------------------------------
     
     def set_player(self, player: Optional[Player]) -> None:
+        """ Bind the player entity (may be None during loading/screens) """
         self.player = player
 
+    # -------------------------------------------------------------------------
+    # Safe add/remove API (queueing)
+    # -------------------------------------------------------------------------
+
     def queue_entity_addition(self, entity: Entity) -> None:
+        """ Request that an entity be added at the end of the current update tick """
         self.queued_additions.add(entity)
 
     def queue_entity_removal(self, entity: Entity) -> None:
+        """ Request that an entity be removed at the end of the current update tick """
         self.queued_removals.add(entity)
 
+    # -------------------------------------------------------------------------
+    # Immediate add/remove (called by the queue flush)
+    # -------------------------------------------------------------------------
+
     def add_entity(self, entity: Entity) -> None:
+        """
+        Add an entity immediately.
+        NOTE: Prefer queue_entity_addition() during update loops.
+        """
         entity.bind_to_manager(self)
         self.entities[entity.id] = entity
         if entity.solid: self.spatial_hash_grid.add_entity(entity)
 
     def remove_entity(self, entity: Entity) -> None:
+        """
+        Remove an entity immediately and notify subscribers.
+        NOTE: Prefer queue_entity_removal() during update loops.
+        """
         # kill entity
         del self.entities[entity.id]
         if entity.solid: self.spatial_hash_grid.remove_entity(entity)
@@ -49,20 +84,36 @@ class EntityManager:
         for subscriber in self.kill_listener_subscribers:
             subscriber.recieve_death_event(entity)
 
-
     def add_kill_listener_subscriber(self, subscriber):
         self.kill_listener_subscribers.append(subscriber)
 
-    # Updates all entities and returns a list of them to render
-    def update_entities(self) -> None :
+    # -------------------------------------------------------------------------
+    # Main update loop
+    # -------------------------------------------------------------------------
+
+    def update_entities(self) -> None:
+        """
+        Update all entities for this tick.
+
+        Steps
+        - Compute what is on-screen (for entity update optimizations and render list)
+        - Rebuild shadow receivers (screen + any entity-provided receivers)
+        - Resolve collisions among on-screen candidates (broad-phase from grid)
+        - Apply any queued add/remove operations
+        """
+
         dt = game_clock.dt
         screen_location, screen_size = self.screen.get_hitbox()
 
         self.entities_on_screen = []
         self.shadows.reset_receivers()
 
+        # Always include a ground plane to recieve shadows
         self.shadows.add_receiver(self.screen.get_screen_reciever())
+
+        # Update entities and collect render/collision/shadow metadata.
         for entity in self.entities.values():
+            # The +z padding of 1 prevents “flat” entities from missing collision
             onscreen = check_collision(entity.location, entity.size + Coord.math(0, 0, 1), screen_location, screen_size)
             entity.update(dt, onscreen)
             if onscreen: 
@@ -74,14 +125,23 @@ class EntityManager:
         resolve_collisions(self.spatial_hash_grid.get_possible_onscreen_collisions(*self.screen.get_bounding_box()))
         
         # Handle entity adds/removes that initaited in the update loop
-
         for entity in self.queued_removals: self.remove_entity(entity)
         for entity in self.queued_additions: self.add_entity(entity)
         
-        self.queued_removals = set()
-        self.queued_additions = set()
+        self.queued_removals.clear()
+        self.queued_additions.clear()
+
+    # -------------------------------------------------------------------------
+    # Rendering
+    # -------------------------------------------------------------------------
 
     def get_entity_render_objs(self, player: Player) -> List[RenderObj]:
+        """
+            Collect RenderObjs for everything currently on-screen:
+            - entity render objs
+            - entity-provided shadow sprites (if any)
+            - computed projected shadows from the Shadows system (ellipse caster)
+        """
         render_objs = []
         for entity in self.entities_on_screen:
             render_objs.extend(entity.get_render_objs())
@@ -93,24 +153,37 @@ class EntityManager:
         return render_objs
     
     def get_and_removed_chunk_entities(self, chunk: Chunk) -> set[Entity]:
+        """ Return entities in a chunk region AND remove them from both """
         x, y, _ = chunk.location.location
         removed_entities = self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE, remove_entities=True)
         for entity in removed_entities: del self.entities[entity.id]
         return removed_entities
 
     def get_chunk_entities(self, chunk: Chunk) -> set[Entity]:
+        """ Return entities in a chunk region (does not remove them) """
         x, y, _ = chunk.location.location
         return self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE)
     
-    def get_entities_in_range(self, base_location: Coord, radius: int, filter: Callable[[Entity], bool] = lambda _: True) -> set[Entity]:
+    def get_entities_in_range(
+        self, 
+        base_location: Coord, 
+        radius: int, 
+        filter: Callable[[Entity], bool] = lambda _: True
+        ) -> set[Entity]:
+        """ Return entities within a radius of a world location """
+
         x, y, _ = base_location.copy().update_as_world_coord(-radius, radius).location
         entities = self.spatial_hash_grid.get_entities_in_range(x, y, radius * 2, radius * 2, strict=False)
         return {
-            entity for entity in entities if filter(entity) and base_location.euclidean_2D(entity.location)
+            entity for entity in entities if filter(entity) and base_location.euclidean_2D(entity.location) <= radius
         }
 
 
 class EntityManagerSubscriber:
+    """
+        Interface/protocol for objects that want to be notified when entities are removed.
+    """
+
     def recieve_death_event(entity: Entity):
         pass
 

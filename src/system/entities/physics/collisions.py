@@ -1,10 +1,12 @@
 from enum import Enum
+from typing import List, Dict, Tuple
+
+from utils.coords import Coord
 from system.entities.entity import Entity
-from utils.generate_unique_entity_pair_string import generate_unique_entity_pair_string
-from system.entities.types.entity_types import EntityTypes
-from typing import List, Dict
-from constants import MAX_COLLISION_PASSES
+
 from system.game_clock import game_clock
+from constants import MAX_COLLISION_PASSES
+
 
 class CollisionTypes(Enum):
     STATIC = 1
@@ -17,13 +19,27 @@ def check_collision(
         e1_location: float, e1_size: float, 
         e2_location: float, e2_size: float
     ) -> bool:
-    """AABB overlap test in 3D. """
+    """
+        Axis-Aligned Bounding Box (AABB) overlap test in 3D.
 
-    # Self box min/max on each axis
+        Parameters
+        ----------
+        loc1, loc2:
+            Expected to have `.x`, `.y`, `.z` (your Coord type).
+            In this module, these are top-left/front-ish corners (see center_hit_box()).
+        size1, size2:
+            Expected to have `.x`, `.y`, `.z` representing box dimensions.
+
+        Returns
+        -------
+        True if the boxes overlap with *strict* inequality (touching faces is not collision).
+    """
+
+    # Box 1 bounds
     ax1, ay1, az1 = e1_location.x, e1_location.y, e1_location.z
     ax2, ay2, az2 = ax1 + e1_size.x, ay1 + e1_size.y, az1 + e1_size.z
 
-    # Other box min/max
+    # Box 1 bounds
     bx1, by1, bz1 = e2_location.x, e2_location.y, e2_location.z
     bx2, by2, bz2 = bx1 + e2_size.x, by1 + e2_size.y, bz1 + e2_size.z
 
@@ -42,13 +58,18 @@ def check_collision(
 
     return overlap_x and overlap_y and overlap_z
 
-def center_hit_box(location, size):
+def center_hit_box(location: Coord, size: Coord) -> Tuple[Coord, Coord]:
+    """ Convert an entity center position into a top-left corner """
     top_left = location.copy()
     top_left.x = top_left.x - size.x / 2
     top_left.y = top_left.y - size.y / 2
     return top_left, size
 
 def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Dict[Entity, float]:
+    """
+    Cache each entity's velocity once per resolve call.
+    Velocity is computed from current - previous location.
+    """
     velocities = {}
     for e1, e2 in unique_collision_pairs.values():
         if e1 not in velocities:
@@ -60,6 +81,15 @@ def get_entity_velocities(unique_collision_pairs: Dict[str, List[Entity]]) -> Di
 
 
 def resolve_collisions(unique_collision_pairs: Dict[str, List[Entity]]) -> None:
+    """
+        Resolve collisions between entity pairs.
+
+        Algorithm:
+        - Split the frame dt into MAX_COLLISION_PASSES substeps (timestep).
+        - For each pass, test all pairs.
+        - If any collisions occur, call handle_collision() on both entities.
+        - If a pass finds no collisions, stop early (stable).
+    """
     timestep = game_clock.dt / MAX_COLLISION_PASSES
     velocities = get_entity_velocities(unique_collision_pairs)
     for _ in range(MAX_COLLISION_PASSES):
