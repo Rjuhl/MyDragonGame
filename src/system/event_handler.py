@@ -1,14 +1,29 @@
-import pygame, sys
-from pygame.locals import *
-from system.global_vars import game_globals
-from utils.close_app import close_app
+import pygame
+from pygame.locals import K_c, K_h, K_z
+
 from decorators import singleton
+from utils.close_app import close_app
+from system.global_vars import game_globals
 
 
 @singleton
 class EventHandler:
-    def __init__(self):
+    """
+        Legacy event hub.
 
+        Responsibilities (legacy split):
+        - store_events(): pulls the pygame event queue once per frame and caches it
+        - events(): returns the cached list so other systems can iterate it safely
+        - event_tick(): applies global debug hotkeys and handles quit requests
+
+        Notes
+        - InputHandler is the authoritative source for high-level input state
+        (quit_requested, was_key_pressed, etc.).
+        - Many systems still iterate EventHandler().events() directly; this class
+        exists to keep that pattern working.
+    """
+
+    def __init__(self):
         from system.input_handler import input_handler
         self.stored_events = []
         self.input_handler = input_handler

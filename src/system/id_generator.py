@@ -1,10 +1,28 @@
-from decorators import singleton
-from pathlib import Path
 from typing import List
+from pathlib import Path
+
+from decorators import singleton
 
 @singleton
 class IdGenerator:
+    """
+        Centralized incremental ID generator for game entities.
+
+        This class provides monotonically increasing integer IDs that are:
+        - unique within a single game/save
+        - persistent across game loads (via disk storage)
+
+        IDs are stored per game in:
+            data/games/<game_name>/idstart
+
+        Design notes
+        - Implemented as a singleton so all systems share one ID source.
+        - IDs are simple integers; no reuse or compaction is attempted.
+        - `load_game()` must be called when switching or loading a save.
+    """
+
     PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
+
     def __init__(self):
         self.current_id = 0
         self.current_game = None

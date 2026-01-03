@@ -2,6 +2,13 @@ from decorators import singleton
 
 @singleton
 class Globals:
+    """
+    Dynamic global state container.
+
+    This class acts as a lightweight, attribute-based key–value store for
+    game-wide flags and debug data (e.g. toggles, diagnostics, runtime state).
+    """
+
     def __init__(self):
         self._data = {}
 
