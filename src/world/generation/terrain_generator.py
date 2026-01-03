@@ -124,7 +124,7 @@ class TerrainGenerator:
         - Perlin noise (controls local variation)
         - A cosine "latitude" heat map (controls global north/south climate)
         """
-        noise_value = noise.pnoise2(x / 200, y / 200, **asdict(self.boime_noise))
+        noise_value = noise.pnoise2(x / 200, y / 200, **asdict(self.biome_noise))
         return noise_value + 0.4 * math.cos(y / 200)
     
 
@@ -195,7 +195,7 @@ class TerrainGenerator:
         )
 
         return Tile(
-            self._choose_weighted_id(weights),
+            self._get_id_from_weight(weights),
             Coord.world(x, y),
             is_chunk_border=onborder,
             is_water=True,

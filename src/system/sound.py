@@ -346,7 +346,7 @@ class SoundMixer:
         if sound_location is not None and self.player is not None:
             direction = sound_location - self.player.location
             angle = self.base_sound_vect.get_angle_2D(direction)
-            return angle, direction.norm() * (255 / MAX_SOUND_DISTANCE)
+            return angle, min(255, direction.norm() * (255 / MAX_SOUND_DISTANCE))
         return 0, 0
     
     # -------------------------------------------------------------------------

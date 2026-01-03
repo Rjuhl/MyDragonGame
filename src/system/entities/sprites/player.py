@@ -66,7 +66,7 @@ class Player(Character):
             0.5, 0.5, 0
         )
     
-    # TODO: Better collision handling (ie special handling for static opbjects and so on)
+    # TODO: Better collision handling (ie special handling for static objects and so on)
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         self.move(self_velocity * -timestep)
 

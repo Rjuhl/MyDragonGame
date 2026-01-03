@@ -10,6 +10,21 @@ from system.event_handler import EventHandler
 
 @singleton
 class InputHandler:
+    """
+        Centralized per-frame input manager.
+
+        Consumes the pygame event queue once per frame and exposes:
+        - edge-triggered input (pressed/released this frame)
+        - continuous input (keys/buttons currently held)
+
+        Tracks keyboard, mouse, scroll, text input, and quit events.
+        Supports action-to-key mappings so gameplay code can query actions
+        instead of raw keycodes.
+
+        Optionally scales mouse coordinates when bound to a screen/display pair.
+        Keybindings are persisted to disk as JSON.
+    """
+
     PATH = Path(__file__).parent.parent.parent / 'data' / 'keybinds'
 
     def __init__(self):
@@ -42,9 +57,9 @@ class InputHandler:
         self._load_config()
         
 
-    # ============================================================
+    # -------------------------------------------------------------------------
     # Core update
-    # ============================================================
+    # -------------------------------------------------------------------------
     def update(self):
         """
         Call once per frame/tick.
@@ -110,9 +125,10 @@ class InputHandler:
             scaled_rel_y = rel_y * dh / sh
             self.mouse_rel = (scaled_rel_x, scaled_rel_y)
 
-    # ============================================================
+    # -------------------------------------------------------------------------
     # Low-level convenience methods (keyboard)
-    # ============================================================
+    # -------------------------------------------------------------------------
+
     def is_key_held(self, key) -> bool:
         """True as long as the key is held down."""
         return bool(self._pressed and self._pressed[key])
@@ -125,9 +141,10 @@ class InputHandler:
         """True only on the frame the key was released."""
         return key in self.keys_up
 
-    # ============================================================
+    # -------------------------------------------------------------------------
     # Low-level convenience methods (mouse)
-    # ============================================================
+    # -------------------------------------------------------------------------
+
     def get_mouse_pos(self):
         self._check_binding()
         return self.mouse_pos
@@ -153,9 +170,10 @@ class InputHandler:
                 "Must bind handler to screen + display before using mouse pos"
             )
 
-    # ============================================================
+    # -------------------------------------------------------------------------
     # Text input
-    # ============================================================
+    # -------------------------------------------------------------------------
+
     def get_text_input(self) -> str:
         """All text characters typed this frame (for UI text fields)."""
         return self.text_input
@@ -208,22 +226,23 @@ class InputHandler:
         return ""
 
 
-    # ============================================================
+    # -------------------------------------------------------------------------
     # Action mapping
-    # ============================================================
+    # -------------------------------------------------------------------------
+
     def _set_default_bindings(self):
         """
         Set up default action bindings.
         You can tweak/remove these or add your own.
         """
         self.action_bindings = {
-            "move_left":  [pygame.K_LEFT, pygame.K_a],
+            "move_left": [pygame.K_LEFT, pygame.K_a],
             "move_right": [pygame.K_RIGHT, pygame.K_d],
-            "move_up":    [pygame.K_UP, pygame.K_w],
-            "move_down":  [pygame.K_DOWN, pygame.K_s],
-            "fly_up":     [pygame.K_SPACE],
-            "fly_down":   [pygame.K_LSHIFT, pygame.K_RSHIFT],
-            "pause":      [pygame.K_ESCAPE],
+            "move_up": [pygame.K_UP, pygame.K_w],
+            "move_down": [pygame.K_DOWN, pygame.K_s],
+            "fly_up": [pygame.K_SPACE],
+            "fly_down": [pygame.K_LSHIFT, pygame.K_RSHIFT],
+            "pause": [pygame.K_ESCAPE],
         }
 
     # -------- Action queries --------
@@ -299,18 +318,18 @@ class InputHandler:
 
     # -------- Loading and Saving ---------
     def save(self) -> None:
-        """Save player configs to a file."""
+        """ Save player configs to a file """
         self.PATH.write_text(json.dumps(self.action_bindings, ensure_ascii=False, indent=2), encoding='utf-8')
     
     def _load_config(self) -> Dict[str, List[int]]:
-        """Load player keybinds later."""
+        """ Load player keybinds later """
         if self.PATH.is_file():
             with self.PATH.open("r", encoding="utf-8") as f:
                 self.action_bindings =  json.load(f)
         else: self._set_default_bindings()
 
     def bind_displays(self, screen: pygame.Surface, dispay: pygame.Surface) -> None:
-        """Bind screen and display so that we can translate mouse pos correctly."""
+        """ Bind screen and display so that we can translate mouse pos correctly """
         self.screen = screen
         self.display = dispay
         w, h = self.screen.get_size()
