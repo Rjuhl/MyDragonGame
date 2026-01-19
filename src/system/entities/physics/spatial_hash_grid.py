@@ -18,6 +18,7 @@ GridKey = Tuple[int, int]
 # Dict containing possiable collisions between entities  
 CollisionPairs = Dict[str, Tuple[Entity]]
 
+
 class SpatialHashGrid(EntitySubscriber):
     """
         Spatial hash grid for broad-phase collision / proximity queries.

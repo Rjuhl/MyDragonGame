@@ -1,20 +1,28 @@
 MAIN TASKS LEFT 
 1. Sound system (mostly done)
 2. AI for NPCs (mostly done)
-3. Combat
+3. Combat (started)
 4. Fox + Knight (mostly done)
 5. Pages (basically done)
 6. Executable + cleanup (started)
-7. Improved tile rendering (lump tiles together)
-8. Player
+7. Player
+
+OPTIMIZATIONS
+1. Improved tile rendering (lump tiles together)
+2. Astart -> Jump Point Search
+3. Load chunks using multiprocessing/threads
 
 KNOWN BUGS
-1. There is bug when loading entity data in chunks (often comes after a crash or reloading a chunk)
-2. Current Astar does not take into account size of entity
-3. Deleting world that was loaded causes a crash
-4. Setting seed value
-5. Sound levels arent always set properly on launch 
-6. Outpost overlaps weird with trees that are very close
+1. Deleting world that was loaded causes a crash
+2. Setting seed value
+3. Outpost overlaps weird with trees that are very close
+4. Need to create data/ and data/games/ folders on first launch
+
+FUTURE IMPROVEMENTS
+1. Upgrade pathfinding to work for entities with size > 1
+2. Complete TODOs
+3. Run chunk loading on threads
+4. Page transition animations
 
 THINGS TO CONSIDER
 1. Animating the water
@@ -29,3 +37,5 @@ FUTURE SYSTEMS
 4. Crafting
 5. Dialogue
 6. Bosses
+7. Logger (Main task?)
+8. Metrics System (Main task?)

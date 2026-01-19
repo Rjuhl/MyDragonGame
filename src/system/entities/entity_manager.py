@@ -12,6 +12,7 @@ from system.entities.physics.spatial_hash_grid import SpatialHashGrid
 from system.game_clock import game_clock
 from system.entities.physics.collisions import check_collision, resolve_collisions
 
+from metrics.simple_metrics import timeit
 
 class EntityManager:
     """
@@ -80,6 +81,8 @@ class EntityManager:
         del self.entities[entity.id]
         if entity.solid: self.spatial_hash_grid.remove_entity(entity)
 
+        if not entity.send_death_event: return
+
         # Notify subscribers
         for subscriber in self.kill_listener_subscribers:
             subscriber.recieve_death_event(entity)
@@ -90,7 +93,7 @@ class EntityManager:
     # -------------------------------------------------------------------------
     # Main update loop
     # -------------------------------------------------------------------------
-
+    @timeit()
     def update_entities(self) -> None:
         """
         Update all entities for this tick.
@@ -101,7 +104,7 @@ class EntityManager:
         - Resolve collisions among on-screen candidates (broad-phase from grid)
         - Apply any queued add/remove operations
         """
-
+        print(f"There are {len(self.entities)} entities")
         dt = game_clock.dt
         screen_location, screen_size = self.screen.get_hitbox()
 
@@ -156,7 +159,11 @@ class EntityManager:
         """ Return entities in a chunk region AND remove them from both """
         x, y, _ = chunk.location.location
         removed_entities = self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE, remove_entities=True)
-        for entity in removed_entities: del self.entities[entity.id]
+        try:
+            for entity in removed_entities: del self.entities[entity.id]
+        except Exception as e:
+            print(f"Entity of type: {entity.__class__} caused exception")
+            raise e
         return removed_entities
 
     def get_chunk_entities(self, chunk: Chunk) -> set[Entity]:

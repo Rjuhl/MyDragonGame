@@ -91,8 +91,8 @@ def generate_shadow(
             def serve_shadow(self):
                 return RenderObj(
                     self.SHADOW_ID + int(self.rotated),
-                    self.draw_location() - self.render_offset.location[:-1],
-                    (shade_level, self.location.x, self.location.y, self.location.z),
+                    self.shadow_location(),
+                    (shade_level, self.location.x, self.location.y, 0),
                     isShadow=True
                 )
 

@@ -7,7 +7,6 @@ from system.entities.physics.shadows import Triangle, Receiver
 from decorators import register_entity, generate_shadow
 
 
-
 @register_entity
 @generate_shadow(1.5, 1.5, shade_level=ShadeLevel.CANOPY_START, fade=0.5)
 class Tree(Entity):

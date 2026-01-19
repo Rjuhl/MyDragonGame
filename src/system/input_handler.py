@@ -5,7 +5,7 @@ from decorators import singleton
 from constants import MOVEMENT_MAP
 from typing import Dict, List, Optional
 from pathlib import Path
-from system.event_handler import EventHandler
+from system.event_handler import EventHandler, GameEvent
 
 
 @singleton
@@ -50,6 +50,7 @@ class InputHandler:
 
         # Other
         self.quit_requested = False
+        self.player_died = False
 
         # -------- Action mapping (high-level) --------
         # action_name -> list of pygame key constants
@@ -73,6 +74,7 @@ class InputHandler:
         self.text_input = ""
         self.scroll_y = 0
         self.quit_requested = False
+        self.player_died = False
 
         # --- 1) Handle discrete events (edges) ---
         for event in EventHandler().events():
@@ -98,6 +100,11 @@ class InputHandler:
             # Scroll wheel
             elif event.type == pygame.MOUSEWHEEL:
                 self.scroll_y += event.y
+            
+            # player death
+            elif event.type == GameEvent.PLAYER_DIED:
+                self.player_died = True
+
 
         # --- 2) Continuous state queries (held state) ---
         # Keyboard "held" state: use key constants as indices
@@ -140,6 +147,9 @@ class InputHandler:
     def was_key_released(self, key) -> bool:
         """True only on the frame the key was released."""
         return key in self.keys_up
+    
+    def is_player_dead(self):
+        return self.player_died
 
     # -------------------------------------------------------------------------
     # Low-level convenience methods (mouse)

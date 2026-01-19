@@ -5,6 +5,7 @@ from .main_menu import MainMenu
 from .settings_page import SettingsPage
 from .create_game_page import CreateGamePage
 from .choose_game_page import ChooseGamePage
+from .respawn_page import Respawn
 
 __all__ = [
     "GamePage", 
@@ -13,5 +14,6 @@ __all__ = [
     "MainMenu", 
     "SettingsPage", 
     "CreateGamePage",
-    "ChooseGamePage"
+    "ChooseGamePage",
+    "Respawn"
 ]

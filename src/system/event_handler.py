@@ -5,6 +5,11 @@ from decorators import singleton
 from utils.close_app import close_app
 from system.global_vars import game_globals
 
+from enum import IntEnum
+
+class GameEvent(IntEnum):
+    PLAYER_DIED = pygame.event.custom_type()
+
 
 @singleton
 class EventHandler:

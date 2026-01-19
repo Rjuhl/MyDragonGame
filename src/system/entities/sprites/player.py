@@ -12,11 +12,14 @@ from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
 from system.input_handler import input_handler
 from system.sound import SoundMixer, SoundRequest, Sound
+from system.event_handler import GameEvent
 
 # Update with character class
+
 class Player(Character):
     def __init__(self, location: Coord, character_args=CharaterArgs()) -> None:
         is_human = True
+        # character_args.health = 10_000_000
         self.init_human(location, character_args) if is_human else self.init_dragon(location)
 
         self.last_drawn_location = self.location.as_view_coord()
@@ -24,6 +27,7 @@ class Player(Character):
 
     def update(self, dt, onscreen=True):
         super().update(dt, onscreen)
+        if not self.handle_character_updates(dt): self.kill()
         movement = self.get_movement(dt)
         self.move(movement)
         self._play_sounds(movement)
@@ -84,6 +88,14 @@ class Player(Character):
                 time_restricted=500
             ))
 
+    def kill(self):
+        super().kill()
+        pygame.event.post(
+            pygame.event.Event(
+                GameEvent.PLAYER_DIED,
+            )
+        )
+        
 
     @staticmethod
     def load(data):

@@ -1,18 +1,18 @@
 import pygame
 import numpy as np
 from pathlib import Path
+from utils.coords import Coord
+from utils.types.colors import RGB, RGBA
+from system.entities.physics.collisions import center_hit_box
+from world.tile import Tile
 from numpy.typing import NDArray
+from system.render_obj import RenderObj
+from system.entities.sheet import SheetManager
 from typing import List, Optional
 
-from world.tile import Tile
-from utils.coords import Coord
-from system.render_obj import RenderObj
-from utils.types.colors import RGB, RGBA
-from system.entities.sheet import SheetManager
-
 from system.global_vars import game_globals
-from system.entities.physics.collisions import center_hit_box
 
+from metrics.simple_metrics import timeit
 class AssetDrawer:
     """
         Low-level drawing helper for tiles, sprites, and debug overlays.
@@ -48,6 +48,7 @@ class AssetDrawer:
     # Tiles
     # -------------------------------------------------------------------------
 
+    @timeit()
     def draw_tile(
         self, 
         tile: Tile, 
@@ -82,6 +83,7 @@ class AssetDrawer:
     # Sprites / entities
     # -------------------------------------------------------------------------
 
+    @timeit()
     def draw_sprite(
             self, 
             sprite: RenderObj, 
@@ -184,14 +186,13 @@ class AssetDrawer:
         Returns:
             list[Surface] where index == <id>
         """
-
-        files = [p.resolve() for p in path.iterdir() if p.is_file()]
-
-        # Sort by numeric prefix before the first underscore.
-        files.sort(key=lambda p: int(p.name.split("_", 1)[0]))
-        imgs = [pygame.image.load(f).convert_alpha() for f in files]
-        for img in imgs: img.set_colorkey((0, 0, 0)) # TODO: Remove this and make tiles assets transparent
-
+        
+        paths = []
+        for file in path.iterdir():
+            paths.append(file.resolve())
+        paths.sort(key=lambda path: int(path.name[:path.name.find('_')]))
+        imgs = [pygame.image.load(file).convert_alpha() for file in paths]
+        for img in imgs: img.set_colorkey((0, 0, 0))
         return imgs
 
 

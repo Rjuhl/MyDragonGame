@@ -12,6 +12,7 @@ from system.id_generator import id_generator
 from regestries import ENTITY_REGISTRY, ChunkSpawnerRegistry
 from world.generation.terrain_generator import default_terrain_generator
 
+
 # Chunk Size will be 64 x 64 tiles
 class Chunk:
     def __init__(

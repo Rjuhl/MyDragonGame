@@ -6,7 +6,7 @@ from system.entities.entity import Entity
 from gui.text import PixelText
 from typing import Callable, List
 
-
+# TODO: Fix bug that where sometimes text is cutoff 
 class DamageText(Entity):
     def __init__(self, location: Coord, num: int, kill_age: float, trajectory: Callable[[float], Coord], with_rng=False):
         super().__init__(location, Coord.math(1e-1, 1e-1, 1e-1), -1, Coord.math(0, 0, 0), id=-1, solid=False)

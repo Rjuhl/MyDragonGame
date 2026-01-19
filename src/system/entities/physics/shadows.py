@@ -138,7 +138,6 @@ class Receiver:
 # -----------------------------------------------------------------------------
 # Shadow builder
 # -----------------------------------------------------------------------------
-
 class Shadows:
     """
         Builds a lightweight 3D world representation and casts "noon" shadows.

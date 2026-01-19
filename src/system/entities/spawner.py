@@ -55,7 +55,7 @@ class Spawner(Entity, EntityManagerSubscriber):
         return self.location.euclidean_2D(self.manager.player.location) < self.vicinity_to_player
 
     def recieve_death_event(self, entity: Entity):
-        if entity.id in self.entities: self.entities.remove(id)
+        if entity.id in self.entities: self.entities.remove(entity.id)
     
 
     def jsonify(self):

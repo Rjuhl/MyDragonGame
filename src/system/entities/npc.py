@@ -102,7 +102,6 @@ class NPC(Character):
         # If location is not in path we need to find another path
         if self.location.tile_center() not in self.path:
             # TODO: Check if we are close to a path and try to get back on it (Could give nice performance gains)
-            print("Location not in path")
 
             # Search for new path if not close to path
             self.path = None

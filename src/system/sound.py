@@ -167,14 +167,14 @@ class SoundMixer:
     # -------------------------------------------------------------------------
 
     def _load_sounds(self):
-        """ Load all Sound enum entries from disk into pygame.mixer.Sound objects. å"""
+        """ Load all Sound enum entries from disk into pygame.mixer.Sound objects """
         for sound in Sound:
             sound_file = pygame.mixer.Sound(self.SOUND_PATH / sound.value)
             sound_file.set_volume(SOUNDS_TO_VOLUMES.get(sound, 1))
             self.sounds[sound] = sound_file
 
     def _load_music(self):
-        """Pre-allocate channels for music tracks."""
+        """Pre-allocate channels for music tracks """
         self.add_music_channel(Sound.MAIN_TRACK)
         self.add_music_channel(Sound.GAME_TRACK_1)
         self.add_music_channel(Sound.GAME_TRACK_2)
@@ -201,7 +201,7 @@ class SoundMixer:
             channel.set_source_location(angle, dist)
 
     def update(self):
-        """ Update positional channels and process music transition events. """
+        """ Update positional channels and process music transition events """
         self._update_channels()
         self.sound_clock += game_clock.dt
         for event in EventHandler().events():
@@ -360,5 +360,5 @@ class SoundMixer:
             channel.set_volume(volume)
 
     def bind_player(self, player) -> None:
-        """ Bind a player object used for positional audio. """
+        """ Bind a player object used for positional audio """
         self.player = player

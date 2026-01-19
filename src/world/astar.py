@@ -21,6 +21,8 @@ from world.tile import Tile
 from utils.coords import Coord
 from typing import Dict, Optional, Tuple, Dict
 
+from metrics.simple_metrics import timeit
+
 
 # Job result maps "from" -> "to" for each step (parent -> child).
 JobResult = Optional[Dict[Coord, Coord]]
@@ -48,7 +50,6 @@ class Node:
 
 # TODO: Make robust to different-size entities.
 # Note: NPC is size.(x/y) <= 1 for now, so this can be implemented later.
-
 class AstarJob:
     """
         Encapsulates a single pathfinding request executed via A*.
@@ -186,8 +187,7 @@ class AstarJob:
         dx = abs(x1 - x2)
         dy = abs(y1 - y2)
         return max(dx, dy)         
-    
-                            
+               
 class AstarManager:
     """
         Manages multiple concurrent A* jobs and shares cached tile-validity checks.
@@ -220,20 +220,25 @@ class AstarManager:
         id = self._get_id()
         self.jobs[id] = AstarJob(start, destination, self.map, self)
         return id, destination
-
+ 
+    @timeit()
     def run_jobs(self) -> None:
         """ Advance all jobs by splitting cycles-per-tick across the number of active jobs. """
 
         total_jobs = len(self.jobs) - len(self.completed_jobs)
+        print(f"There are {total_jobs} jobs running right now ({len(self.jobs)}/{len(self.completed_jobs)})")
         if total_jobs == 0: return
         
         cycles_per_job = self.cpt // total_jobs
 
         for id, job in self.jobs.items():
+            if job.path is not None: continue
             job.search(cycles_per_job)
             if job.path is not None: 
                 self.completed_jobs.add(id)
 
+    # Note: Jobs completed but never retrieved can gunk up the works
+    # Jobs with path are not cycled again -- should help relieve load
     def get_job_result(self, job: int) -> JobResult:
         """ Fetch and remove a completed job result. Returns None if not complete yet. """
         if job not in self.completed_jobs: return None

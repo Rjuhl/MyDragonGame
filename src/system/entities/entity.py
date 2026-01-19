@@ -26,6 +26,7 @@ class Entity(BaseEntity):
         self.rotated = False
         self.solid = True
         self.collided = False
+        self.send_death_event = True
 
     
     @classmethod
@@ -110,6 +111,9 @@ class Entity(BaseEntity):
 
     def shade_level(self):
         return ShadeLevel.SPRITE
+    
+    def shadow_location(self):
+        return self.draw_location() - self.render_offset.location[:-1]
 
     def draw_location(self):
         return self.location.as_view_coord() + self.render_offset.location[:-1]

@@ -6,6 +6,7 @@ from utils.coords import Coord
 from system.render_obj import RenderObj
 from system.entities.entity import Entity
 from world.generation.types import Terrain
+from system.entities.types.facing_types import Facing
 from system.entities.damage_text_entity import DamageText
 from decorators import register_entity
 from dataclasses import dataclass
@@ -71,7 +72,7 @@ class Character(Entity):
         self.current_health = self.eff_max_health
         self.current_mana = self.eff_max_mana
         self.current_energy = self.eff_max_energy
-        self.effects: Set[Tuple[float, Callable[[Self], None]]] = set() # Need a way to save this 
+        self.effects: Set[Tuple[float, Callable[[Self], None]]] = set() # Need a way to save this [should probably pass an effects class that is saveable]
 
         self.damage_mask = None
         self.damage_animation_frame = 0
@@ -84,9 +85,7 @@ class Character(Entity):
 
     def take_damage(self, damage_func: Callable[[Self], float]) -> None:
         damage = damage_func(self)
-        self.current_health -= damage
-        self._apply_damage_animation()
-        self._spawn_damage_number(damage // 1)
+        self._apply_damage(damage)
 
     def spend_energy(self, energy: float) -> bool:
         if energy <= self.current_energy: 
@@ -117,24 +116,24 @@ class Character(Entity):
         self.current_energy = min(self.eff_max_energy, self.current_health + self._stat_to_multiplier(self.stam))
 
     # Helper to deal damage with respect to stats 
-    def apply_damage(self, damage: float) -> None:
+    def _apply_damage(self, damage: float) -> None:
         damage = self._apply_def_reduction(damage)
         self.current_health -= damage
         self._apply_damage_animation()
-        self._spawn_damage_number(damage // 1)
+        self._spawn_damage_number(int(damage))
+        self._start_damage_animation()
 
-    
+    #TODO: pool damage over time and acumalte it into one damage animation effect
     def handle_character_updates(self, dt: float) -> bool:
         self.apply_effects(dt)
 
         if self.current_health <= 0: 
-            self.kill()
             return False
 
         self._apply_damage_animation()
-        self.regen_mana(dt, True)
-        self.regen_health(dt, True)
-        self.regen_energy(dt, True)
+        self.regen_mana()
+        self.regen_health()
+        self.regen_energy()
         return True
 
 
@@ -174,6 +173,13 @@ class Character(Entity):
             lifetime -= dt
             self.effects.remove(item)
             if lifetime > 0: self.effects.add((effect, lifetime))
+
+    def get_4_facing_based_on_direction(self, direction: Coord) -> Facing:
+        angle = Coord.math(0, 1, 0).get_angle_2D(direction)
+        if 0 <= angle < 90: return Facing.Up
+        elif 90 <= angle < 180: return Facing.Left
+        elif 180 <= angle < 270: return Facing.Down
+        else: return Facing.Right
     
     def jsonify(self):
         json = super().jsonify()

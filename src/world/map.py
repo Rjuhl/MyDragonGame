@@ -25,7 +25,6 @@ from functools import lru_cache
 #     2   5   8
 #     3   6   9
 
-
 class Map:
     def __init__(self, game_name, screen, player, terrain_generator):
         self.game_name = game_name
