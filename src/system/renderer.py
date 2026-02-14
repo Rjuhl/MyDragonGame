@@ -26,18 +26,28 @@ class Renderer:
         self.display = display
         self.asset_drawer = AssetDrawer(self.display)
 
-    def draw(self, map: Map, screen: Screen) -> int:
+    def draw(self, map: Map, screen: Screen, optimize=False) -> int:
         """ Renders current frame """
-        cam_screen_i = screen.cam_offset 
-        tiles_to_render = map.get_tiles_to_render(*screen.get_bounding_box())
-        for tile in tiles_to_render:
-            # Optional overlay: highlight chunk borders in red when toggled on.
-            tint = (255, 0, 0) if game_globals.chunk_borders_on and tile.is_chunk_border else None
-            
-            # Helps show where the "floor" is
-            # tint = (0, 0, 255, 128) if tile.location == map.player.location.floor_world() else None
+        cam_screen_i = screen.cam_offset
+        num_tiles = 0
 
-            self.asset_drawer.draw_tile(tile, cam_screen_i, tint)
+        if optimize:
+            surfaces_to_render = map.get_tile_surfaces_to_render(*screen.get_bounding_box())
+            num_tiles = len(surfaces_to_render)
+            for (surface, top_left) in surfaces_to_render:
+                self.asset_drawer.draw_tile_group(surface, top_left, cam_screen_i)
+            
+        if not optimize:
+            tiles_to_render = map.get_tiles_to_render(*screen.get_bounding_box())
+            num_tiles = len(tiles_to_render)
+            for tile in tiles_to_render:
+                # Optional overlay: highlight chunk borders in red when toggled on.
+                tint = (255, 0, 0) if game_globals.chunk_borders_on and tile.is_chunk_border else None
+                
+                # Helps show where the "floor" is
+                # tint = (0, 0, 255, 128) if tile.location == map.player.location.floor_world() else None
+
+                self.asset_drawer.draw_tile(tile, cam_screen_i, tint)
 
          # --- Entities ---
         for entity in map.get_entities_to_render():
@@ -55,7 +65,7 @@ class Renderer:
         # self.asset_drawer.draw_fox_path(cam_screen_i)
         # self.asset_drawer.draw_coords_and_centers(cam_screen_i)
 
-        return len(tiles_to_render)
+        return num_tiles
     
     def _render_dubug_elements(self, map: Map, screen: Screen, cam_screen_i: NDArray[np.float64]) -> None:
         tl, tr, bl, br = screen.get_tracking_box(screen_axis=False)

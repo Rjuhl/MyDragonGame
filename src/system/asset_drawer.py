@@ -8,7 +8,7 @@ from world.tile import Tile
 from numpy.typing import NDArray
 from system.render_obj import RenderObj
 from system.entities.sheet import SheetManager
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from system.global_vars import game_globals
 
@@ -78,6 +78,22 @@ class AssetDrawer:
         center = tile.location.as_view_coord() - cam_offset
         rect = img.get_rect(center=center)
         target.blit(img, rect)
+
+    # -------------------------------------------------------------------------
+    # Tile Groups
+    # -------------------------------------------------------------------------
+
+    @timeit()
+    def draw_tile_group(
+        self, 
+        surface: pygame.Surface, 
+        top_left: Tuple[int, int], 
+        cam_offset: NDArray[np.float64],
+        display: Optional[pygame.Surface] = None
+    ) -> None:
+        target = self.display if display is None else display
+        topleft_screen = np.asarray(top_left) - cam_offset
+        target.blit(surface, topleft_screen)
 
     # -------------------------------------------------------------------------
     # Sprites / entities

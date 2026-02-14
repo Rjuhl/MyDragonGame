@@ -9,6 +9,8 @@ class Tile(BaseEntity):
         self.is_chunk_border = is_chunk_border
         self.is_water = is_water
         self.has_obsticle = has_obsticle
+
+        self.update_subscribers = set()
     
     @classmethod
     def load(cls, data):
@@ -20,6 +22,18 @@ class Tile(BaseEntity):
             data["has_obsticle"]
         )
     
+    def subscribe(self, subscriber):
+        self.update_subscribers.add(subscriber)
+
+    def unsubscribe(self, subscriber):
+        if subscriber in self.update_subscribers:
+            self.update_subscribers.remove(subscriber)
+
+    # Will be used in future if tile changes can occur
+    def notify_subscribers(self):
+        for subscriber in self.update_subscribers:
+            subscriber.tile_update(self)
+
     def jsonify(self):
         return {
             "id": self.id,

@@ -29,4 +29,5 @@ def set_base_globals():
     game_globals.chunk_borders_on = False
     game_globals.show_hitboxes_on = False
     game_globals.render_debug = False
+    game_globals.optimize_render = True
     game_globals.debug_data = {}

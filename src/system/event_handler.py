@@ -44,6 +44,7 @@ class EventHandler:
 
         if self.input_handler.was_key_pressed(K_c):
             game_globals.chunk_borders_on = not game_globals.chunk_borders_on
+            game_globals.optimize_render = not game_globals.chunk_borders_on
         
         if self.input_handler.was_key_pressed(K_h):
             game_globals.show_hitboxes_on = not game_globals.show_hitboxes_on

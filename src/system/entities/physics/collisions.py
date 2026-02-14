@@ -16,8 +16,8 @@ class CollisionTypes(Enum):
     NONE = 5
 
 def check_collision(
-        e1_location: float, e1_size: float, 
-        e2_location: float, e2_size: float
+        e1_location: Coord, e1_size: Coord, 
+        e2_location: Coord, e2_size: Coord
     ) -> bool:
     """
         Axis-Aligned Bounding Box (AABB) overlap test in 3D.

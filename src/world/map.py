@@ -13,7 +13,7 @@ from system.game_clock import game_clock
 from system.entities.spawners.fox_burrow import FoxBurrow
 from system.entities.sprites.fox import Fox
 from world.tile import Tile
-from typing import Optional
+from typing import Optional, Tuple, List
 from pathlib import Path
 from world.path_finder import path_finder
 
@@ -24,6 +24,7 @@ from functools import lru_cache
 #     1   4   7
 #     2   5   8
 #     3   6   9
+
 
 class Map:
     def __init__(self, game_name, screen, player, terrain_generator):
@@ -41,6 +42,15 @@ class Map:
         self.init_map_chunks()
 
         path_finder.bind_map(self)
+
+        # ---- Load chunks over a few frames ---- #
+        self._loading_chunks: List[Chunk] = []
+        self._chunks_not_to_save: List[int] = []
+        self._new_locations: List[Tuple[int, int]] = []
+        self._new_chunk_index: int = 0
+        self._is_loading_chunks: bool = False
+
+        
 
         # TEMP for testing
         # E = [Fox(Coord.world(1, 0), None)]
@@ -78,38 +88,71 @@ class Map:
 
         return tiles_to_render
     
+    def get_tile_surfaces_to_render(self, min_x, max_x, min_y, max_y):
+        tile_surfaces_to_render = []
+        region = (
+            Coord.world(min_x, min_y),
+            Coord.world(max_x - min_x, max_y - min_y, 1) 
+        )
+
+        for chunk in self.chunks:
+            tile_surfaces_to_render.extend(chunk.get_tile_groups_in_region(region))
+
+        return tile_surfaces_to_render
+
+    
     
     # TODO: Add entity loading/unloading here or in a similiar fashion
     def handle_chunk_loading(self):
         if np.array_equal(
             self.chunk_center,
             self.screen.get_screen_center().as_chunk_coord()
-        ): return
+        ) and not self._is_loading_chunks: return
         self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
-
-        chunks = []
-        new_locations = self.get_chunk_locations()
-        chunks_not_to_save = []
-        for i, (x, y) in enumerate(new_locations):
-            # If chunk is still loaded
-            if (index := self.get_chunk_index(self.chunks, Coord.chunk(x, y))):
-                chunks.append(self.chunks[index - 1])
-                chunks_not_to_save.append(index - 1)
-
-            else:
-                chunk = Chunk.load(x, y, self.game_name) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator)
-                chunks.append(chunk)
-                for entity in chunk.entities: 
-                    self.entity_manager.add_entity(entity)
+        
+        if self._new_chunk_index == 0:
+            self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
+            self._new_locations = self.get_chunk_locations()
+            self._is_loading_chunks = True
+        
+        self._load_new_location()
+        if (self._new_chunk_index <= len(self._new_locations)):
+            return
         
         for i, chunk in enumerate(self.chunks):
-            if i not in chunks_not_to_save: 
+            if i not in self._chunks_not_to_save: 
                 # First remove entities from manager and add them to chunk to save
                 chunk.entities = list(self.entity_manager.get_and_removed_chunk_entities(chunk))
                 chunk.save(self.game_name)
                
-        self.chunks = chunks
+        self.chunks = self._loading_chunks
         path_finder.clear_cache()
+        self._reset_chunk_loading()
+        self._is_loading_chunks = False
+    
+    def _load_new_location(self) -> int:
+        if self._new_chunk_index >= len(self._new_locations): 
+            self._new_chunk_index += 1
+            return
+
+        x, y = self._new_locations[self._new_chunk_index]
+        if (index := self.get_chunk_index(self.chunks, Coord.chunk(x, y))):
+            self._loading_chunks.append(self.chunks[index - 1])
+            self._chunks_not_to_save.append(index - 1)
+
+        else:
+            chunk = Chunk.load(x, y, self.game_name) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator)
+            self._loading_chunks.append(chunk)
+            for entity in chunk.entities: 
+                self.entity_manager.add_entity(entity)
+        
+        self._new_chunk_index += 1
+    
+    def _reset_chunk_loading(self):
+        self._loading_chunks = []
+        self._chunks_not_to_save = []
+        self._new_location = []
+        self._new_chunk_index = 0
  
     # setups map with a chunk grid based on location
     def init_map_chunks(self):

@@ -1,16 +1,23 @@
 import math
 import uuid
 import json
+import pygame
 import random
 from world.tile import Tile
 from pathlib import Path
 from bisect import bisect_left
 from utils.coords import Coord
-from constants import CHUNK_SIZE, SEED
+from system.asset_drawer import AssetDrawer
+from constants import CHUNK_SIZE, SEED, TILE_GROUP_DRAW_SIZE, TILE_SIZE
+from world.tile_group import TileGroup
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
 from regestries import ENTITY_REGISTRY, ChunkSpawnerRegistry
 from world.generation.terrain_generator import default_terrain_generator
+from typing import Tuple, List
+
+
+
 
 
 # Chunk Size will be 64 x 64 tiles
@@ -21,7 +28,7 @@ class Chunk:
         random_number_generator=random.randint, 
         size=CHUNK_SIZE, 
         id=id_generator.get_id(),
-        terrain_generator=default_terrain_generator
+        terrain_generator=default_terrain_generator,
     ):
         self.tiles = []
         self.SIZE = size
@@ -29,8 +36,14 @@ class Chunk:
         self.id = id
         self.random_number_generator = random_number_generator
         self.terrain_generator = terrain_generator
+
+        #TODO: Have chunks share this
+        tile_imgs = TILE_IMGS = AssetDrawer.load_assets(
+            Path(__file__).parent.parent.parent / 'assets' / 'tiles'
+        )
         
         self.chunk_spawn_chances = ChunkSpawnerRegistry()
+        self.tile_groups = [TileGroup(tile_imgs) for _ in range((CHUNK_SIZE // TILE_GROUP_DRAW_SIZE) ** 2)]
 
         self.entities = []
         self.generate()
@@ -89,6 +102,12 @@ class Chunk:
             tile, entity = self.terrain_generator.generate_tile(location.x, location.y, onborder)
             self.tiles.append(tile)
             if entity: self.entities.append(entity)
+
+            groups_per_row = self.SIZE // TILE_GROUP_DRAW_SIZE
+            gx = x // TILE_GROUP_DRAW_SIZE
+            gy = y // TILE_GROUP_DRAW_SIZE
+            tile_group_index = gx * groups_per_row + gy
+            self.tile_groups[tile_group_index].add_tile(tile)
         
         self._generate_chunk_spawners()
     
@@ -161,6 +180,13 @@ class Chunk:
             tiles_on_screen.extend(self.tiles[startIdx + local_col_min: startIdx + local_col_max + 1])
 
         return tiles_on_screen
+
+    def get_tile_groups_in_region(self, region: Tuple[Coord, Coord]) -> List[Tuple[pygame.Surface, Tuple[int, int]]]:
+        tile_group_surfaces = []
+        for tile_group in self.tile_groups:
+            if (tile_group_surface := tile_group.get_surface(region)):
+                tile_group_surfaces.append(tile_group_surface)
+        return tile_group_surfaces
     
 
     @staticmethod
