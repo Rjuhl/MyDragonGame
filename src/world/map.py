@@ -27,7 +27,7 @@ from functools import lru_cache
 
 
 class Map:
-    def __init__(self, game_name, screen, player, terrain_generator):
+    def __init__(self, game_name, screen, player, terrain_generator, assets=None):
         self.game_name = game_name
         self.chunks = []
         self.player = None
@@ -35,6 +35,7 @@ class Map:
         self.entity_manager = EntityManager(self.screen)
         self.entities_to_render = []
         self.terrain_generator = terrain_generator
+        self.assets = assets
 
         self.bind_player(player)
 
@@ -49,8 +50,6 @@ class Map:
         self._new_locations: List[Tuple[int, int]] = []
         self._new_chunk_index: int = 0
         self._is_loading_chunks: bool = False
-
-        
 
         # TEMP for testing
         # E = [Fox(Coord.world(1, 0), None)]
@@ -141,7 +140,7 @@ class Map:
             self._chunks_not_to_save.append(index - 1)
 
         else:
-            chunk = Chunk.load(x, y, self.game_name) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator)
+            chunk = Chunk.load(x, y, self.game_name, assets=self.assets) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator, assets=self.assets)
             self._loading_chunks.append(chunk)
             for entity in chunk.entities: 
                 self.entity_manager.add_entity(entity)
@@ -158,7 +157,7 @@ class Map:
     def init_map_chunks(self):
         chunk_locations = self.get_chunk_locations()
         self.chunks = [
-            Chunk.load(x, y, self.game_name) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator)
+            Chunk.load(x, y, self.game_name, assets=self.assets) if self.check_dir_exists(x, y) else Chunk(Coord.chunk(x, y), terrain_generator=self.terrain_generator, assets=self.assets)
             for x, y in chunk_locations
         ]
 

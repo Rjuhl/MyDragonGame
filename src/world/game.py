@@ -7,7 +7,7 @@ from system.entities.sprites.player import Player
 from world.map import Map
 from world.generation.terrain_generator import TerrainGenerator
 from utils.coords import Coord
-from typing import Dict, Any, Optional
+from typing import Dict, List, Optional
 from decorators import singleton
 from system.id_generator import id_generator
 from system.settings import GameSettings
@@ -43,7 +43,13 @@ class Game:
             )
 
             self.player = Player(self._find_load_spot())
-            self.map = Map(self.name, self.screen, self.player, self.terrain_generator)
+            self.map = Map(
+                self.name, 
+                self.screen, 
+                self.player, 
+                self.terrain_generator, 
+                assets=self.drawer.tiles
+            )
             self._create_banner()
     
     def _create_banner(self):
@@ -106,10 +112,16 @@ class Game:
         return Player.load(data)
 
     @staticmethod
-    def load(name: str, screen: pygame.Surface):
+    def load(name: str, screen: pygame.Surface, assets: List[pygame.Surface]):
         terrain_generator = TerrainGenerator.load(name)
         player = Game._load_player(name)
-        map = Map(name, screen, player, terrain_generator)
+        map = Map(
+            name, 
+            screen, 
+            player, 
+            terrain_generator,
+            assets=assets
+        )
         game = Game(name, screen, defer_load=True)
         game.map = map
         game.player = player
@@ -158,7 +170,7 @@ class GameManager:
         id_generator.load_game(name)
 
         if (self.PATH / name).is_dir():
-            self.game = Game.load(name, self.screen)
+            self.game = Game.load(name, self.screen, self.drawer.tiles)
         else:
             self.game = Game(
                 name, self.screen,

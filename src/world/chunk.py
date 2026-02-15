@@ -29,6 +29,7 @@ class Chunk:
         size=CHUNK_SIZE, 
         id=id_generator.get_id(),
         terrain_generator=default_terrain_generator,
+        assets=None,
     ):
         self.tiles = []
         self.SIZE = size
@@ -36,20 +37,15 @@ class Chunk:
         self.id = id
         self.random_number_generator = random_number_generator
         self.terrain_generator = terrain_generator
-
-        #TODO: Have chunks share this
-        tile_imgs = TILE_IMGS = AssetDrawer.load_assets(
-            Path(__file__).parent.parent.parent / 'assets' / 'tiles'
-        )
         
         self.chunk_spawn_chances = ChunkSpawnerRegistry()
-        self.tile_groups = [TileGroup(tile_imgs) for _ in range((CHUNK_SIZE // TILE_GROUP_DRAW_SIZE) ** 2)]
+        self.tile_groups = [TileGroup(assets) for _ in range((CHUNK_SIZE // TILE_GROUP_DRAW_SIZE) ** 2)]
 
         self.entities = []
         self.generate()
     
     @classmethod
-    def load(cls, x, y, game_name):
+    def load(cls, x, y, game_name, assets=None):
         path = next(cls.get_data_path(x, y, game_name).iterdir())
         data = json.loads(path.read_text(encoding='utf-8'))
 
@@ -59,9 +55,18 @@ class Chunk:
         tiles = [Tile.load(d) for d in data["tiles"]]
         entities = [ENTITY_REGISTRY.get(e_data["classname"]).load(e_data) for e_data in data["entities"]]
 
-        chunk = cls(location=location, size=size, id=chunk_id)
+        chunk = cls(location=location, size=size, id=chunk_id, assets=assets)
         chunk.tiles = tiles
         chunk.entities = entities
+
+        # Add tiles to tile group
+        for i, tile in enumerate(tiles):
+            x, y = i // chunk.SIZE, i % chunk.SIZE
+            groups_per_row = chunk.SIZE // TILE_GROUP_DRAW_SIZE
+            gx = x // TILE_GROUP_DRAW_SIZE
+            gy = y // TILE_GROUP_DRAW_SIZE
+            tile_group_index = gx * groups_per_row + gy
+            chunk.tile_groups[tile_group_index].add_tile(tile)
 
         return chunk
     
