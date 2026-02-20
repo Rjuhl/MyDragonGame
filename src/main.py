@@ -45,12 +45,17 @@ def runGame(logger):
     )
 
     page_manager = PageManager(page_context)
-    input_handler.bind_displays(screen, display)
 
     sound_mixer = SoundMixer()
     sound_mixer.play_music(Sound.MAIN_TRACK)
 
+    is_input_handler_bound = False
+
     while True:
+        if not is_input_handler_bound:
+            is_input_handler_bound = True
+            input_handler.bind_displays(screen, display)
+
         game_clock.tick()
         event_handler.store_events()
         input_handler.update()
