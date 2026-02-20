@@ -3,6 +3,7 @@ from functools import wraps
 from decorators import singleton
 from typing import Dict, Tuple
 from collections import defaultdict
+from constants import DEGUB_ON
 
 class LightMetric:
     def __init__(self):
@@ -26,6 +27,7 @@ def timeit(*, base=False):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
+            if not DEGUB_ON: return func(*args, **kwargs)
             start = time.perf_counter()
             result = func(*args, **kwargs)
             elapsed = time.perf_counter() - start

@@ -8,13 +8,13 @@ MAIN TASKS LEFT
 7. Player
 
 OPTIMIZATIONS
-1. Improved tile rendering (lump tiles together)
+1. Improved tile rendering (lump tiles together) (done)
 2. Astart -> Jump Point Search
 3. Load chunks using multiprocessing/threads
 
 KNOWN BUGS
-1. Deleting world that was loaded causes a crash
-2. Setting seed value
+1. Deleting world that was loaded and then creating it again causes a crash (fixed)
+2. Setting seed value (fixed)
 3. Outpost overlaps weird with trees that are very close
 4. Need to create data/ and data/games/ folders on first launch
 

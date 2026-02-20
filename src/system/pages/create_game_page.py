@@ -38,8 +38,16 @@ class CreateGamePage(Page):
             gap=20
         )
 
-        self.seed_input = TextInput("seed_value", "200", "20", 16, variant=1, verifier= lambda c: c.isdigit(), char_limit=8, outline_color=(79, 80, 112, 255))
         self._reroll_seed(self.context.state)
+        self.seed_input = TextInput(
+            "seed_value", "200", "20", 16, 
+            variant=1, 
+            verifier= lambda c: c.isdigit(), 
+            char_limit=8, 
+            outline_color=(79, 80, 112, 255), 
+            default_text=self.context.state["seed_value"]
+        )
+        
 
         seed_name_container = Container(
             "80%", "20",
@@ -74,7 +82,7 @@ class CreateGamePage(Page):
             ], gap=10, padding=(0, 20)
         )
 
-        self.empty_error_text = PixelText("", 14, (0, 0, 0, 0),  varient=1)
+        self.empty_error_text = PixelText("", 14, (0, 0, 0, 0), varient=1)
         self.error_text = PixelText("World name already in use or is invalid", 16, (238, 18, 66, 255), varient=1)
 
         self.buttons_container = Container(
@@ -138,7 +146,10 @@ class CreateGamePage(Page):
         return not (self.GAME_DIR / self.context.state["world_name"]).is_dir()
     
     def update(self):
-        self.seed_input.text = self.context.state["seed_value"]
+        if self.context.state.get("reroll_called", False):
+            self.seed_input.text = self.context.state["seed_value"]
+            self.context.state["reroll_called"] = False
+
         super().render()
 
         self.buttons_container.children[0] = self.empty_error_text
@@ -170,3 +181,4 @@ class CreateGamePage(Page):
     @staticmethod
     def _reroll_seed(context: PageContext) -> None:
         context["seed_value"] = str(random.randint(0, 99999999))
+        context["reroll_called"] = True

@@ -44,7 +44,7 @@ class IdGenerator:
         return [self.current_id - i for i in range(1, num_ids + 1)]
     
     def save(self) -> None:
-        if self.current_game:
+        if self.current_game and (self.PATH / self.current_game).is_dir():
             path = self.PATH / self.current_game / 'idstart'
             path.write_text(str(self.current_id), encoding='utf-8')
 
