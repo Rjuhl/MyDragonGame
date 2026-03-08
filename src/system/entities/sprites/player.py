@@ -11,37 +11,44 @@ from system.render_obj import RenderObj
 from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
 from system.input_handler import input_handler
-from system.sound import SoundMixer, SoundRequest, Sound
+from system.sound import SoundMixer, SoundRequest, Sound, DRAGON_WING_FLAPS
 from system.event_handler import GameEvent
+from system.entities.types.facing_types import Facing
+from system.entities.frame_incrementer import FrameIncrementer
+from collections import defaultdict
 
 # Update with character class
 
 class Player(Character):
     def __init__(self, location: Coord, character_args=CharaterArgs()) -> None:
-        is_human = True
-        # character_args.health = 10_000_000
-        self.init_human(location, character_args) if is_human else self.init_dragon(location)
+        size = Coord.math(.25, .25, 1.25)
+        render_offset = Coord.math(0, -9, 0)
+        img_id = 12
+        entity_args = [location, size, img_id, render_offset]
+        super().__init__(entity_args, character_args)
+
 
         self.last_drawn_location = self.location.as_view_coord()
         self.prev_drawn_location = self.location.as_view_coord()
+
+        # Animation
+        self.facing = Facing.Right
+        self.incrementer = FrameIncrementer(0, 120, lambda i: (i + 1) % 10)
+        self.current_step = 0
+        self.current_wing_flap = 0
+        self.is_moving = False
+        self.frame = 0 if self.location.z == 0 else 160
+
 
     def update(self, dt, onscreen=True):
         super().update(dt, onscreen)
         if not self.handle_character_updates(dt): self.kill()
         movement = self.get_movement(dt)
+        self._set_facing(movement)
+        self._set_frame()
         self.move(movement)
         self._play_sounds(movement)
         return self
-
-    def init_human(self, location: Coord, character_args: CharaterArgs):
-        size = Coord.math(.25, .25, 1.25)
-        render_offset = Coord.math(0, -9, 0)
-        img_id = 1
-        entity_args = [location, size, img_id, render_offset]
-        super().__init__(entity_args, character_args)
-
-    def init_dragon(self, location: Coord) -> None:
-        pass
 
     def smooth_movement(self):
         # Update draw location 
@@ -63,6 +70,7 @@ class Player(Character):
     def draw_location(self):
         return self.last_drawn_location + self.render_offset.location[:-1]
     
+    # TODO: update this based on frame
     def get_shadow(self) -> EllipseData:
         x, y = self.last_drawn_location
         return EllipseData(
@@ -88,6 +96,46 @@ class Player(Character):
                 time_restricted=500
             ))
 
+        if self.location.z > 0 and self.current_step == 0:
+            SoundMixer().add_sound_effect(SoundRequest(
+                DRAGON_WING_FLAPS[self.current_wing_flap % len(DRAGON_WING_FLAPS)],
+                id=self.id
+            ))
+            self.current_wing_flap += 1
+    
+
+    def _set_facing(self, movement: Coord) -> None:
+        dx, dy, _ = movement.location
+        if dx < 0 and dy > 0: self.facing = Facing.Up
+        elif dx > 0 and dy < 0: self.facing = Facing.Down
+        elif dx < 0 and dy < 0: self.facing = Facing.Left
+        elif dx > 0 and dy > 0: self.facing = Facing.Right
+        elif dx == 0 and dy > 0: self.facing = Facing.UpperRight
+        elif dx == 0 and dy < 0: self.facing = Facing.LowerLeft
+        elif dx > 0 and dy == 0: self.facing = Facing.LowerRight
+        elif dx < 0 and dy == 0: self.facing = Facing.UpperLeft
+
+        self.is_moving = dx != 0 or dy != 0
+        # Don't change facing if no movement was made
+        
+
+    def _set_frame(self):
+        is_flying = self.location.z > 0
+        if is_flying or self.is_moving: self.current_step = self.incrementer.tick()
+
+        print(self.facing)
+        
+        frame = self.current_step  + (is_flying * 80) + ((is_flying and not self.is_moving) * 80)
+        if self.facing == Facing.Left: frame += 10
+        if self.facing == Facing.Up: frame += 20
+        if self.facing == Facing.Down: frame += 30
+        if self.facing == Facing.UpperRight: frame += 40
+        if self.facing == Facing.UpperLeft: frame += 50
+        if self.facing == Facing.LowerRight: frame += 60
+        if self.facing == Facing.LowerLeft: frame += 70
+
+        self.frame = frame
+
     def kill(self):
         super().kill()
         pygame.event.post(
@@ -95,6 +143,11 @@ class Player(Character):
                 GameEvent.PLAYER_DIED,
             )
         )
+
+    def get_render_objs(self) -> List[RenderObj]:
+        render_objs = super().get_render_objs()
+        for obj in render_objs: obj.frame = self.frame
+        return render_objs
         
 
     @staticmethod
@@ -104,7 +157,7 @@ class Player(Character):
         return player
     
     @staticmethod
-    def get_movement(dt: float):
+    def get_movement(dt: float) -> Coord:
         movement = input_handler.get_player_movement()
         movement *= TEMP_MOVEMENT_FACTOR * (dt / 1000)
         return movement

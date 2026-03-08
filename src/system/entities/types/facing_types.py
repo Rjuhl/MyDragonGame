@@ -7,3 +7,7 @@ class Facing(Enum):
     Right = 3
     Idle = 4
     Null = 5
+    UpperRight = 6
+    UpperLeft = 7
+    LowerRight = 8
+    LowerLeft = 9

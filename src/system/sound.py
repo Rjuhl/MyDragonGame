@@ -57,6 +57,15 @@ class Sound(str, Enum):
     GRASS_1 = "grass_1.wav"
     GRASS_2 = "grass_2.wav"
 
+    DRAGON_WING_FLAP_1 = "dragon_wing_flap_1.wav"
+    DRAGON_WING_FLAP_2 = "dragon_wing_flap_2.wav"
+    DRAGON_WING_FLAP_3 = "dragon_wing_flap_3.wav"
+    DRAGON_WING_FLAP_4 = "dragon_wing_flap_4.wav"
+    DRAGON_WING_FLAP_5 = "dragon_wing_flap_5.wav"
+    DRAGON_WING_FLAP_6 = "dragon_wing_flap_6.wav"
+    DRAGON_WING_FLAP_7 = "dragon_wing_flap_7.wav"
+    DRAGON_WING_FLAP_8 = "dragon_wing_flap_8.wav"
+
 
 # Default per-sound volume multipliers (0...1). Missing sounds default to 1.0.
 SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
@@ -64,7 +73,27 @@ SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
     Sound.GAME_TRACK_2: 0.3,
     Sound.GRASS_1: 0.2,
     Sound.GRASS_2: 0.2,
+    Sound.DRAGON_WING_FLAP_1: 0.2, 
+    Sound.DRAGON_WING_FLAP_2: 0.2, 
+    Sound.DRAGON_WING_FLAP_3: 0.2, 
+    Sound.DRAGON_WING_FLAP_4: 0.2, 
+    Sound.DRAGON_WING_FLAP_5: 0.2, 
+    Sound.DRAGON_WING_FLAP_6: 0.2, 
+    Sound.DRAGON_WING_FLAP_7: 0.2, 
+    Sound.DRAGON_WING_FLAP_8: 0.2, 
 }
+
+# Additional convience imports
+DRAGON_WING_FLAPS = [
+    Sound.DRAGON_WING_FLAP_1,
+    Sound.DRAGON_WING_FLAP_2,
+    Sound.DRAGON_WING_FLAP_3,
+    Sound.DRAGON_WING_FLAP_4,
+    Sound.DRAGON_WING_FLAP_5,
+    Sound.DRAGON_WING_FLAP_6,
+    Sound.DRAGON_WING_FLAP_7,
+    Sound.DRAGON_WING_FLAP_8,
+]
 
 
 # -----------------------------------------------------------------------------
