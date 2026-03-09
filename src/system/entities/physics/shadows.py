@@ -286,7 +286,7 @@ class Shadows:
     def get_alpha(height: float) -> int:
         """Map a height gap to alpha (0..255)."""
         t = max(0.0, min(1.0, height / 8.0))
-        return int(120 * (1.0 - t) + 50 * t)
+        return int(80 * (1.0 - t) + 50 * t)
     
     # -------------------------------------------------------------------------
     #  Polygon clipping (Sutherland–Hodgman)

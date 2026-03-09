@@ -22,7 +22,7 @@ from collections import defaultdict
 class Player(Character):
     def __init__(self, location: Coord, character_args=CharaterArgs()) -> None:
         size = Coord.math(.25, .25, 1.25)
-        render_offset = Coord.math(0, -9, 0)
+        render_offset = Coord.math(0, 0, 0)
         img_id = 12
         entity_args = [location, size, img_id, render_offset]
         super().__init__(entity_args, character_args)
@@ -70,12 +70,73 @@ class Player(Character):
     def draw_location(self):
         return self.last_drawn_location + self.render_offset.location[:-1]
     
-    # TODO: update this based on frame
     def get_shadow(self) -> EllipseData:
         x, y = self.last_drawn_location
+
+        # Circle returned
+        if (
+            # (
+            #     self.facing == Facing.Right or
+            #     self.facing == Facing.Left or
+            #     self.facing == Facing.Up or
+            #     self.facing == Facing.Down
+            # ) and not
+            not self.is_moving and
+            self.location.z > 0
+        ): return EllipseData(
+            Coord.view(x, y, self.location.z),
+            0.65, 0.65, 0
+        )
+
+        # Ellipse rot: 0 (screen coords) returned
+        if (
+            (
+                self.facing == Facing.Left or
+                self.facing == Facing.Right
+            ) and 
+            (
+                self.is_moving or
+                self.location.z == 0
+            )
+        ): return EllipseData(
+            Coord.view(x, y, self.location.z),
+            0.65, 1, -math.pi / 4
+        )
+
+        # Ellipse rot: 45 (screen coords) returned
+        if (
+            (
+                self.facing == Facing.UpperRight or
+                self.facing == Facing.LowerLeft
+            ) and 
+            (
+                self.is_moving or
+                self.location.z == 0
+            )
+        ): return EllipseData(
+            Coord.view(x, y, self.location.z),
+            0.65, 1, 0
+        )
+
+        # Ellipse rot: 90 (screen coords) returned
+        if (
+            (
+                self.facing == Facing.Up or
+                self.facing == Facing.Down
+            ) and 
+            (
+                self.is_moving or
+                self.location.z == 0
+            )
+        ): return EllipseData(
+            Coord.view(x, y, self.location.z),
+            0.65, 1, math.pi / 4
+        )
+
+        # Ellipse rot: 135 (screen coords) returned
         return EllipseData(
             Coord.view(x, y, self.location.z),
-            0.5, 0.5, 0
+            0.65, 1.2, math.pi / 2
         )
     
     # TODO: Better collision handling (ie special handling for static objects and so on)
