@@ -25,6 +25,7 @@ class Entity(BaseEntity):
 
         self.rotated = False
         self.solid = True
+        self.is_particle = False
         self.collided = False
         self.send_death_event = True
 
@@ -51,7 +52,7 @@ class Entity(BaseEntity):
         self.location = self.location + movement if is_vector else movement
 
         # Clamp z axis movement 
-        self.location.z = np.clip(self.location.z, 0, WORLD_HEIGHT / TILE_SIZE)
+        self.location.z = np.clip(self.location.z, 0, (WORLD_HEIGHT / TILE_SIZE) + int(self.is_particle))
 
         if with_listeners:
             for movement_subscriber in self.movement_subscribers:

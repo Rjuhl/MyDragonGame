@@ -1,5 +1,5 @@
 from collections import defaultdict
-from itertools import combinations
+from itertools import combinations, product, chain
 from typing import Tuple, Self, Set, Dict
 
 from utils.coords import Coord
@@ -89,7 +89,10 @@ class SpatialHashGrid(EntitySubscriber):
         key = self.convert_to_key(x, y)
         entities = self.location_to_entity_map[key]
         if len(entities) == 0: del self.location_to_entity_map[key]
-        for e1, e2 in combinations(entities, 2):
+        particles = [e for e in entities if e.is_particle]
+        non_particles = [e for e in entities if not e.is_particle]
+
+        for e1, e2 in chain(combinations(non_particles, 2), product(non_particles, particles)):
             key = generate_unique_entity_pair_string(e1, e2)
             unique_collision_pairs[key] = [e1, e2]
 

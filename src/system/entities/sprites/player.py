@@ -2,11 +2,10 @@ import math
 import pygame
 import random
 from pygame.locals import *
-from system.entities.entity import Entity
 from system.entities.character import Character, CharaterArgs
-from typing import List, Dict
+from typing import List 
 from utils.coords import Coord
-from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO
+from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO, Y_MOUSE_FIRE_RANGE
 from system.render_obj import RenderObj
 from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
@@ -15,16 +14,20 @@ from system.sound import SoundMixer, SoundRequest, Sound, DRAGON_WING_FLAPS
 from system.event_handler import GameEvent
 from system.entities.types.facing_types import Facing
 from system.entities.frame_incrementer import FrameIncrementer
-from collections import defaultdict
+from system.entities.projectiles.fire_particle import FireParticle, FireParticleArgs
+from world.generation.types import Terrain
+from utils.cooldown import Cooldown
 
 # Update with character class
-
+#TODO: Update dragon hitbox + add head hitbox
 class Player(Character):
     def __init__(self, location: Coord, character_args=CharaterArgs()) -> None:
-        size = Coord.math(.25, .25, 1.25)
-        render_offset = Coord.math(0, 0, 0)
+        size = Coord.math(0.65, 0.65, 0.5)
+        render_offset = Coord.math(0, -3, 0)
         img_id = 12
         entity_args = [location, size, img_id, render_offset]
+        character_args.air_speed_mod = 2
+        character_args.base_speed = TEMP_MOVEMENT_FACTOR * 0.75
         super().__init__(entity_args, character_args)
 
 
@@ -39,6 +42,9 @@ class Player(Character):
         self.is_moving = False
         self.frame = 0 if self.location.z == 0 else 160
 
+        self.can_spawn_fire_particles = Cooldown(33)
+        self.mouse_pos_on_fire_start = None
+
 
     def update(self, dt, onscreen=True):
         super().update(dt, onscreen)
@@ -48,6 +54,8 @@ class Player(Character):
         self._set_frame()
         self.move(movement)
         self._play_sounds(movement)
+        self._spawn_fire()
+        self.can_spawn_fire_particles.tick()
         return self
 
     def smooth_movement(self):
@@ -183,8 +191,6 @@ class Player(Character):
     def _set_frame(self):
         is_flying = self.location.z > 0
         if is_flying or self.is_moving: self.current_step = self.incrementer.tick()
-
-        print(self.facing)
         
         frame = self.current_step  + (is_flying * 80) + ((is_flying and not self.is_moving) * 80)
         if self.facing == Facing.Left: frame += 10
@@ -209,17 +215,64 @@ class Player(Character):
         render_objs = super().get_render_objs()
         for obj in render_objs: obj.frame = self.frame
         return render_objs
+    
+
+    def _get_fire_location_and_direction(self):
+        fire_start = fire_direction = None
+        z_offset = self.mouse_pos_on_fire_start - input_handler.get_mouse_pos()[-1]
+        z_offset = max(min(z_offset, Y_MOUSE_FIRE_RANGE), -Y_MOUSE_FIRE_RANGE) / Y_MOUSE_FIRE_RANGE
+        match self.facing:
+            case Facing.Right:
+                fire_start = self.location + Coord.math(0.55, 0.55, 0.5)
+                fire_direction = Coord.math(1, 1, z_offset)
+            case Facing.Left:
+                fire_start = self.location + Coord.math(-0.5, -0.5, 0.5)
+                fire_direction = Coord.math(-1, -1, z_offset)
+            case Facing.Down:
+                fire_start = self.location + Coord.math(1.25, -1.25, 0.5)
+                fire_direction = Coord.math(1, -1, z_offset)
+            case Facing.Up:
+                fire_start = self.location + Coord.math(-0.75, 0.75, 0.5)
+                fire_direction = Coord.math(-1, 1, z_offset)
+            case Facing.UpperRight:
+                fire_start = self.location + Coord.math(0, 0.85, 0.5)
+                fire_direction = Coord.math(0, 1, z_offset)
+            case Facing.UpperLeft:
+                fire_start = self.location + Coord.math(-0.85, 0, 0.5)
+                fire_direction = Coord.math(-1, 0, z_offset)
+            case Facing.LowerRight:
+                fire_start = self.location + Coord.math(0.85, 0, 0)
+                fire_direction = Coord.math(1, 0, z_offset)
+            case Facing.LowerLeft:
+                fire_start = self.location + Coord.math(0, -0.85, 0)
+                fire_direction = Coord.math(0, -1, z_offset)
+        return fire_start, fire_direction
         
+
+    def _spawn_fire(self):
+        if not input_handler.is_mouse_button_held(1): 
+            self.mouse_pos_on_fire_start = None
+            return
+        if self.can_spawn_fire_particles.ready():
+                if self.mouse_pos_on_fire_start is None:
+                    self.mouse_pos_on_fire_start = input_handler.get_mouse_pos()[-1]
+
+                location, direction = self._get_fire_location_and_direction()
+                parameters = FireParticleArgs(location, direction)
+                FireParticle.spawn_random_cone_embers(
+                    10, 10, parameters, self.manager, count=10
+                )
+
+        
+    def get_movement(self, dt: float) -> Coord:
+        movement = input_handler.get_player_movement()
+        movement *= self.get_speed(Terrain.Ground if self.location.z == 0 else Terrain.Air) * (dt / 1000)
+        return movement
 
     @staticmethod
     def load(data):
         player = Player(Coord.load(data["location"]), CharaterArgs())
         player.load_character_attrs(data)
         return player
-    
-    @staticmethod
-    def get_movement(dt: float) -> Coord:
-        movement = input_handler.get_player_movement()
-        movement *= TEMP_MOVEMENT_FACTOR * (dt / 1000)
-        return movement
+
     

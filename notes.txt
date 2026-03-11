@@ -2,10 +2,10 @@ MAIN TASKS LEFT
 1. Sound system (mostly done)
 2. AI for NPCs (mostly done)
 3. Combat (started)
-4. Fox + Knight (mostly done)
+4. Fox + Wizard (mostly done)
 5. Pages (basically done)
 6. Executable + cleanup (started)
-7. Player
+7. Player (started)
 
 OPTIMIZATIONS
 1. Improved tile rendering (lump tiles together) (done)
@@ -17,6 +17,7 @@ KNOWN BUGS
 2. Setting seed value (fixed)
 3. Outpost overlaps weird with trees that are very close
 4. Need to create data/ and data/games/ folders on first launch
+5. First clicked not registered if mouse is moved before launch
 
 FUTURE IMPROVEMENTS
 1. Upgrade pathfinding to work for entities with size > 1

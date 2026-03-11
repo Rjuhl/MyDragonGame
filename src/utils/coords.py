@@ -41,7 +41,7 @@ class Coord:
         Construct a Coord from an array-like of length 3.
         Prefer using Coord.world / Coord.view / Coord.chunk for clarity.
         """
-        self.location = location.astype(np.float64)
+        self.location = self._coerce(location)
 
     # -------------------------------------------------------------------------
     # Properties: x, y, z reflect / mutate the underlying vector

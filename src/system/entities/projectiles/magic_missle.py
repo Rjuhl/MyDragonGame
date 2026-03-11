@@ -25,6 +25,7 @@ class MagicMissle(Entity):
         self.frame = 0
         self.frame_incrementer = FrameIncrementer(0, 83, lambda i: (i + 1) % 4)
 
+        self.is_particle = True
         self.send_death_event = False
 
     def update(self, dt, onscreen=True):
