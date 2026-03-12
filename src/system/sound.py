@@ -66,6 +66,10 @@ class Sound(str, Enum):
     DRAGON_WING_FLAP_7 = "dragon_wing_flap_7.wav"
     DRAGON_WING_FLAP_8 = "dragon_wing_flap_8.wav"
 
+    DRAGON_FIRE_START = "dragon_fire_start.wav"
+    DRAGON_FIRE = "dragon_fire.wav"
+    DRAGON_FIRE_END = "dragon_fire_end.wav"
+
 
 # Default per-sound volume multipliers (0...1). Missing sounds default to 1.0.
 SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
@@ -81,6 +85,9 @@ SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
     Sound.DRAGON_WING_FLAP_6: 0.2, 
     Sound.DRAGON_WING_FLAP_7: 0.2, 
     Sound.DRAGON_WING_FLAP_8: 0.2, 
+    Sound.DRAGON_FIRE_START: 0.2,
+    Sound.DRAGON_FIRE: 0.2,
+    Sound.DRAGON_FIRE_END: 0.2,
 }
 
 # Additional convience imports
@@ -117,17 +124,26 @@ class SoundRequest:
         pygame repeats arg: 0 = play once, 1 = play twice, etc.
     time_restricted:
         Cooldown duration (ms) for (sound, id) pairs. 0 disables cooldown.
+    fade_out_time:
+        Fadout duration for if the sound is cancled before it finishes
     get_location:
         Callable returning current world location of the sound source.
         Used for positional audio; ignored for non-locational sounds.
+    keep_playing:
+        Callable used to check if the sound should continue playing or
+        be canceled
+    finished_callback:
+        Callable that runs when a sound finished playing
     """
 
     sound: Sound
     id: SoundInstanceId = None
     repeats: int = 0
     time_restricted: int = 0
+    fade_out_time: int = 0
     get_location: Callable[[], Optional[Coord]] = lambda: None
-
+    keep_playing: Callable[[], bool] = lambda: True
+    finished_callback: Callable[[], None] = lambda: None
 
 # -----------------------------------------------------------------------------
 # Sound mixer
@@ -219,13 +235,21 @@ class SoundMixer:
         """
         for c_i in list(self.channels_to_update.keys()):
             channel = pygame.mixer.Channel(c_i)
+            inst = self.channels_to_update[c_i]
 
             # Sound finished so stop tracking
             if not channel.get_busy():
                 del self.channels_to_update[c_i]
+                inst.finished_callback()
                 continue
 
-            inst = self.channels_to_update[c_i]
+            # Sound is canceled
+            if inst.keep_playing is not None and not inst.keep_playing():
+                channel.fadeout(inst.fade_out_time)
+                del self.channels_to_update[c_i]
+                inst.finished_callback()
+                continue
+
             angle, dist = self._get_source_location(inst.get_location())
             channel.set_source_location(angle, dist)
 

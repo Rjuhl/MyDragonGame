@@ -24,8 +24,6 @@ class FireParticleArgs:
     heat: Callable[[int], FireParticleHeat] = lambda x: max(2 - x // 1000, 0)
     damage: Callable[[FireParticleHeat], float] = lambda x: (int(x) + 1) / 50
     id: Optional[int] = None
-
-@register_entity # Remove the resgister? Does it need to be saved? I dont think so but either is fine
 class FireParticle(Projectile):
     def __init__(self, args: FireParticleArgs):
         size = Coord.math(0.25, 0.25, 0.25)

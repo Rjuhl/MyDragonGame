@@ -22,8 +22,8 @@ class Fox(NPC):
         ]
 
         character_args = CharaterArgs(
-            10 + random.randint(0, 8), 0, + random.randint(0, 8), 
-            10 + random.randint(0, 3), 15, 15, 10 + random.randint(0, 3), 10, 5,
+            8 + random.randint(0, 6), 0, + random.randint(0, 8), 
+            10 + random.randint(0, 3), 15, 5, 10 + random.randint(0, 3), 10, 5,
             0.5, 0, 1.25
         )
 
@@ -95,6 +95,7 @@ class Fox(NPC):
         self._idle()
         self._set_frame()
         self.current_step = self.incrementer.tick()
+        if not self.handle_character_updates(dt): self.kill()
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         super().handle_collision(self_velocity, other_entity, other_velocity, timestep)

@@ -104,6 +104,7 @@ class Game:
     def bind_new_player(self) -> None:
         self.player = Player(self._find_load_spot())
         self.map.bind_player(self.player)
+        SoundMixer().bind_player(self.player)
 
     @classmethod
     def _load_player(cls, name: str) -> Player:

@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Callable, Dict, Any, Tuple
 
 
-class IconSheet(SpriteSheet):
+class IconSheet(SpriteSheet): # Not used but outdated if I were to use it
     GUI_FOLDER = Path(__file__).parent.parent.parent / 'assets' / 'gui'
 
     def __init__(self, name: str):

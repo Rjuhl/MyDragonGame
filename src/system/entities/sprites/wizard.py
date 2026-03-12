@@ -23,7 +23,7 @@ class Wizard(NPC):
         
         character_args = CharaterArgs(
             10 + random.randint(0, 8), 0, + random.randint(0, 8), 
-            10 + random.randint(0, 3), 15, 15, 10 + random.randint(0, 3), 10, 5,
+            10 + random.randint(0, 3), 15, 5, 10 + random.randint(0, 3), 10, 5,
             0.5, 0, 1.25
         )
 
@@ -118,11 +118,12 @@ class Wizard(NPC):
         if not self.missle_fire_rate.ready():
             return
 
-        direction = player_loc - self_loc
+        spawn_loc = self._get_attack_spawn_location()
+        direction = player_loc - spawn_loc
         self.facing = self.get_4_facing_based_on_direction(direction)
 
         self.manager.queue_entity_addition(
-            MagicMissle(self._get_attack_spawn_location(), direction)
+            MagicMissle(spawn_loc, direction)
         )
 
         self.missle_count -= 1
@@ -168,6 +169,7 @@ class Wizard(NPC):
         self._set_frame()
         self.magic_missle_cooldown.tick()
         self.missle_fire_rate.tick()
+        if not self.handle_character_updates(dt): self.kill()
 
     def get_render_objs(self) -> List[RenderObj]:
         render_objs = super().get_render_objs()

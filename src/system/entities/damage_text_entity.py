@@ -13,7 +13,7 @@ class DamageText(Entity):
         self.kill_age = kill_age
         self.trajectory = trajectory
         self.with_rng = with_rng
-        self.img = PixelText(str(num), 8, (238, 18, 66, 255)).text
+        self.img = PixelText(str(num), 12, (238, 18, 66, 255), outline_color=(255, 255, 255, 255), outline=1).text
 
         self.base_render_offset = self.render_offset
         self.multiplier = 1

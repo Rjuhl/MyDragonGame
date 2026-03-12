@@ -9,6 +9,7 @@ from system.entities.sprites.player import Player
 from system.entities.physics.shadows import Shadows
 from system.entities.physics.spatial_hash_grid import SpatialHashGrid
 
+from constants import DEGUB_ON
 from system.game_clock import game_clock
 from system.entities.physics.collisions import check_collision, resolve_collisions
 
@@ -104,7 +105,7 @@ class EntityManager:
         - Resolve collisions among on-screen candidates (broad-phase from grid)
         - Apply any queued add/remove operations
         """
-        print(f"There are {len(self.entities)} entities")
+        if DEGUB_ON: print(f"There are {len(self.entities)} entities")
         dt = game_clock.dt
         screen_location, screen_size = self.screen.get_hitbox()
 

@@ -44,9 +44,7 @@ class Projectile(Entity):
         return render_objs
     
     def jsonify(self):
-        json = super().jsonify()
-        json["direction"] = self.direction.jsonify()
-        return json
+        return None
     
     def shade_level(self):
         if self.location.z <= 1: return ShadeLevel.SPRITE
@@ -65,7 +63,6 @@ class Projectile(Entity):
     
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         super().handle_collision(self_velocity, other_entity, other_velocity, timestep)
-        # self.kill()
     
     def deal_damage(self, e: Character) -> float:
         return 0

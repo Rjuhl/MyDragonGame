@@ -19,6 +19,7 @@ from functools import lru_cache
 
 from world.tile import Tile
 from utils.coords import Coord
+from constants import DEGUB_ON
 from typing import Dict, Optional, Tuple, Dict
 
 from metrics.simple_metrics import timeit
@@ -226,7 +227,9 @@ class AstarManager:
         """ Advance all jobs by splitting cycles-per-tick across the number of active jobs. """
 
         total_jobs = len(self.jobs) - len(self.completed_jobs)
-        print(f"There are {total_jobs} jobs running right now ({len(self.jobs)}/{len(self.completed_jobs)})")
+        if DEGUB_ON:
+            print(f"There are {total_jobs} jobs running right now ({len(self.jobs)}/{len(self.completed_jobs)})")
+        
         if total_jobs == 0: return
         
         cycles_per_job = self.cpt // total_jobs

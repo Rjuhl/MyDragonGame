@@ -16,17 +16,17 @@ from system.entities.types.facing_types import Facing
 from system.entities.frame_incrementer import FrameIncrementer
 from system.entities.projectiles.fire_particle import FireParticle, FireParticleArgs
 from world.generation.types import Terrain
+from system.entities.projectiles.projectile import Projectile
 from utils.cooldown import Cooldown
 
 # Update with character class
-#TODO: Update dragon hitbox + add head hitbox
 class Player(Character):
     def __init__(self, location: Coord, character_args=CharaterArgs()) -> None:
         size = Coord.math(0.65, 0.65, 0.5)
         render_offset = Coord.math(0, -3, 0)
         img_id = 12
         entity_args = [location, size, img_id, render_offset]
-        character_args.air_speed_mod = 2
+        character_args.air_speed_mod = 1.6
         character_args.base_speed = TEMP_MOVEMENT_FACTOR * 0.75
         super().__init__(entity_args, character_args)
 
@@ -44,6 +44,8 @@ class Player(Character):
 
         self.can_spawn_fire_particles = Cooldown(33)
         self.mouse_pos_on_fire_start = None
+        self._fire_state = 'idle'  # 'idle' | 'starting' | 'firing' | 'ending'
+        self.sound_ready = False
 
 
     def update(self, dt, onscreen=True):
@@ -149,7 +151,8 @@ class Player(Character):
     
     # TODO: Better collision handling (ie special handling for static objects and so on)
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
-        self.move(self_velocity * -timestep)
+        if not isinstance(other_entity, Projectile):
+            self.move(self_velocity * -timestep)
 
     # def jsonify(self):
     #     json = super().jsonify()
@@ -159,19 +162,59 @@ class Player(Character):
     
     def _play_sounds(self, movement: Coord):
         if not movement.is_null() and self.location.z == 0:
-            SoundMixer().add_sound_effect(SoundRequest(
+            SoundMixer().add_locational_sound_effect(SoundRequest(
                 random.choice([Sound.GRASS_1, Sound.GRASS_2]),
                 id=self.id,
-                time_restricted=500
+                time_restricted=500,
+                get_location=lambda: self.location
             ))
 
         if self.location.z > 0 and self.current_step == 0:
-            SoundMixer().add_sound_effect(SoundRequest(
+            SoundMixer().add_locational_sound_effect(SoundRequest(
                 DRAGON_WING_FLAPS[self.current_wing_flap % len(DRAGON_WING_FLAPS)],
-                id=self.id
+                id=self.id,
+                get_location=lambda: self.location
             ))
             self.current_wing_flap += 1
-    
+        
+        if input_handler.is_mouse_button_held(1) and self._fire_state == 'idle':
+            # First click in game will be from "choosing game" so ignore it
+            if not self.sound_ready:
+                self.sound_ready = True
+                return
+            
+            self._fire_state = 'starting'
+            SoundMixer().add_locational_sound_effect(SoundRequest(
+                Sound.DRAGON_FIRE_START,
+                get_location=lambda: self.location,
+                keep_playing=lambda: input_handler.is_mouse_button_held(1),
+                finished_callback=self._on_fire_start_done,
+            ))
+
+    def _on_fire_start_done(self):
+        if not input_handler.is_mouse_button_held(1):
+            self._fire_state = 'idle'
+            return
+        self._fire_state = 'firing'
+        SoundMixer().add_locational_sound_effect(SoundRequest(
+            Sound.DRAGON_FIRE,
+            repeats=-1,
+            get_location=lambda: self.location,
+            keep_playing=lambda: input_handler.is_mouse_button_held(1),
+            finished_callback=self._on_fire_done,
+        ))
+
+    def _on_fire_done(self):
+        self._fire_state = 'ending'
+        SoundMixer().add_locational_sound_effect(SoundRequest(
+            Sound.DRAGON_FIRE_END,
+            get_location=lambda: self.location,
+            finished_callback=self._on_fire_end_done,
+        ))
+
+    def _on_fire_end_done(self):
+        self._fire_state = 'idle'
+
 
     def _set_facing(self, movement: Coord) -> None:
         dx, dy, _ = movement.location
@@ -262,7 +305,6 @@ class Player(Character):
                 FireParticle.spawn_random_cone_embers(
                     10, 10, parameters, self.manager, count=10
                 )
-
         
     def get_movement(self, dt: float) -> Coord:
         movement = input_handler.get_player_movement()

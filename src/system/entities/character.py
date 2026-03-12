@@ -3,6 +3,7 @@ import math
 import numpy as np
 from typing import Callable, Self, Set, Tuple, List, Any, Optional
 from utils.coords import Coord
+from utils.cooldown import Cooldown
 from system.render_obj import RenderObj
 from system.entities.entity import Entity
 from world.generation.types import Terrain
@@ -78,6 +79,9 @@ class Character(Entity):
         self.damage_animation_frame = 0
         self.damage_animation_frames = []
         self.animation_offset = 0
+
+        self.damage_taken_in_interval = 0
+        self.damage_interval = Cooldown(333)
         
 
     def add_effect(self, effect: Callable[[Self], None], duration: float) -> None:
@@ -105,7 +109,6 @@ class Character(Entity):
     def get_speed(self, terrain: Terrain) -> float:
         return self.eff_base_speed * self._stat_to_multiplier(self.eff_spd) * self._terrain_spd_multiplier(terrain)
 
-    # Maybe make regen field based purley off of stats and not need any inputs
     def regen_health(self) -> None:
         self.current_health = min(self.eff_max_health, self.current_health + self._stat_to_multiplier(self.vit))
 
@@ -119,8 +122,8 @@ class Character(Entity):
     def _apply_damage(self, damage: float) -> None:
         damage = self._apply_def_reduction(damage)
         self.current_health -= damage
-        self._apply_damage_animation()
-        self._spawn_damage_number(int(damage))
+        self.damage_taken_in_interval += damage
+        # self._apply_damage_animation()
         self._start_damage_animation()
 
     #TODO: pool damage over time and acumalte it into one damage animation effect
@@ -129,6 +132,11 @@ class Character(Entity):
 
         if self.current_health <= 0: 
             return False
+        
+        if self.damage_interval.ready() and self.damage_taken_in_interval > 0:
+            self._spawn_damage_number(int(round(self.damage_taken_in_interval)))
+            self.damage_taken_in_interval = 0
+        self.damage_interval.tick()
 
         self._apply_damage_animation()
         self.regen_mana()
@@ -144,7 +152,7 @@ class Character(Entity):
 
     def _start_damage_animation(self, amplitude=2, duration=10) -> None:
         self.damage_animation_frame = 0
-        self.damage_mask = (238, 18, 66, 100)
+        self.damage_mask = (255, 255, 255, 100) #(238, 18, 66, 100)
 
         period = duration // 2
         steps = np.linspace(0, period, duration)
@@ -240,7 +248,7 @@ class Character(Entity):
     
     @staticmethod
     def _base_trajectory(age: float) -> Coord:
-        return 12 * (-(((age - 600) / 600) ** 2) + 1)
+        return 24 * (-(((age - 600) / 600) ** 2) + 1)
     
 
     # ----------------------------------------------------- #
