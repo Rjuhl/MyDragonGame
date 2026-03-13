@@ -9,6 +9,7 @@ from system.entities.entity import Entity
 from world.generation.types import Terrain
 from system.entities.types.facing_types import Facing
 from system.entities.damage_text_entity import DamageText
+from utils.trajectories import base_trajectory
 from decorators import register_entity
 from dataclasses import dataclass
 from constants import TEMP_MOVEMENT_FACTOR
@@ -17,7 +18,7 @@ from constants import TEMP_MOVEMENT_FACTOR
 class CharaterArgs:
     health: int = 100
     mana: int = 100
-    energy: int = 1
+    energy: int = 100
     stam: int = 1
     vit: int = 1
     wis: int = 1
@@ -82,6 +83,8 @@ class Character(Entity):
 
         self.damage_taken_in_interval = 0
         self.damage_interval = Cooldown(333)
+
+        self.apply_effects_interval = Cooldown(111)
         
 
     def add_effect(self, effect: Callable[[Self], None], duration: float) -> None:
@@ -113,10 +116,10 @@ class Character(Entity):
         self.current_health = min(self.eff_max_health, self.current_health + self._stat_to_multiplier(self.vit))
 
     def regen_mana(self) -> None:
-        self.current_mana = min(self.eff_max_mana, self.current_health + self._stat_to_multiplier(self.wis))
+        self.current_mana = min(self.eff_max_mana, self.current_mana + self._stat_to_multiplier(self.wis))
 
     def regen_energy(self) -> None:
-        self.current_energy = min(self.eff_max_energy, self.current_health + self._stat_to_multiplier(self.stam))
+        self.current_energy = min(self.eff_max_energy, self.current_energy + self._stat_to_multiplier(self.stam))
 
     # Helper to deal damage with respect to stats 
     def _apply_damage(self, damage: float) -> None:
@@ -126,7 +129,6 @@ class Character(Entity):
         # self._apply_damage_animation()
         self._start_damage_animation()
 
-    #TODO: pool damage over time and acumalte it into one damage animation effect
     def handle_character_updates(self, dt: float) -> bool:
         self.apply_effects(dt)
 
@@ -139,15 +141,19 @@ class Character(Entity):
         self.damage_interval.tick()
 
         self._apply_damage_animation()
-        self.regen_mana()
-        self.regen_health()
-        self.regen_energy()
+
+        if self.apply_effects_interval.ready():
+            self.regen_mana()
+            self.regen_health()
+            self.regen_energy()
+        self.apply_effects_interval.tick()
+        
         return True
 
 
     def _spawn_damage_number(self, num: int) -> None:
         text_location = self.location.copy()
-        text_entity = DamageText(text_location, num, 1200, self._base_trajectory, with_rng=True)
+        text_entity = DamageText(text_location, num, 1200, base_trajectory, with_rng=True)
         self.manager.queue_entity_addition(text_entity)
 
     def _start_damage_animation(self, amplitude=2, duration=10) -> None:
@@ -245,10 +251,6 @@ class Character(Entity):
     @staticmethod
     def _stat_to_multiplier(stat: int) -> float:
         return 0.01 * stat + (math.sqrt(stat) / 10) + 1   
-    
-    @staticmethod
-    def _base_trajectory(age: float) -> Coord:
-        return 24 * (-(((age - 600) / 600) ** 2) + 1)
     
 
     # ----------------------------------------------------- #

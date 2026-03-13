@@ -161,3 +161,7 @@ class NPC(Character):
         if self.destination is None: return True
         return self.location.manhattan_2D(self.destination) <= 1
     
+    def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
+        from system.entities.items.stat_boost import Item
+        if isinstance(other_entity, Item): return
+        super().handle_collision(self_velocity, other_entity, other_velocity, timestep)

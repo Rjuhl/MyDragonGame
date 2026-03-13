@@ -70,6 +70,8 @@ class Sound(str, Enum):
     DRAGON_FIRE = "dragon_fire.wav"
     DRAGON_FIRE_END = "dragon_fire_end.wav"
 
+    ITEM_PICKUP = "item_pickup.wav"
+
 
 # Default per-sound volume multipliers (0...1). Missing sounds default to 1.0.
 SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
@@ -88,6 +90,7 @@ SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
     Sound.DRAGON_FIRE_START: 0.2,
     Sound.DRAGON_FIRE: 0.2,
     Sound.DRAGON_FIRE_END: 0.2,
+    Sound.ITEM_PICKUP: 0.3
 }
 
 # Additional convience imports

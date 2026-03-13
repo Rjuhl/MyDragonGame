@@ -102,7 +102,7 @@ class FireParticle(Projectile):
                 location=parameters.location.copy(),
                 direction=particle_dir,
                 speed=parameters.speed,
-                lifespan=parameters.lifespan,
+                lifespan=parameters.lifespan + random.randint(0, 100),
                 heat=make_heat(initial_heat),
                 damage=parameters.damage,
             )

@@ -6,14 +6,14 @@ from system.entities.entity import Entity
 from gui.text import PixelText
 from typing import Callable, List
 
-# TODO: Fix bug that where sometimes text is cutoff 
-class DamageText(Entity):
-    def __init__(self, location: Coord, num: int, kill_age: float, trajectory: Callable[[float], Coord], with_rng=False):
+class HoppingText(Entity):
+    def __init__(self, location: Coord, text: PixelText, kill_age: float, trajectory: Callable[[float], Coord], with_rng=False):
         super().__init__(location, Coord.math(1e-1, 1e-1, 1e-1), -1, Coord.math(0, 0, 0), id=-1, solid=False)
         self.kill_age = kill_age
         self.trajectory = trajectory
         self.with_rng = with_rng
-        self.img = PixelText(str(num), 12, (238, 18, 66, 255), outline_color=(255, 255, 255, 255), outline=1).text
+        self.text = text
+        self.img = text.text
 
         self.base_render_offset = self.render_offset
         self.multiplier = 1
@@ -22,7 +22,7 @@ class DamageText(Entity):
         if self.with_rng:
             if random.random() < 0.5: self.multiplier = -1
             self.base_render_offset  = Coord.view(random.randint(0, 4), random.randint(0, 4), 0)
-
+        
     def update(self, dt, onscreen=True):
         super().update(dt)
         if self.lifespan > self.kill_age:
@@ -44,3 +44,12 @@ class DamageText(Entity):
     # Don't save damage text
     def jsonify():
         return None
+
+
+class DamageText(HoppingText):
+    def __init__(self, location: Coord, num: int, kill_age: float, trajectory: Callable[[float], Coord], with_rng=False):
+        super().__init__(
+            location,
+            PixelText(str(num), 12, (238, 18, 66, 255), outline_color=(255, 255, 255, 255), outline=1),
+            kill_age, trajectory, with_rng=with_rng
+        )

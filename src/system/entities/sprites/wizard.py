@@ -5,17 +5,27 @@ from system.entities.projectiles.magic_missle import MagicMissle
 from system.entities.character import CharaterArgs
 from system.entities.types.entity_types import NPCState
 from system.entities.types.facing_types import Facing
+from system.entities.items.stat_boost import StatBoost, CoinType
 from utils.cooldown import Cooldown
 from system.entities.frame_incrementer import FrameIncrementer
 from system.render_obj import RenderObj
 from system.sound import SoundMixer, Sound, SoundRequest
 from constants import WIZARD_AGGRESSION_RANGE
+from utils.sampling import sample_from_weighted_list
 from decorators import register_entity, generate_shadow
 from typing import Optional, List, Self
 
 @register_entity
 @generate_shadow(0.6, 0.6, fade=0.5)
 class Wizard(NPC):
+    DROPS = [
+        (CoinType.Gold, 10),
+        (CoinType.Defense, 20),
+        (CoinType.Fire, 20),
+        (CoinType.Energy, 20),
+        (None, 30)
+    ]
+
     def __init__(self, location: Coord, home: Optional[int], id: Optional[int] = None):
         entity_args = [
             location, Coord.math(0.25, 0.25, 1), 10, Coord.math(-2, -12, 0)
@@ -201,6 +211,14 @@ class Wizard(NPC):
 
     def close_to_player(self):
         return self.manager.player.location.euclidean(self.location) < 3
+    
+    def kill(self):
+        super().kill()
+        if (coin_type := sample_from_weighted_list(self.DROPS)):
+            self.manager.queue_entity_addition(
+                StatBoost(self.location + Coord.math(0, 0, 0.4), coin_type)
+            )
+
 
     @classmethod
     def load(cls, data):

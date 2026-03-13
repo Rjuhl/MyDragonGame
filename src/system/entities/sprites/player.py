@@ -47,10 +47,30 @@ class Player(Character):
         self._fire_state = 'idle'  # 'idle' | 'starting' | 'firing' | 'ending'
         self.sound_ready = False
 
+        self.max_fire_charge = 100
+        self.fire_charge = self.max_fire_charge
+        self.fire_charge_rate = 1
+        self.fire_exhuastion_rate = -2 
+        self.has_energy = self.current_energy > 0
+
+    def regen_energy(self):
+        if not self.has_energy and self.location.z > 0: return
+        super().regen_energy()
+
+    def _handle_player_updates(self, dt: float) -> bool:
+        if self.apply_effects_interval.ready(reset=False):
+            # Spend energy if flying
+            self.has_energy = self.spend_energy(2) if self.location.z > 0 else self.spend_energy(0)
+        
+            # Spend/gain fire energy 
+            self.fire_charge += self.fire_exhuastion_rate if self._is_breathing_fire() else self.fire_charge_rate
+            self.fire_charge = max(0, self.fire_charge)
+
+        return self.handle_character_updates(dt)
 
     def update(self, dt, onscreen=True):
         super().update(dt, onscreen)
-        if not self.handle_character_updates(dt): self.kill()
+        if not self._handle_player_updates(dt): self.kill()
         movement = self.get_movement(dt)
         self._set_facing(movement)
         self._set_frame()
@@ -85,12 +105,6 @@ class Player(Character):
 
         # Circle returned
         if (
-            # (
-            #     self.facing == Facing.Right or
-            #     self.facing == Facing.Left or
-            #     self.facing == Facing.Up or
-            #     self.facing == Facing.Down
-            # ) and not
             not self.is_moving and
             self.location.z > 0
         ): return EllipseData(
@@ -154,11 +168,17 @@ class Player(Character):
         if not isinstance(other_entity, Projectile):
             self.move(self_velocity * -timestep)
 
-    # def jsonify(self):
-    #     json = super().jsonify()
-    #     json["last_drawn_location"] = self.last_drawn_location.tolist()
-    #     json["prev_drawn_location"] = self.prev_drawn_location.tolist()
-    #     return json
+    def jsonify(self):
+        json = super().jsonify()
+        # json["last_drawn_location"] = self.last_drawn_location.tolist()
+        # json["prev_drawn_location"] = self.prev_drawn_location.tolist()
+        json["fire_charge"] = self.fire_charge
+        json["max_fire_charge"] = self.max_fire_charge
+        json["fire_charge_rate"] = self.fire_charge_rate
+        return json
+
+    def _is_breathing_fire(self) -> bool:
+        return input_handler.is_mouse_button_held(1) and self.fire_charge > 0
     
     def _play_sounds(self, movement: Coord):
         if not movement.is_null() and self.location.z == 0:
@@ -177,7 +197,7 @@ class Player(Character):
             ))
             self.current_wing_flap += 1
         
-        if input_handler.is_mouse_button_held(1) and self._fire_state == 'idle':
+        if self._is_breathing_fire() and self._fire_state == 'idle':
             # First click in game will be from "choosing game" so ignore it
             if not self.sound_ready:
                 self.sound_ready = True
@@ -187,12 +207,12 @@ class Player(Character):
             SoundMixer().add_locational_sound_effect(SoundRequest(
                 Sound.DRAGON_FIRE_START,
                 get_location=lambda: self.location,
-                keep_playing=lambda: input_handler.is_mouse_button_held(1),
+                keep_playing=lambda: self._is_breathing_fire(),
                 finished_callback=self._on_fire_start_done,
             ))
 
     def _on_fire_start_done(self):
-        if not input_handler.is_mouse_button_held(1):
+        if not self._is_breathing_fire():
             self._fire_state = 'idle'
             return
         self._fire_state = 'firing'
@@ -200,7 +220,7 @@ class Player(Character):
             Sound.DRAGON_FIRE,
             repeats=-1,
             get_location=lambda: self.location,
-            keep_playing=lambda: input_handler.is_mouse_button_held(1),
+            keep_playing=lambda: self._is_breathing_fire(),
             finished_callback=self._on_fire_done,
         ))
 
@@ -293,7 +313,7 @@ class Player(Character):
         
 
     def _spawn_fire(self):
-        if not input_handler.is_mouse_button_held(1): 
+        if not self._is_breathing_fire(): 
             self.mouse_pos_on_fire_start = None
             return
         if self.can_spawn_fire_particles.ready():
@@ -309,12 +329,19 @@ class Player(Character):
     def get_movement(self, dt: float) -> Coord:
         movement = input_handler.get_player_movement()
         movement *= self.get_speed(Terrain.Ground if self.location.z == 0 else Terrain.Air) * (dt / 1000)
+
+        if not self.has_energy:
+            movement.z = -0.05
+
         return movement
 
     @staticmethod
     def load(data):
         player = Player(Coord.load(data["location"]), CharaterArgs())
         player.load_character_attrs(data)
+        player.fire_charge = data["fire_charge"]
+        player.max_fire_charge = data["max_fire_charge"]
+        player.fire_charge_rate = data["fire_charge_rate"]
         return player
 
     

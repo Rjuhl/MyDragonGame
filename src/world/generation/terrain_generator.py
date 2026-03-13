@@ -206,6 +206,7 @@ class TerrainGenerator:
         """Current convention: water tile ids are 13..15 inclusive."""
         return 13 <= tile.id <= 15 
     
+    #TODO: replace with sample_from_weighted_list
     def _get_id_from_weight(self, weights: List[Tuple[int, int]]) -> int:
         """ 
         Given (ids, weights) returns random id influenced by the weights

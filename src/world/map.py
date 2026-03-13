@@ -101,7 +101,6 @@ class Map:
 
     
     
-    # TODO: Add entity loading/unloading here or in a similiar fashion
     def handle_chunk_loading(self):
         if np.array_equal(
             self.chunk_center,
