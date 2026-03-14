@@ -121,6 +121,12 @@ class Wizard(NPC):
             if prev_step == 3 and self.current_step == 0:
                 self.missle_count = 6
                 self.missle_fire_rate.reset()
+                SoundMixer().add_locational_sound_effect(
+                    SoundRequest(
+                        Sound.WIZARD_SPELL,
+                        get_location=lambda: self.location
+                    )
+                )
                 
             return
 
@@ -214,6 +220,12 @@ class Wizard(NPC):
     
     def kill(self):
         super().kill()
+        SoundMixer().add_locational_sound_effect(
+            SoundRequest(
+                Sound.WIZARD_DEATH,
+                get_location=lambda: self.location
+            )
+        )
         if (coin_type := sample_from_weighted_list(self.DROPS)):
             self.manager.queue_entity_addition(
                 StatBoost(self.location + Coord.math(0, 0, 0.4), coin_type)

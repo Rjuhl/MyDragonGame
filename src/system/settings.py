@@ -79,7 +79,8 @@ class GlobalSettings:
 # Singleton instance with presets if neccarry
 global_settings = GlobalSettings(
     defaults={
-        "volume": DEFAULT_SOUND_VOLUME
+        "volume": DEFAULT_SOUND_VOLUME,
+        "fullscreen_on": False,
     }
 )
         

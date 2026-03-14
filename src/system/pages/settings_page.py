@@ -5,6 +5,7 @@ from gui.page import Page
 from gui.text import PixelText
 from gui.atoms.slider_input import SliderInput
 from gui.atoms.keybind_box import KeyBindBox
+from gui.atoms.radio_input import RadioInput
 from gui.buttons.button import Button
 from gui.container import Container
 from gui.types import ItemAlign, ItemAppend
@@ -42,6 +43,7 @@ class SettingsPage(Page):
             children=[
                 self._create_key_bind("Fly Up:", "fly_up"),
                 self._create_key_bind("Fly Down:", "fly_down"),
+                self._create_fullscreen_toggle(),
             ],
             padding=(0, 20),
             gap=10
@@ -76,6 +78,33 @@ class SettingsPage(Page):
 
         self.add_container(0, 0, self.base_container)
         self.add_container(0, 0, self.buttons_container)
+
+    
+    def _create_fullscreen_toggle(self):
+        return Container(
+            "100%", "20",
+            ItemAlign.Center, ItemAlign.Center, ItemAppend.Right,
+            children=[
+                Container(
+                    "50%", "20",
+                    ItemAlign.Center, ItemAlign.Center, ItemAppend.Right,
+                    children=[
+                        PixelText("Fullscreen:", 14, (255, 255, 255, 255), varient=1),
+                    ]
+                ),
+                Container(
+                    "50%", "20",
+                    ItemAlign.Center, ItemAlign.Center, ItemAppend.Right,
+                    children=[
+                        RadioInput(
+                            "fullscreen_on", "60", "20", 14,
+                            ["on", "off"], 
+                            int(not global_settings.get("fullscreen_on"))
+                        )
+                    ]
+                )
+            ]
+        )
     
     def _create_key_bind(self, text: str, field: str):
         return Container(
@@ -119,9 +148,15 @@ class SettingsPage(Page):
 
             global_settings.set("volume", self.volume)
             SoundMixer().set_volume(self.volume / 100)
+    
+    def _update_fullscreen(self):
+        if "fullscreen_on" not in self.context.state: return
+        if not bool(self.context.state["fullscreen_on"]) != global_settings.get("fullscreen_on"):
+            global_settings.set("fullscreen_on", not bool(self.context.state["fullscreen_on"]))
 
     
     def update(self):
         self._update_volume()
+        self._update_fullscreen()
         self.context.state["items_rendered"] = 0
         super().render()

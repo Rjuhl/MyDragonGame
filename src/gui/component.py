@@ -5,6 +5,7 @@ from typing import Tuple, Dict, Any, List, Optional
 
 from gui.types import SizeUnit, ClickEvent
 
+from constants import DEBUG_ON
 from system.global_vars import game_globals
 from gui.utils.shapes import draw_rect_surface
 
@@ -245,7 +246,7 @@ class Component:
         """
 
         # For debugging 
-        if game_globals.show_hitboxes_on:
+        if game_globals.show_hitboxes_on and DEBUG_ON:
             w, h = self.get_size()
             color = (0, 0, 0, 255)
             surface.blit(draw_rect_surface((0, 0, 0, 0), color, 1, w, h), (self.x, self.y))

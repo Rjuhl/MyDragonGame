@@ -13,11 +13,10 @@ OPTIMIZATIONS
 3. Load chunks using multiprocessing/threads
 
 KNOWN BUGS
-1. Deleting world that was loaded and then creating it again causes a crash (fixed)
-2. Setting seed value (fixed)
-3. Outpost overlaps weird with trees that are very close
-4. Need to create data/ and data/games/ folders on first launch
-5. First clicked not registered if mouse is moved before launch
+1. Outpost overlaps weird with trees that are very close
+2. Need to create data/ and data/games/ folders on first launch
+3. First clicked not registered if mouse is moved before launch
+4. Something is off about locational sound
 
 FUTURE IMPROVEMENTS
 1. Upgrade pathfinding to work for entities with size > 1

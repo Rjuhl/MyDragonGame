@@ -24,7 +24,7 @@ from constants import MAX_SOUND_DISTANCE
 MUSIC_CHANNELS = 8
 
 # Total mixer channels (music + SFX).
-MIXER_CHANNELS = 48
+MIXER_CHANNELS = 64
 
 # Fade out time (ms) when switching tracks.
 FADE_OUT_TIME = 1200
@@ -70,13 +70,19 @@ class Sound(str, Enum):
     DRAGON_FIRE = "dragon_fire.wav"
     DRAGON_FIRE_END = "dragon_fire_end.wav"
 
+    DRAGON_HURT_1 = "dragon_hit_1.wav"
+    DRAGON_HURT_2 = "dragon_hit_2.wav"
+
     ITEM_PICKUP = "item_pickup.wav"
+
+    WIZARD_SPELL = "spell_cast.wav"
+    WIZARD_DEATH = "wizard_death.wav"
 
 
 # Default per-sound volume multipliers (0...1). Missing sounds default to 1.0.
 SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
-    Sound.GAME_TRACK_1: 0.3,
-    Sound.GAME_TRACK_2: 0.3,
+    Sound.GAME_TRACK_1: 0.25,
+    Sound.GAME_TRACK_2: 0.25,
     Sound.GRASS_1: 0.2,
     Sound.GRASS_2: 0.2,
     Sound.DRAGON_WING_FLAP_1: 0.2, 
@@ -90,7 +96,11 @@ SOUNDS_TO_VOLUMES: Dict[Sound, float] = {
     Sound.DRAGON_FIRE_START: 0.2,
     Sound.DRAGON_FIRE: 0.2,
     Sound.DRAGON_FIRE_END: 0.2,
-    Sound.ITEM_PICKUP: 0.3
+    Sound.DRAGON_HURT_1: 0.3,
+    Sound.DRAGON_HURT_2: 0.3,
+    Sound.ITEM_PICKUP: 0.3,
+    Sound.WIZARD_SPELL: 0.3,
+    Sound.WIZARD_DEATH: 1,
 }
 
 # Additional convience imports
@@ -103,6 +113,11 @@ DRAGON_WING_FLAPS = [
     Sound.DRAGON_WING_FLAP_6,
     Sound.DRAGON_WING_FLAP_7,
     Sound.DRAGON_WING_FLAP_8,
+]
+
+DRAGON_HURT_SOUNDS  = [
+    Sound.DRAGON_HURT_1,
+    Sound.DRAGON_HURT_2,
 ]
 
 

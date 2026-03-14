@@ -2,13 +2,14 @@ import pygame
 from pygame.locals import K_c, K_h, K_z
 
 from decorators import singleton
-from utils.close_app import close_app
+from utils.app_helpers import close_app
 from system.global_vars import game_globals
 
 from enum import IntEnum
 
 class GameEvent(IntEnum):
     PLAYER_DIED = pygame.event.custom_type()
+    MOUSE_ONE_CLICKED = pygame.event.custom_type()
 
 
 @singleton

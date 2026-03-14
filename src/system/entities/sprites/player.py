@@ -3,14 +3,14 @@ import pygame
 import random
 from pygame.locals import *
 from system.entities.character import Character, CharaterArgs
-from typing import List 
+from typing import List, Callable, Self
 from utils.coords import Coord
 from constants import TEMP_MOVEMENT_FACTOR, MOVEMENT_MAP, GRID_RATIO, Y_MOUSE_FIRE_RANGE
 from system.render_obj import RenderObj
 from system.entities.physics.shadows import EllipseData
 from utils.types.shade_levels import ShadeLevel
 from system.input_handler import input_handler
-from system.sound import SoundMixer, SoundRequest, Sound, DRAGON_WING_FLAPS
+from system.sound import SoundMixer, SoundRequest, Sound, DRAGON_WING_FLAPS, DRAGON_HURT_SOUNDS
 from system.event_handler import GameEvent
 from system.entities.types.facing_types import Facing
 from system.entities.frame_incrementer import FrameIncrementer
@@ -186,14 +186,14 @@ class Player(Character):
                 random.choice([Sound.GRASS_1, Sound.GRASS_2]),
                 id=self.id,
                 time_restricted=500,
-                get_location=lambda: self.location
+                get_location=lambda: self.get_location()
             ))
 
         if self.location.z > 0 and self.current_step == 0:
             SoundMixer().add_locational_sound_effect(SoundRequest(
                 DRAGON_WING_FLAPS[self.current_wing_flap % len(DRAGON_WING_FLAPS)],
                 id=self.id,
-                get_location=lambda: self.location
+                get_location=lambda: self.get_location()
             ))
             self.current_wing_flap += 1
         
@@ -206,7 +206,7 @@ class Player(Character):
             self._fire_state = 'starting'
             SoundMixer().add_locational_sound_effect(SoundRequest(
                 Sound.DRAGON_FIRE_START,
-                get_location=lambda: self.location,
+                get_location=lambda: self.get_location(),
                 keep_playing=lambda: self._is_breathing_fire(),
                 finished_callback=self._on_fire_start_done,
             ))
@@ -219,7 +219,7 @@ class Player(Character):
         SoundMixer().add_locational_sound_effect(SoundRequest(
             Sound.DRAGON_FIRE,
             repeats=-1,
-            get_location=lambda: self.location,
+            get_location=lambda: self.get_location(),
             keep_playing=lambda: self._is_breathing_fire(),
             finished_callback=self._on_fire_done,
         ))
@@ -228,7 +228,7 @@ class Player(Character):
         self._fire_state = 'ending'
         SoundMixer().add_locational_sound_effect(SoundRequest(
             Sound.DRAGON_FIRE_END,
-            get_location=lambda: self.location,
+            get_location=lambda: self.get_location(),
             finished_callback=self._on_fire_end_done,
         ))
 
@@ -265,6 +265,16 @@ class Player(Character):
         if self.facing == Facing.LowerLeft: frame += 70
 
         self.frame = frame
+
+    def take_damage(self, damage_func: Callable[[Self], float]) -> None:
+        super().take_damage(damage_func)
+        SoundMixer().add_locational_sound_effect(
+            SoundRequest(
+                random.choice(DRAGON_HURT_SOUNDS),
+                get_location=lambda: self.get_location(),
+                time_restricted=333,
+            )
+        )
 
     def kill(self):
         super().kill()
@@ -334,6 +344,10 @@ class Player(Character):
             movement.z = -0.05
 
         return movement
+    
+
+    def get_location(self):
+        return self.location
 
     @staticmethod
     def load(data):

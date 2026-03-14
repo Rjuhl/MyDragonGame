@@ -14,7 +14,8 @@ from system.page_manager import PageManager
 from system.page_context import PageContext
 from system.global_vars import set_base_globals
 from system.sound import SoundMixer, Sound
-from utils.close_app import close_app
+from utils.app_helpers import close_app
+from system.settings import global_settings
 from world.game import GameManager
 from system.id_generator import id_generator
 
@@ -23,15 +24,18 @@ def runGame(logger):
     # Load and set icon image 
     current_dir = Path(__file__).parent
     icon_path = current_dir.parent / 'assets' / 'dragon_game_logo_scaled.png'
+    pygame.init()
     icon_surface = pygame.image.load(icon_path)
-    pygame.init() 
     pygame.display.set_icon(icon_surface)
 
     set_base_globals()
     font = pygame.font.Font(None, 24) 
     pygame.display.set_caption(constants.GAME_NAME)
     display = pygame.Surface(constants.DISPLAY_SIZE)
+
+    fullscreen = global_settings.get("fullscreen_on")
     screen = pygame.display.set_mode(constants.SCREEN_INIT_SIZE, pygame.RESIZABLE | pygame.DOUBLEBUF, vsync=1)
+    if fullscreen: pygame.display.toggle_fullscreen()
     screen_entity = Screen.load()
 
     game_manager = GameManager()
@@ -55,7 +59,6 @@ def runGame(logger):
         if not is_input_handler_bound:
             is_input_handler_bound = True
             input_handler.bind_displays(screen, display)
-
         game_clock.tick()
         event_handler.store_events()
         input_handler.update()
@@ -69,7 +72,14 @@ def runGame(logger):
         fps_text = font.render(f"FPS: {fps:.1f}", True, (0, 0, 255))
         tiles_text = font.render(f"Tiles Rendered: {page_context.state["items_rendered"]}", True, (0, 0, 255))
         screen.blit(pygame.transform.scale(display, screen.get_size()), (0, 0))
-        screen.blit(fps_text, (10, 10))
-        screen.blit(tiles_text, (10, 26))
+
+        if constants.DEBUG_ON:
+            screen.blit(fps_text, (10, 10))
+            screen.blit(tiles_text, (10, 26))
+
+        if fullscreen != global_settings.get("fullscreen_on"):
+            fullscreen = not fullscreen
+            pygame.display.toggle_fullscreen()
+
         pygame.display.flip()
             

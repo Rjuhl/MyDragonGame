@@ -5,6 +5,7 @@ from numpy.typing import NDArray
 from world.map import Map
 from system.screen import Screen
 from system.asset_drawer import AssetDrawer
+from constants import DEBUG_ON
 
 from system.global_vars import game_globals
 
