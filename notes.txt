@@ -19,7 +19,7 @@ KNOWN BUGS
 3. First clicked not registered if mouse is moved before launch
 4. Something is off about locational sound
 5. Key error causes crash here: get_and_removed_chunk_entities
-6. Chunks will wait to long to load
+6. Chunks will wait too long to load
 7. Fox will freeze and overlaps
 8. Outpost can suddenly disappear
 9. Lumped together tiles optmizations very rarlely has bug where it renders incorrectly (only seen by water so far)

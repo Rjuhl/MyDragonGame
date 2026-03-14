@@ -13,6 +13,7 @@ from world.tile_group import TileGroup
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
 from regestries import ENTITY_REGISTRY, ChunkSpawnerRegistry
+from metrics.simple_metrics import timeit
 from world.generation.terrain_generator import default_terrain_generator
 from typing import Tuple, List
 
@@ -30,6 +31,7 @@ class Chunk:
         id=id_generator.get_id(),
         terrain_generator=default_terrain_generator,
         assets=None,
+        auto_gen=True
     ):
         self.tiles = []
         self.SIZE = size
@@ -42,9 +44,19 @@ class Chunk:
         self.tile_groups = [TileGroup(assets) for _ in range((CHUNK_SIZE // TILE_GROUP_DRAW_SIZE) ** 2)]
 
         self.entities = []
-        self.generate()
+
+        self._load_state = None
+        self._raw_tile_data = None
+        self._raw_entity_data = None
+        self._tile_load_index = 0
+        self._entity_load_index = 0
+        self._group_build_index = 0
+        self._assets = assets
+
+        if auto_gen: self.generate()
     
     @classmethod
+    @timeit()
     def load(cls, x, y, game_name, assets=None):
         path = next(cls.get_data_path(x, y, game_name).iterdir())
         data = json.loads(path.read_text(encoding='utf-8'))
@@ -55,7 +67,7 @@ class Chunk:
         tiles = [Tile.load(d) for d in data["tiles"]]
         entities = [ENTITY_REGISTRY.get(e_data["classname"]).load(e_data) for e_data in data["entities"]]
 
-        chunk = cls(location=location, size=size, id=chunk_id, assets=assets)
+        chunk = cls(location=location, size=size, id=chunk_id, assets=assets, auto_gen=False)
         chunk.tiles = tiles
         chunk.entities = entities
 
@@ -70,11 +82,85 @@ class Chunk:
 
         return chunk
     
+
+    @classmethod
+    def begin_load(cls, x, y, game_name, assets=None):
+        path = next(cls.get_data_path(x, y, game_name).iterdir())
+        raw_text = path.read_text(encoding="utf-8")
+        data = json.loads(raw_text)
+
+        chunk_id = data["id"]
+        size = int(data["size"])
+        location = Coord.load(data["location"])
+
+        chunk = cls(
+            location=location,
+            size=size,
+            id=chunk_id,
+            assets=assets,
+            auto_gen=False,
+        )
+
+        chunk._load_state = "tiles"
+        chunk._raw_tile_data = data["tiles"]
+        chunk._raw_entity_data = data["entities"]
+        return chunk
+
+    def step_load(self, tile_budget=128, entity_budget=16, group_budget=128):
+        if self._load_state == "tiles":
+            end = min(self._tile_load_index + tile_budget, len(self._raw_tile_data))
+            for i in range(self._tile_load_index, end):
+                self.tiles.append(Tile.load(self._raw_tile_data[i]))
+            self._tile_load_index = end
+
+            if self._tile_load_index >= len(self._raw_tile_data):
+                self._load_state = "entities"
+
+            return False
+
+        if self._load_state == "entities":
+            end = min(self._entity_load_index + entity_budget, len(self._raw_entity_data))
+            for i in range(self._entity_load_index, end):
+                e_data = self._raw_entity_data[i]
+                cls = ENTITY_REGISTRY.get(e_data["classname"])
+                self.entities.append(cls.load(e_data))
+            self._entity_load_index = end
+
+            if self._entity_load_index >= len(self._raw_entity_data):
+                self._load_state = "groups"
+
+            return False
+
+        if self._load_state == "groups":
+            groups_per_row = self.SIZE // TILE_GROUP_DRAW_SIZE
+            end = min(self._group_build_index + group_budget, len(self.tiles))
+
+            for i in range(self._group_build_index, end):
+                tile = self.tiles[i]
+                x, y = i // self.SIZE, i % self.SIZE
+                gx = x // TILE_GROUP_DRAW_SIZE
+                gy = y // TILE_GROUP_DRAW_SIZE
+                tile_group_index = gx * groups_per_row + gy
+                self.tile_groups[tile_group_index].add_tile(tile)
+
+            self._group_build_index = end
+
+            if self._group_build_index >= len(self.tiles):
+                self._raw_tile_data = None
+                self._raw_entity_data = None
+                self._load_state = "done"
+                return True
+
+            return False
+
+        return self._load_state == "done"
+    
+    @timeit()
     def save(self, game_name: str):
         x, y, _ = self.location.as_chunk_coord()
         path = self.get_data_path(x, y, game_name)
         file_path = path / f"{self.id}.chunk"
-        file_path.write_text(json.dumps(self.jsonify(), ensure_ascii=False, indent=2), encoding='utf-8')
+        file_path.write_text(json.dumps(self.jsonify(), ensure_ascii=False), encoding='utf-8')
 
     def jsonify(self):
         return {
@@ -92,6 +178,7 @@ class Chunk:
         pass
     
     # neighbor_biomes arr -> [left, right, top, bottom] biomes
+    @timeit()
     def generate(self):
         if self.random_number_generator is None:
             raise ValueError("random_number_generator must be provided before generating tiles.")
@@ -115,6 +202,47 @@ class Chunk:
             self.tile_groups[tile_group_index].add_tile(tile)
         
         self._generate_chunk_spawners()
+
+    def start_generation(self):
+        self.tiles = []
+        self.entities = []
+        self._gen_index = 0
+        self._gen_done = False
+        self._groups_per_row = self.SIZE // TILE_GROUP_DRAW_SIZE
+        self._chunk_world_loc = self.location.as_world_coord()
+
+    def step_generation(self, tiles_per_step=64):
+        if self._gen_done:
+            return True
+
+        end = min(self._gen_index + tiles_per_step, self.SIZE * self.SIZE)
+
+        for i in range(self._gen_index, end):
+            x = i // self.SIZE
+            y = i % self.SIZE
+            onborder = (x == 0 or x == self.SIZE - 1 or y == 0 or y == self.SIZE - 1)
+
+            wx = self._chunk_world_loc[0] + x
+            wy = self._chunk_world_loc[1] - y
+
+            tile, entity = self.terrain_generator.generate_tile(wx, wy, onborder)
+            self.tiles.append(tile)
+            if entity:
+                self.entities.append(entity)
+
+            gx = x // TILE_GROUP_DRAW_SIZE
+            gy = y // TILE_GROUP_DRAW_SIZE
+            tile_group_index = gx * self._groups_per_row + gy
+            self.tile_groups[tile_group_index].add_tile(tile)
+
+        self._gen_index = end
+
+        if self._gen_index >= self.SIZE * self.SIZE:
+            self._generate_chunk_spawners()
+            self._gen_done = True
+            return True
+
+        return False
     
     def get_tile(self, location: Coord) -> Tile | None:
         if not self.contains_coord(location): return None
