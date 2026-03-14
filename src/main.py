@@ -38,6 +38,11 @@ def runGame(logger):
     if fullscreen: pygame.display.toggle_fullscreen()
     screen_entity = Screen.load()
 
+    cursor_hotspot = (0, 0)
+    cursor_path = current_dir.parent / 'assets' / 'mouse_claw.png'
+    cursor_image = pygame.image.load(cursor_path).convert_alpha()
+    pygame.mouse.set_cursor(cursor_hotspot, cursor_image)
+
     game_manager = GameManager()
     game_manager.bind_screen(screen_entity)
 
