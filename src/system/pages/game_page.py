@@ -21,18 +21,18 @@ class GamePage(Page):
         self.fire_icon = PercentageIcon("fire_icon.png")
 
         icon_container = Container(
-            "90%", "24%",
-            ItemAlign.First, ItemAlign.Center, ItemAppend.Right,
+            "98%", "36%",
+            ItemAlign.Last, ItemAlign.Last, ItemAppend.Below,
             children=[
                 self.health_icon,
                 self.energy_icon,
                 self.fire_icon,
             ],
-            gap=20
+            gap=10
         )
 
         base_container = Container(
-            "100%", "100%", 
+            "100%", "98%", 
             ItemAlign.Center, ItemAlign.Last, ItemAppend.Below,
             children = [icon_container]
         )
