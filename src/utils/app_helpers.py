@@ -17,7 +17,7 @@ def close_app():
 
 def setup_file_structure():
     # If function is moved the relative path needs updated
-    base_data_dir = Path(__file__).parent.parent.parent
+    base_data_dir = Path(__file__).parent.parent.parent / 'data'
     if not base_data_dir.is_dir():
         base_data_dir.mkdir()
         (base_data_dir / 'games').mkdir()
