@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-
-from main import runGame
 import sys
 import os
 import logging
 import argparse
+
+from main import runGame
+from utils.app_helpers import setup_file_structure
 
 # -------------------------------
 # Configuration
@@ -58,6 +59,7 @@ def main():
 
     # Add your main logic here
     logger.info("Script finished.")
+    setup_file_structure()
     runGame(logger)
 
 # -------------------------------

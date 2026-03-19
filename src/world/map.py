@@ -71,9 +71,9 @@ class Map:
         self.screen.center_anchor()
         
     def update(self):
-        self.handle_chunk_loading()
         path_finder.run_jobs()
         self.entity_manager.update_entities()
+        self.handle_chunk_loading()
         self.player.smooth_movement()
         self.screen.update()
         self.entities_to_render = self.entity_manager.get_entity_render_objs(self.player)

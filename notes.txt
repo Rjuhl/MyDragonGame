@@ -18,12 +18,15 @@ KNOWN BUGS
 2. Need to create data/ and data/games/ folders on first launch
 3. First clicked not registered if mouse is moved before launch
 4. Something is off about locational sound
-5. Key error causes crash here: get_and_removed_chunk_entities
+5. Key error causes crash here: get_and_removed_chunk_entities (fixed -- unverified)
 6. Chunks will wait too long to load
 7. Fox will freeze and overlaps
 8. Outpost can suddenly disappear
 9. Lumped together tiles optmizations very rarlely has bug where it renders incorrectly (only seen by water so far)
 10. First click after screen mode is toggled is dropped
+11. Fire icon sometimes doesnt deplete (thought i fixed it)
+12. Fishy lack of spawners in new chunks (after reloading?)
+
 
 FUTURE IMPROVEMENTS
 1. Upgrade pathfinding to work for entities with size > 1

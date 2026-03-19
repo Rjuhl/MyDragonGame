@@ -136,6 +136,7 @@ class Game:
         self.map.save()
         self.game_settings.save()
         self._save_player()
+        id_generator.save()
 
 
 
@@ -162,7 +163,6 @@ class GameManager:
     ):
         
         self.save_game()
-        id_generator.save()
         
         if name is None:
             self.game = None

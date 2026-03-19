@@ -162,8 +162,8 @@ class EntityManager:
         removed_entities = self.spatial_hash_grid.get_entities_in_range(x, y, chunk.SIZE, chunk.SIZE, remove_entities=True)
         try:
             for entity in removed_entities: del self.entities[entity.id]
-        except KeyError as e:
-            print(f"Entity of type: {entity.__class__} caused exception")
+        except Exception as e:
+            print(entity)
             raise e
         return removed_entities
 

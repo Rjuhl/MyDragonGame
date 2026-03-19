@@ -126,6 +126,9 @@ class Entity(BaseEntity):
             (self.shade_level(), self.location.x, self.location.y, self.location.z),
             location=self.location, size=self.size
         )]
+    
+    def __str__(self):
+        return f"{self.__class__.__name__} ({self.id})\nImg id: {self.img_id}\nLocation: {self.location}\n"
 
 
     # move this methods elswhere (to a utlity or physics sections)
