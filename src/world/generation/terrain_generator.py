@@ -3,6 +3,7 @@ import math
 import noise
 import random
 from pathlib import Path
+from utils.paths import data_root
 from bisect import bisect_left
 from dataclasses import dataclass, asdict
 from typing import Optional, Tuple, Dict, List
@@ -290,7 +291,7 @@ class TerrainGenerator:
     
     def save(self, game_name: str):
         """ Persist generator settings so the same world can be regenerated later """
-        path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
+        path = data_root() / 'games' / game_name / 'terrain_generator'
         path.write_text(json.dumps(
             {"data": [
                 self.seed, self.water_level, self.forest_size, self.temperature
@@ -303,7 +304,7 @@ class TerrainGenerator:
         Load generator settings previously written by save().
         Returns None if no saved generator exists.
         """
-        path = Path(__file__).parent.parent.parent.parent / 'data' / 'games' / game_name / 'terrain_generator'
+        path = data_root() / 'games' / game_name / 'terrain_generator'
         if path.is_file():
             data = json.loads(path.read_text(encoding="utf-8"))
             return TerrainGenerator(*data["data"])

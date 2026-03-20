@@ -1,7 +1,7 @@
 import pygame
 import math
 from enum import Enum
-from pathlib import Path
+from utils.paths import assets_root
 from dataclasses import dataclass
 from typing import Callable, Optional, Dict, Tuple
 
@@ -182,7 +182,7 @@ class SoundMixer:
         - Distance is scaled to [0..255] based on MAX_SOUND_DISTANCE.
     """
 
-    SOUND_PATH = Path(__file__).parent.parent.parent / 'assets' / 'sounds'
+    SOUND_PATH = assets_root() / 'sounds'
 
     def __init__(self):
         # Initialize pygame's audio mixer and channel pool.

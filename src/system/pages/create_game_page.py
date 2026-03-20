@@ -12,12 +12,12 @@ from system.page_context import PageContext
 from world.game import GameManager
 from decorators import register_page
 from typing import Optional, List, Tuple, Dict, Any
-from pathlib import Path
+from utils.paths import data_root
 
 
 @register_page
 class CreateGamePage(Page):
-    GAME_DIR = Path(__file__).parent.parent.parent.parent / 'data' / 'games'
+    GAME_DIR = data_root() / 'games'
     def __init__(self, pageContext):
         super().__init__(pageContext)
 

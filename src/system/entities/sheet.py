@@ -1,6 +1,7 @@
 import json
 import pygame
 from pathlib import Path
+from utils.paths import assets_root
 from typing import Optional, List
 
 from regestries import SHADOW_ENTITY_REGISTRY
@@ -81,8 +82,7 @@ class SpriteSheet:
         self.img = img
         self.data = []
 
-        current_dir = Path(__file__).parent
-        data_path = current_dir.parent.parent.parent / 'assets' / 'sprites' / 'meta_data' / f'{name}.json'
+        data_path = assets_root() / 'sprites' / 'meta_data' / f'{name}.json'
         self._load_data(data_path)
     
     def _get_frame(self, frame: int) -> pygame.Surface:

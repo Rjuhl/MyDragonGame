@@ -5,6 +5,7 @@ from decorators import singleton
 from constants import MOVEMENT_MAP
 from typing import Dict, List, Optional
 from pathlib import Path
+from utils.paths import data_root
 from system.event_handler import EventHandler, GameEvent
 
 
@@ -25,7 +26,7 @@ class InputHandler:
         Keybindings are persisted to disk as JSON.
     """
 
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'keybinds'
+    PATH = data_root() / 'keybinds'
 
     def __init__(self):
         # -------- Raw input state --------

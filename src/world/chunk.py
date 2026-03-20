@@ -5,6 +5,7 @@ import pygame
 import random
 from world.tile import Tile
 from pathlib import Path
+from utils.paths import data_root
 from bisect import bisect_left
 from utils.coords import Coord
 from system.asset_drawer import AssetDrawer
@@ -324,8 +325,7 @@ class Chunk:
 
     @staticmethod
     def get_data_path(x, y, game_name: str):
-        current_dir = Path(__file__).parent
-        full_path = current_dir.parent.parent / 'data' / 'games' / game_name / 'chunks' / f'{x}' / f'{y}'
+        full_path = data_root() / 'games' / game_name / 'chunks' / f'{x}' / f'{y}'
         full_path.mkdir(parents=True, exist_ok=True)
         return full_path
 

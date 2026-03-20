@@ -4,7 +4,7 @@ from gui.types import ItemAlign, ItemAppend, ClickEvent
 from system.sound import SoundMixer, SoundRequest, Sound
 from constants import DEFAULT_BUTTON_COOLDOWN
 from typing import Tuple, Dict, Any, List, Optional, Callable
-from pathlib import Path
+from utils.paths import assets_root
 
 class BasicButton(Container):
     def __init__(
@@ -17,8 +17,7 @@ class BasicButton(Container):
             time_restricted=DEFAULT_BUTTON_COOLDOWN
         )
     ):
-        current_dir = Path(__file__).parent
-        asset_dir = current_dir.parent.parent.parent / 'assets' / 'gui' / 'backgrounds'
+        asset_dir = assets_root() / 'gui' / 'backgrounds'
 
         backgrounds = [asset_dir / f'basic_button{varient}.png', asset_dir / f'basic_button{varient}_hovered.png']
         text = PixelText(text, font_size, (79, 80, 112, 255), varient=1)

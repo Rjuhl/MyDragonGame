@@ -2,7 +2,7 @@ import argparse
 import subprocess
 
 APP_NAME = "MyDragonGame"
-ENTRY_POINT = "src/game_main.py"
+ENTRY_POINT = "src/game_name.py"
 ASSETS_DIR = "assets"
 
 def build_mac():
@@ -11,7 +11,6 @@ def build_mac():
         "--name", APP_NAME,
         "--onedir",
         "--windowed",
-        "--onedir",
         "--icon", "assets/my_dragon_game_app_icon.icns",
         "--add-data", f"{ASSETS_DIR}:assets",
         ENTRY_POINT,
@@ -25,7 +24,7 @@ def build_windows():
         "--name", APP_NAME,
         "--onedir",
         "--windowed",
-        "--noconsole"
+        "--noconsole",
         "--icon", "assets/my_dragon_game_app_icon.ico",
         "--add-data", f"{ASSETS_DIR};assets",
         ENTRY_POINT,

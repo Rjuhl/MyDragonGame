@@ -1,11 +1,11 @@
 import pygame
-from pathlib import Path
 from gui.component import Component
+from utils.paths import assets_root
 
 class PixelText(Component):
     FONTS = {
-        0: Path(__file__).parent.parent.parent / 'assets' / 'gui' / 'fonts' / 'PixelGame.otf',
-        1: Path(__file__).parent.parent.parent / 'assets' / 'gui' / 'fonts' / 'pixelated.ttf',
+        0: assets_root() / 'gui' / 'fonts' / 'PixelGame.otf',
+        1: assets_root() / 'gui' / 'fonts' / 'pixelated.ttf',
     } 
     
     def __init__(self, text_content, font_size, font_color, bold=False, outline=0, outline_color=(0, 0, 0, 255), varient=0):

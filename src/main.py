@@ -1,6 +1,6 @@
 import pygame
 import constants
-from pathlib import Path
+from utils.paths import assets_root
 from utils.coords import Coord
 from world.map import Map
 from system.renderer import Renderer
@@ -21,9 +21,8 @@ from system.id_generator import id_generator
 
 
 def runGame(logger):
-    # Load and set icon image 
-    current_dir = Path(__file__).parent
-    icon_path = current_dir.parent / 'assets' / 'dragon_game_logo_scaled.png'
+    # Load and set icon image
+    icon_path = assets_root() / 'dragon_game_logo_scaled.png'
     pygame.init()
     icon_surface = pygame.image.load(icon_path)
     pygame.display.set_icon(icon_surface)
@@ -39,7 +38,7 @@ def runGame(logger):
     screen_entity = Screen.load()
 
     cursor_hotspot = (0, 0)
-    cursor_path = current_dir.parent / 'assets' / 'mouse_claw.png'
+    cursor_path = assets_root() / 'mouse_claw.png'
     cursor_image = pygame.image.load(cursor_path).convert_alpha()
     pygame.mouse.set_cursor(cursor_hotspot, cursor_image)
 

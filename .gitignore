@@ -204,3 +204,5 @@ data/*
 untracked/**/*
 src/visualize_terrain_gen.py
 src/metrics/performance.py
+dist/**/*
+build/**/*/

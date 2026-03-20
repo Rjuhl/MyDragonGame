@@ -1,10 +1,10 @@
 import pygame
-from pathlib import Path
 from gui.component import Component
+from utils.paths import assets_root
 from utils.types.colors import RGBA
 
 class PercentageIcon(Component):
-    GUI_FOLDER = Path(__file__).parent.parent.parent.parent / 'assets' / 'gui' / 'icons'
+    GUI_FOLDER = assets_root() / 'gui' / 'icons'
     
     def __init__(self, icon: str, percentage: float = 100, background_color: RGBA = (255, 255, 255, 128)):
         self.percentage = percentage

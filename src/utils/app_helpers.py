@@ -1,6 +1,6 @@
 import sys
 import pygame
-from pathlib import Path
+from utils.paths import data_root
 from system.settings import global_settings
 from constants import SCREEN_INIT_SIZE
 
@@ -17,7 +17,7 @@ def close_app():
 
 def setup_file_structure():
     # If function is moved the relative path needs updated
-    base_data_dir = Path(__file__).parent.parent.parent / 'data'
+    base_data_dir = data_root()
     if not base_data_dir.is_dir():
         base_data_dir.mkdir()
         (base_data_dir / 'games').mkdir()

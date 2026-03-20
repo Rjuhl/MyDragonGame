@@ -3,6 +3,7 @@ import json
 import shutil
 import pygame
 from pathlib import Path
+from utils.paths import data_root
 from system.entities.sprites.player import Player
 from world.map import Map
 from world.generation.terrain_generator import TerrainGenerator
@@ -17,7 +18,7 @@ from constants import BANNER_SIZE
 
 
 class Game:
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
+    PATH = data_root() / 'games'
     def __init__(
         self, name: str, 
         screen: pygame.Surface,
@@ -142,7 +143,7 @@ class Game:
 
 @singleton
 class GameManager:
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
+    PATH = data_root() / 'games'
     def __init__(self) -> None:
         self.screen: pygame.Surface = None
         self.game: Game = None

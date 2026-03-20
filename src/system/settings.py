@@ -1,7 +1,7 @@
 import json
 from typing import Any, Dict, Optional, Self
 
-from pathlib import Path
+from utils.paths import data_root
 
 from decorators import singleton
 from constants import DEFAULT_SOUND_VOLUME
@@ -21,7 +21,7 @@ class GameSettings:
         - Call save() after making changes if you want them persisted.
     """
      
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
+    PATH = data_root() / 'games'
 
     def __init__(self, name: str, game_settings: Dict[str, Any]):
         self.name = name
@@ -56,7 +56,7 @@ class GlobalSettings:
             data/global_settings
     """
 
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'global_settings'
+    PATH = data_root() / 'global_settings'
 
     def __init__(self, defaults: Optional[Dict[str, Any]] = None):
         self.global_settings = {} if defaults is None else defaults

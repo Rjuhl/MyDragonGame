@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from pathlib import Path
+from utils.paths import assets_root
 from utils.coords import Coord
 from utils.types.colors import RGB, RGBA
 from system.entities.physics.collisions import center_hit_box
@@ -34,9 +34,8 @@ class AssetDrawer:
         self.display = display
 
         # Dirs
-        current_dir = Path(__file__).parent
-        tile_img_dir = current_dir.parent.parent / 'assets' / 'tiles'
-        sprite_img_dir = current_dir.parent.parent / 'assets' / 'sprites'
+        tile_img_dir = assets_root() / 'tiles'
+        sprite_img_dir = assets_root() / 'sprites'
 
         # Tile images are loaded as a list indexed by tile.id
         self.tiles: List[pygame.Surface] = self.load_assets(tile_img_dir)

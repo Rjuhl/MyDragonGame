@@ -1,6 +1,6 @@
 import math
 import numpy as np
-from pathlib import Path
+from utils.paths import data_root
 from typing import List, Tuple
 from numpy.typing import NDArray
 
@@ -21,7 +21,7 @@ class Screen:
         - a `cam_offset` in view/screen space used to shift rendering
     """
 
-    PATH = Path(__file__).parent.parent.parent / 'data'
+    PATH = data_root()
 
     def __init__(self):
         # Screen trackers

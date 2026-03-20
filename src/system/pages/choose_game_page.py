@@ -8,7 +8,7 @@ from gui.utils.callbacks import main_menu_callback, game_loop_callback
 from system.page_context import PageContext
 from system.game_clock import game_clock
 from decorators import register_page
-from pathlib import Path
+from utils.paths import data_root
 from typing import List
 from world.game import GameManager
 
@@ -18,7 +18,7 @@ DELETE_BAR_SPEED = 0.1
 
 @register_page
 class ChooseGamePage(Page):
-    GAME_DIR = Path(__file__).parent.parent.parent.parent / 'data' / 'games'
+    GAME_DIR = data_root() / 'games'
     def __init__(self, pageContext):
         super().__init__(pageContext)
 

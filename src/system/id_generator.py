@@ -1,5 +1,5 @@
 from typing import List
-from pathlib import Path
+from utils.paths import data_root
 
 from decorators import singleton
 
@@ -21,7 +21,7 @@ class IdGenerator:
         - `load_game()` must be called when switching or loading a save.
     """
 
-    PATH = Path(__file__).parent.parent.parent / 'data' / 'games'
+    PATH = data_root() / 'games'
 
     def __init__(self):
         self.current_id = 0
