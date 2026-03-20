@@ -7,6 +7,7 @@ MAIN TASKS LEFT
 6. Executable + cleanup (started)
 7. Player (mostly done)
 8. Items (mostly done)
+9. Have game diffculty effect something
 
 OPTIMIZATIONS
 1. Improved tile rendering (lump tiles together) (done)
@@ -14,8 +15,8 @@ OPTIMIZATIONS
 3. Load chunks using multiprocessing/threads
 
 KNOWN BUGS
-1. Outpost overlaps weird with trees that are very close
-2. Need to create data/ and data/games/ folders on first launch
+1. Outpost overlaps weird with trees that are very close (fixed)
+2. Need to create data/ and data/games/ folders on first launch (fixed, dmg/exe in progress)
 3. First clicked not registered if mouse is moved before launch
 4. Something is off about locational sound
 5. Key error causes crash here: get_and_removed_chunk_entities (fixed -- unverified)

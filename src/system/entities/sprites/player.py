@@ -28,6 +28,7 @@ class Player(Character):
         entity_args = [location, size, img_id, render_offset]
         character_args.air_speed_mod = 1.6
         character_args.base_speed = TEMP_MOVEMENT_FACTOR * 0.75
+        character_args.deff = 15
         super().__init__(entity_args, character_args)
 
 

@@ -22,7 +22,7 @@ class FireParticleArgs:
     speed: float = 6
     lifespan: int = 1000
     heat: Callable[[int], FireParticleHeat] = lambda x: max(2 - x // 1000, 0)
-    damage: Callable[[FireParticleHeat], float] = lambda x: (int(x) + 1) / 50
+    damage: Callable[[FireParticleHeat], float] = lambda x: (int(x) + 1) / 25
     id: Optional[int] = None
 class FireParticle(Projectile):
     def __init__(self, args: FireParticleArgs):
