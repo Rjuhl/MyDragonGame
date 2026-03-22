@@ -65,7 +65,7 @@ class Player(Character):
         
             # Spend/gain fire energy 
             self.fire_charge += self.fire_exhuastion_rate if self._is_breathing_fire() else self.fire_charge_rate
-            self.fire_charge = max(0, self.fire_charge)
+            self.fire_charge = min(max(0, self.fire_charge), self.max_fire_charge)
 
         return self.handle_character_updates(dt)
 

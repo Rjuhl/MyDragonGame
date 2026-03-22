@@ -25,9 +25,9 @@ KNOWN BUGS
 8. Outpost can suddenly disappear (fixed?)
 9. Lumped together tiles optmizations very rarlely has bug where it renders incorrectly (only seen by water so far) (haveing trouble reproducing)
 10. First click after screen mode is toggled is dropped (FL?)
-11. Fire icon sometimes doesnt deplete. (thought i fixed it)
+11. Fire icon sometimes doesnt deplete. (fixed)
 12. Fishy lack of spawners in new chunks (fixed)
-13. When icons gain max that dont recharge to full
+13. When icons gain max that dont recharge to full (fixed)
 
 
 FUTURE IMPROVEMENTS

@@ -96,6 +96,7 @@ class StatBoost(Entity, Item):
     def _apply_gold_coin_boost(cls, player: Player) -> str:
         if random.random() < 0.5: 
             player.vit += 1
+            player.eff_vit = player.vit
             return cls._on_collect_text(["Vitality"], [1])
         
         player.max_health += 10
@@ -104,13 +105,16 @@ class StatBoost(Entity, Item):
     
     @classmethod
     def _apply_defense_coin_boost(cls, player: Player) -> str:
-        player.deff += 1
-        return cls._on_collect_text(["Defense"], [1])
+        def_boost = random.randint(1, 3)
+        player.deff += def_boost
+        player.eff_deff = player.deff
+        return cls._on_collect_text(["Defense"], [def_boost])
     
     @classmethod
     def _apply_energy_coin_boost(cls, player: Player) -> str:
         if random.random() < 0.5: 
             player.stam += 1
+            player.eff_stam = player.stam
             return cls._on_collect_text(["Stamina"], [1])
             
         player.max_energy += 10

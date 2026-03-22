@@ -35,7 +35,7 @@ class Outpost(Spawner):
             RenderObj(
                 self.img_id,
                 self.draw_location(),
-                (ShadeLevel.CANOPY_START, self.location.x, -self.location.y, self.location.z),
+                (ShadeLevel.SPRITE, self.location.x, -self.location.y, self.location.z),
                 location=self.location, size=self.size
             ),
             RenderObj(
