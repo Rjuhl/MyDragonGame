@@ -60,7 +60,7 @@ def main():
     # Add your main logic here
     logger.info("Script finished.")
     setup_file_structure()
-    runGame(logger)
+    runGame()
 
 # -------------------------------
 # Entry point

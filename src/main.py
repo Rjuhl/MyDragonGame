@@ -20,7 +20,7 @@ from world.game import GameManager
 from system.id_generator import id_generator
 
 
-def runGame(logger):
+def runGame():
     # Load and set icon image
     icon_path = assets_root() / 'dragon_game_logo_scaled.png'
     pygame.init()
@@ -63,6 +63,14 @@ def runGame(logger):
         if not is_input_handler_bound:
             is_input_handler_bound = True
             input_handler.bind_displays(screen, display)
+
+        if fullscreen != global_settings.get("fullscreen_on"):
+            fullscreen = not fullscreen
+            pygame.display.toggle_fullscreen()
+            pygame.mouse.set_cursor(cursor_hotspot, cursor_image)
+            pygame.event.pump()
+            pygame.event.clear()
+
         game_clock.tick()
         event_handler.store_events()
         input_handler.update()
@@ -72,7 +80,7 @@ def runGame(logger):
         event_handler.event_tick()
 
         if not page_manager.show_page(): close_app()
-        fps = game_clock.fps           
+        fps = game_clock.fps
         fps_text = font.render(f"FPS: {fps:.1f}", True, (0, 0, 255))
         tiles_text = font.render(f"Tiles Rendered: {page_context.state["items_rendered"]}", True, (0, 0, 255))
         screen.blit(pygame.transform.scale(display, screen.get_size()), (0, 0))
@@ -80,10 +88,6 @@ def runGame(logger):
         if constants.DEBUG_ON:
             screen.blit(fps_text, (10, 10))
             screen.blit(tiles_text, (10, 26))
-
-        if fullscreen != global_settings.get("fullscreen_on"):
-            fullscreen = not fullscreen
-            pygame.display.toggle_fullscreen()
 
         pygame.display.flip()
             

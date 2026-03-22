@@ -148,6 +148,10 @@ class Map:
                 self._chunk_loading = (index, Chunk.begin_load(x, y, self.game_name, assets=self.assets))
             
             if self._chunk_loading[1].step_load():
+                # Could add seperate task to handle adding entities if this lags frames
+                for entity in self._chunk_loading[1].entities: 
+                    self.entity_manager.add_entity(entity)
+
                 self._loading_chunks[self._chunk_loading[0]] = self._chunk_loading[1]
                 self._chunk_loading = None
                 return len(self._chunks_to_load) > 0
@@ -167,6 +171,10 @@ class Map:
                 self._chunk_generating[1].start_generation()
 
             if self._chunk_generating[1].step_generation():
+                # Could add seperate task to handle adding entities if this lags frames
+                for entity in self._chunk_generating[1].entities: 
+                    self.entity_manager.add_entity(entity)
+
                 self._loading_chunks[self._chunk_generating[0]] = self._chunk_generating[1]
                 self._chunk_generating = None
                 return len(self._chunks_to_generate) > 0
