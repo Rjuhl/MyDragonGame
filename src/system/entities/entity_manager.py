@@ -139,7 +139,7 @@ class EntityManager:
     # Rendering
     # -------------------------------------------------------------------------
 
-    def get_entity_render_objs(self, player: Player) -> List[RenderObj]:
+    def get_entity_render_objs(self, player: Optional[Player]) -> List[RenderObj]:
         """
             Collect RenderObjs for everything currently on-screen:
             - entity render objs
@@ -151,7 +151,7 @@ class EntityManager:
             render_objs.extend(entity.get_render_objs())
             if (shadow:= entity.serve_shadow()): render_objs.append(shadow)
         
-        render_objs.extend(self.shadows.get_shadow_objs(player.get_shadow()))
+        if player: render_objs.extend(self.shadows.get_shadow_objs(player.get_shadow()))
         render_objs.sort(key= lambda r_obj: r_obj.render_order)
 
         return render_objs

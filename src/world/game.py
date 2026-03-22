@@ -73,8 +73,8 @@ class Game:
                 self.drawer.draw_tile(tile, cam_offset, None)
             
             self.map.update()
-            for entity in self.map.get_entities_to_render():
-                self.drawer.draw_sprite(entity, cam_offset)
+            for entity in self.map.entity_manager.get_entity_render_objs(None):
+                if entity.id != self.player.img_id: self.drawer.draw_sprite(entity, cam_offset)
    
             pygame.image.save(banner_surface, str((self.PATH / self.name / 'banner.png')))
 
