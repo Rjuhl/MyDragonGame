@@ -253,6 +253,8 @@ class InputHandler:
             "move_down": [pygame.K_DOWN, pygame.K_s],
             "fly_up": [pygame.K_SPACE],
             "fly_down": [pygame.K_LSHIFT, pygame.K_RSHIFT],
+            "toggle_borders": [pygame.K_c],
+            "toggle_hitboxes": [pygame.K_h],
             "pause": [pygame.K_ESCAPE],
         }
 

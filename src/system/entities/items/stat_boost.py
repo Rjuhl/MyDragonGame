@@ -95,17 +95,19 @@ class StatBoost(Entity, Item):
     @classmethod
     def _apply_gold_coin_boost(cls, player: Player) -> str:
         if random.random() < 0.5: 
-            player.vit += 1
+            vit_bonus = cls._get_difficulty_multiplier()
+            player.vit += vit_bonus
             player.eff_vit = player.vit
-            return cls._on_collect_text(["Vitality"], [1])
+            return cls._on_collect_text(["Vitality"], [vit_bonus])
         
-        player.max_health += 10
+        extra_health = int(10 * cls._get_difficulty_multiplier())
+        player.max_health += extra_health
         player.eff_max_health = player.max_energy
-        return cls._on_collect_text(["Max Health"], [10])
+        return cls._on_collect_text(["Max Health"], [extra_health])
     
     @classmethod
     def _apply_defense_coin_boost(cls, player: Player) -> str:
-        def_boost = random.randint(1, 3)
+        def_boost = random.randint(1, 3) * cls._get_difficulty_multiplier()
         player.deff += def_boost
         player.eff_deff = player.deff
         return cls._on_collect_text(["Defense"], [def_boost])
@@ -113,22 +115,33 @@ class StatBoost(Entity, Item):
     @classmethod
     def _apply_energy_coin_boost(cls, player: Player) -> str:
         if random.random() < 0.5: 
-            player.stam += 1
+            stam_bonus = cls._get_difficulty_multiplier()
+            player.stam += stam_bonus
             player.eff_stam = player.stam
-            return cls._on_collect_text(["Stamina"], [1])
+            return cls._on_collect_text(["Stamina"], [stam_bonus])
             
-        player.max_energy += 10
+        extra_energy = int(10 * cls._get_difficulty_multiplier())
+        player.max_energy += extra_energy
         player.eff_max_energy = player.max_energy
-        return cls._on_collect_text(["Max Energy"], [10])
+        return cls._on_collect_text(["Max Energy"], [extra_energy])
     
     @classmethod
     def _apply_fire_coin_boost(cls, player: Player) -> str:
         if random.random() < 0.5: 
-            player.fire_charge_rate += 0.1
-            return cls._on_collect_text(["Fire Charge Rate"], [0.1])
+            fire_charge_rate = cls._get_difficulty_multiplier() * 0.1
+            player.fire_charge_rate += fire_charge_rate
+            return cls._on_collect_text(["Fire Charge Rate"], [fire_charge_rate])
         
-        player.max_fire_charge += 5
-        return cls._on_collect_text(["Max Fire Charge"], [5])
+        extra_fire_charge = int(cls._get_difficulty_multiplier() * 5)
+        player.max_fire_charge += extra_fire_charge
+        return cls._on_collect_text(["Max Fire Charge"], [extra_fire_charge])
+    
+
+    @staticmethod
+    def _get_difficulty_multiplier() -> float:
+        from world.game import GameManager
+        difficulty_setting = GameManager().game.game_settings.get("difficulty")
+        return 0.5 if difficulty_setting == 2 else 2 - difficulty_setting
 
     @staticmethod
     def _on_collect_text(stats: List[str], amounts: List[int]):

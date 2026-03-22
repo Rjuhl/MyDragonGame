@@ -43,6 +43,8 @@ class SettingsPage(Page):
             children=[
                 self._create_key_bind("Fly Up:", "fly_up"),
                 self._create_key_bind("Fly Down:", "fly_down"),
+                self._create_key_bind("Toggle Borders:", "toggle_borders"),
+                self._create_key_bind("Toggle Hitboxes:", "toggle_hitboxes"),
                 self._create_fullscreen_toggle(),
             ],
             padding=(0, 20),

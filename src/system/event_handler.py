@@ -1,9 +1,11 @@
 import pygame
-from pygame.locals import K_c, K_h, K_z
+from pygame.locals import K_z
 
 from decorators import singleton
 from utils.app_helpers import close_app
 from system.global_vars import game_globals
+
+from constants import DEBUG_ON
 
 from enum import IntEnum
 
@@ -43,12 +45,12 @@ class EventHandler:
     def event_tick(self):
         if self.input_handler.quit_requested: close_app()
 
-        if self.input_handler.was_key_pressed(K_c):
+        if self.input_handler.was_action_pressed("toggle_borders"):
             game_globals.chunk_borders_on = not game_globals.chunk_borders_on
             game_globals.optimize_render = not game_globals.chunk_borders_on
         
-        if self.input_handler.was_key_pressed(K_h):
+        if self.input_handler.was_action_pressed("toggle_hitboxes"):
             game_globals.show_hitboxes_on = not game_globals.show_hitboxes_on
         
-        if self.input_handler.was_key_pressed(K_z):
+        if self.input_handler.was_key_pressed(K_z) and DEBUG_ON:
             game_globals.render_debug = not game_globals.render_debug
