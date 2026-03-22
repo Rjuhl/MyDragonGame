@@ -21,10 +21,10 @@ KNOWN BUGS
 4. Something is off about locational sound (fixed -- unverified)
 5. Key error causes crash here: get_and_removed_chunk_entities (fixed -- unverified)
 6. Chunks will wait too long to load (FL)
-7. Fox will freeze and overlaps
+7. Fox will freeze and overlaps (fixed -- unverified)
 8. Outpost can suddenly disappear (fixed?)
-9. Lumped together tiles optmizations very rarlely has bug where it renders incorrectly (only seen by water so far)
-10. First click after screen mode is toggled is dropped (FL)
+9. Lumped together tiles optmizations very rarlely has bug where it renders incorrectly (only seen by water so far) (haveing trouble reproducing)
+10. First click after screen mode is toggled is dropped (FL?)
 11. Fire icon sometimes doesnt deplete. (thought i fixed it)
 12. Fishy lack of spawners in new chunks (fixed)
 13. When icons gain max that dont recharge to full

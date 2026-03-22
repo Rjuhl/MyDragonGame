@@ -33,9 +33,9 @@ WATER_EDGE_SOFTNESS = 0.5
 
 # Base water thresholds per biome (higher => less water in that biome).
 WATER_THRESHOLDS: Dict[Biome, float] = {
-    Biome.DESERT: 0.84,
-    Biome.GRASSLAND: 0.66,
-    Biome.TUNDRA: 0.74,
+    Biome.DESERT: 0.80,
+    Biome.GRASSLAND: 0.62,
+    Biome.TUNDRA: 0.70,
 }
 
 # -----------------------------------------------------------------------------

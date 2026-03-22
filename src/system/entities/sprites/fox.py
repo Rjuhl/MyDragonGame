@@ -51,7 +51,7 @@ class Fox(NPC):
     def _wander(self, dt: float) -> None:
         if self.state != FoxStates.WANDER: return
         if self.destination is None:
-            new_destination = self.location.copy().update_as_world_coord(10 + random.randint(0, 10), 10 + random.randint(0, 10))
+            new_destination = self.location.copy().update_as_world_coord(6 + random.randint(0, 6), 6 + random.randint(0, 6))
             new_destination.x *= -1 * random.randint(0, 1)
             new_destination.y *= -1 * random.randint(0, 1)
             self.set_destination(new_destination)
@@ -99,6 +99,7 @@ class Fox(NPC):
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         super().handle_collision(self_velocity, other_entity, other_velocity, timestep)
+        self.destination = None # Reset destination on collision 
         self.move(self.prev_location, is_vector=False)
         
     

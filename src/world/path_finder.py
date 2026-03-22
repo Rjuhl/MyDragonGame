@@ -1,7 +1,7 @@
 from world.tile import Tile
 from utils.coords import Coord
 from world.astar import AstarManager
-from constants import PATH_FINDER_CPT
+from constants import PATH_FINDER_CPT, PATH_NODE_LIMIT
 
 from collections import deque
 from decorators import singleton
@@ -27,9 +27,9 @@ class PathFinder(AstarManager):
         super().__init__(cycles_per_tick)
 
     
-    def add_job(self, start, destination):
+    def add_job(self, start, destination, job_cycle_limit: int = PATH_NODE_LIMIT):
         """ Add a pathfinding job, snapping the destination to the closest loaded and unblocked tile. """
-        return super().add_job(start, self._get_closest_loaded_point(destination))
+        return super().add_job(start, self._get_closest_loaded_point(destination), job_cycle_limit)
 
 
     def _get_closest_loaded_point(self, point: Coord) -> Optional[Coord]:

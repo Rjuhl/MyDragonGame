@@ -50,6 +50,7 @@ class Node:
 
 
 # TODO: Make robust to different-size entities.
+# TODO: Upgrade to jump point search
 # Note: NPC is size.(x/y) <= 1 for now, so this can be implemented later.
 class AstarJob:
     """
@@ -60,7 +61,7 @@ class AstarJob:
     """
 
 
-    def __init__(self, start: Coord, destination: Coord, map, manager):
+    def __init__(self, start: Coord, destination: Coord, cycle_limit: int, map, manager):
         self.map = map
         self.start = (int(start.x * 2), int(start.y * 2))
         self.destination = (int(destination.x * 2), int(destination.y * 2))
@@ -80,6 +81,8 @@ class AstarJob:
         self.heap = [(h0, 0, 0, self.start[0], self.start[1])]
 
         self.path: JobResult = None
+        self.cycle_limit = cycle_limit
+        self.cycles = 0
 
     def search(self, cycles: int) -> None:
         """
@@ -95,6 +98,7 @@ class AstarJob:
 
         while cycles > 0 and self.heap:
             cycles -= 1
+            self.cycles += 1
 
             f, heap_turns, heap_g, n_x, n_y = heapq.heappop(self.heap)
             current = (n_x, n_y)
@@ -144,6 +148,12 @@ class AstarJob:
         # Failure case
         if not self.heap:
             self.path = {}
+
+        # If job runs for to many cycles just returns path for current heap top
+        if self.cycles >= self.cycle_limit:
+            _, _, _, n_x, n_y = heapq.heappop(self.heap)
+            current = (n_x, n_y)
+            self.path = self._reconstruct_path(current)
 
     def _iter_neighbors(self, x: int, y: int):
         """
@@ -214,12 +224,12 @@ class AstarManager:
             raise ValueError("Map is required but not set.")
 
     # Start is expected to be the center of a tile
-    def add_job(self, start: Coord, destination: Coord) -> Tuple[int, Coord]:
+    def add_job(self, start: Coord, destination: Coord, job_cycle_limit: int) -> Tuple[int, Coord]:
         """ Creates Astar job. Returns id and updated destination """
         self._require_map()
 
         id = self._get_id()
-        self.jobs[id] = AstarJob(start, destination, self.map, self)
+        self.jobs[id] = AstarJob(start, destination, job_cycle_limit, self.map, self)
         return id, destination
  
     @timeit()
