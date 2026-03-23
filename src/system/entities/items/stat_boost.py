@@ -102,7 +102,7 @@ class StatBoost(Entity, Item):
         
         extra_health = int(10 * cls._get_difficulty_multiplier())
         player.max_health += extra_health
-        player.eff_max_health = player.max_energy
+        player.eff_max_health = player.max_health
         return cls._on_collect_text(["Max Health"], [extra_health])
     
     @classmethod

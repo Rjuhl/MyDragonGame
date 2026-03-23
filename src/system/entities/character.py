@@ -179,6 +179,7 @@ class Character(Entity):
     
     def _apply_def_reduction(self, damage: float) -> float:
         return damage / self._stat_to_multiplier(self.eff_deff) 
+    
 
     def apply_effects(self, dt: float):
         for item in self.effects:
@@ -212,6 +213,17 @@ class Character(Entity):
         json["current_health"] = self.current_health
         json["current_mana"] = self.current_mana
         json["current_energy"] = self.current_energy
+        json["eff_max_health"] = self.eff_max_health
+        json["eff_max_mana"] = self.eff_max_mana
+        json["eff_max_energy"] = self.eff_max_energy
+        json["eff_stam"] = self.eff_stam
+        json["eff_vit"] = self.eff_vit
+        json["eff_wis"] = self.eff_wis
+        json["eff_spd"] = self.eff_spd
+        json["eff_att"] = self.eff_att
+        json["eff_deff"] = self.eff_deff
+
+        self.eff_base_speed = self.base_speed
         # Save effects somehow
         return json
         
@@ -232,6 +244,15 @@ class Character(Entity):
         self.current_health = data["current_health"]
         self.current_mana = data["current_mana"]
         self.current_energy = data["current_energy"]
+        self.eff_max_health = data["eff_max_health"]
+        self.eff_max_mana = data["eff_max_mana"]
+        self.eff_max_energy = data["eff_max_energy"]
+        self.eff_stam = data["eff_stam"]
+        self.eff_vit = data["eff_vit"]
+        self.eff_wis = data["eff_wis"]
+        self.eff_spd = data["eff_spd"]
+        self.eff_att = data["eff_att"]
+        self.eff_deff = data["eff_deff"]
 
 
     @staticmethod
