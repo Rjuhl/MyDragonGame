@@ -39,8 +39,6 @@ class Map:
         self.assets = assets
 
         self.bind_player(player)
-
-        self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
         self.init_map_chunks()
 
         path_finder.bind_map(self)
@@ -61,6 +59,7 @@ class Map:
         self.screen.center_anchor()
         self.entity_manager.set_player(player)
         self.entity_manager.add_entity(player)
+        self.chunk_center = self.screen.get_screen_center().as_chunk_coord()
 
 
     def unbind_player(self):

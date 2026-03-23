@@ -7,7 +7,7 @@ MAIN TASKS LEFT
 6. Executable + cleanup (started)
 7. Player (mostly done)
 8. Items (mostly done)
-9. Have game diffculty effect something
+9. Have game diffculty effect something (mostly done)
 
 OPTIMIZATIONS
 1. Improved tile rendering (lump tiles together) (done)

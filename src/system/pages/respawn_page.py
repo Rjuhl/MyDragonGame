@@ -55,5 +55,7 @@ class Respawn(Page):
 
     @staticmethod
     def _respawn_player(context: PageContext):
-        GameManager().game.bind_new_player()
+        game = GameManager().game
+        game.bind_new_player()
+        game.map.init_map_chunks()
         game_loop_callback(context)
