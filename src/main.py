@@ -15,6 +15,7 @@ from system.page_context import PageContext
 from system.global_vars import set_base_globals
 from system.sound import SoundMixer, Sound
 from utils.app_helpers import close_app
+from system.global_vars import game_globals
 from system.settings import global_settings
 from world.game import GameManager
 from system.id_generator import id_generator
@@ -85,9 +86,9 @@ def runGame():
         tiles_text = font.render(f"Tiles Rendered: {page_context.state["items_rendered"]}", True, (0, 0, 255))
         screen.blit(pygame.transform.scale(display, screen.get_size()), (0, 0))
 
-        if constants.DEBUG_ON:
+        if game_globals.fps_on:
             screen.blit(fps_text, (10, 10))
-            screen.blit(tiles_text, (10, 26))
+            # screen.blit(tiles_text, (10, 26))
 
         pygame.display.flip()
             

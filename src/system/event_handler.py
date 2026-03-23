@@ -45,12 +45,22 @@ class EventHandler:
     def event_tick(self):
         if self.input_handler.quit_requested: close_app()
 
-        if self.input_handler.was_action_pressed("toggle_borders"):
-            game_globals.chunk_borders_on = not game_globals.chunk_borders_on
-            game_globals.optimize_render = not game_globals.chunk_borders_on
-        
-        if self.input_handler.was_action_pressed("toggle_hitboxes"):
-            game_globals.show_hitboxes_on = not game_globals.show_hitboxes_on
-        
-        if self.input_handler.was_key_pressed(K_z) and DEBUG_ON:
-            game_globals.render_debug = not game_globals.render_debug
+        if self._is_game_page():
+            if self.input_handler.was_action_pressed("toggle_borders"):
+                game_globals.chunk_borders_on = not game_globals.chunk_borders_on
+                game_globals.optimize_render = not game_globals.chunk_borders_on
+            
+            if self.input_handler.was_action_pressed("toggle_hitboxes"):
+                game_globals.show_hitboxes_on = not game_globals.show_hitboxes_on
+
+            if self.input_handler.was_action_pressed("toggle_fps"):
+                game_globals.fps_on = not game_globals.fps_on
+            
+            if self.input_handler.was_key_pressed(K_z) and DEBUG_ON:
+                game_globals.render_debug = not game_globals.render_debug
+
+    @staticmethod
+    def _is_game_page():
+        from system.pages.game_page import GamePage
+        from system.page_manager import PageManager
+        return isinstance(PageManager().current_page, GamePage)

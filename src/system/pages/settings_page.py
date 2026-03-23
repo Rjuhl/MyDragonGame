@@ -45,6 +45,7 @@ class SettingsPage(Page):
                 self._create_key_bind("Fly Down:", "fly_down"),
                 self._create_key_bind("Toggle Borders:", "toggle_borders"),
                 self._create_key_bind("Toggle Hitboxes:", "toggle_hitboxes"),
+                self._create_key_bind("Toggle FPS:", "toggle_fps"),
                 self._create_fullscreen_toggle(),
             ],
             padding=(0, 20),
