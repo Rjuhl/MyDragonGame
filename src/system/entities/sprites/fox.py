@@ -2,7 +2,7 @@ import pygame
 import random
 from utils.coords import Coord
 from system.entities.npc import NPC
-from system.entities.spawner import Spawner
+from system.entities.projectiles.projectile import Projectile
 from system.entities.character import CharaterArgs
 from system.entities.types.entity_types import FoxStates
 from system.entities.types.facing_types import Facing
@@ -35,7 +35,7 @@ class Fox(NPC):
         self.facing = Facing.Idle
         self.state = FoxStates.WANDER
         self.incrementer = FrameIncrementer(0, 167, lambda i: (i + 1) % 4)
-        self.idle_time = FrameIncrementer(0, 1000 * 12, lambda i: i + 1)
+        self.idle_time = FrameIncrementer(0, 1000 * 8, lambda i: i + 1)
         
 
 
@@ -99,8 +99,10 @@ class Fox(NPC):
 
     def handle_collision(self, self_velocity, other_entity, other_velocity, timestep):
         super().handle_collision(self_velocity, other_entity, other_velocity, timestep)
-        self.destination = None # Reset destination on collision 
         self.move(self.prev_location, is_vector=False)
+
+        if not isinstance(other_entity, Projectile):
+            self.destination = None
         
     
     def jsonify(self):
@@ -111,6 +113,7 @@ class Fox(NPC):
 
     def _load_fox(self, data):
         self.state = FoxStates[data["state"]]
+
 
     @classmethod
     def load(cls, data):
