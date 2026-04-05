@@ -27,6 +27,8 @@ pip install -r requirements.txt
 python src/game_name.py
 ```
 
+> If crashing when entering the game on Windows, try switching all instances of pnoise to snoise in terrain_generator.py (will be fixed in biome update)
+
 ## Default Controls (can change in settings)
 | Action | Key |
 |--------|-----|
