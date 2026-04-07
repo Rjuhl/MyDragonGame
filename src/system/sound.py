@@ -426,7 +426,7 @@ class SoundMixer:
 
     def set_volume(self, volume: float) -> None:
         """ Set master volume on all channels """
-        for c_i in range(MUSIC_CHANNELS):
+        for c_i in range(MIXER_CHANNELS):
             channel = pygame.mixer.Channel(c_i)
             channel.set_volume(volume)
 

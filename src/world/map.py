@@ -240,8 +240,11 @@ class Map:
             if chunk.contains_coord(coord): return chunk.get_tile(coord)
         
 
-    def save(self):
+    def finish_chunk_loading(self):
         while self._is_loading_chunks: self.handle_chunk_loading()
+
+    def save(self):
+        self.finish_chunk_loading()
         for chunk in self.chunks: 
             chunk.entities = list(self.entity_manager.get_chunk_entities(chunk))
             chunk.save(self.game_name)

@@ -56,6 +56,7 @@ class Respawn(Page):
     @staticmethod
     def _respawn_player(context: PageContext):
         game = GameManager().game
+        game.map.finish_chunk_loading()
         for chunk in game.map.chunks:
             chunk.entities = list(game.map.entity_manager.get_and_removed_chunk_entities(chunk))
             chunk.save(game.name)
