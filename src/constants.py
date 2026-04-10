@@ -18,11 +18,17 @@ DEFAULT_BUTTON_COOLDOWN = 100
 # Map constants
 TILE_SIZE = 32
 WORLD_HEIGHT = TILE_SIZE * 4
-CHUNK_SIZE = 64
 ASSET_SIZE = 8
 PADDING = 3
 TILE_GROUP_DRAW_SIZE = 8 # 16
 TILE_ASSET_SHOWN_SIZE = (32, 16)
+
+# Chunk constants
+CHUNK_SIZE = 64
+TILES_GEN_PER_STEP = 128 # Tiles created in chunk when generated per cycle
+TILES_LOAD_PER_STEP = 258 # Tiles loaded in new chunk per cycle
+ENTITY_LOAD_STEP = 64 # Entities in new chunk per cycle
+TOTAL_LOAD_BUDGET = 258
 
 assert CHUNK_SIZE % TILE_GROUP_DRAW_SIZE == 0
 

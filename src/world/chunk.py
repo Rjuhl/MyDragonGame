@@ -9,7 +9,7 @@ from utils.paths import data_root
 from bisect import bisect_left
 from utils.coords import Coord
 from system.asset_drawer import AssetDrawer
-from constants import CHUNK_SIZE, SEED, TILE_GROUP_DRAW_SIZE, TILE_SIZE
+from constants import CHUNK_SIZE, SEED, TILE_GROUP_DRAW_SIZE, TILES_GEN_PER_STEP, TILES_LOAD_PER_STEP, ENTITY_LOAD_STEP, TOTAL_LOAD_BUDGET 
 from world.tile_group import TileGroup
 from world.biome_tile_weights import BIOME_TILE_WEIGHTS
 from system.id_generator import id_generator
@@ -107,7 +107,7 @@ class Chunk:
         chunk._raw_entity_data = data["entities"]
         return chunk
 
-    def step_load(self, tile_budget=128, entity_budget=16, group_budget=128):
+    def step_load(self, tile_budget=TILES_LOAD_PER_STEP, entity_budget=ENTITY_LOAD_STEP, group_budget=TOTAL_LOAD_BUDGET):
         if self._load_state == "tiles":
             end = min(self._tile_load_index + tile_budget, len(self._raw_tile_data))
             for i in range(self._tile_load_index, end):
@@ -212,7 +212,7 @@ class Chunk:
         self._groups_per_row = self.SIZE // TILE_GROUP_DRAW_SIZE
         self._chunk_world_loc = self.location.as_world_coord()
 
-    def step_generation(self, tiles_per_step=64):
+    def step_generation(self, tiles_per_step=TILES_GEN_PER_STEP):
         if self._gen_done:
             return True
 
