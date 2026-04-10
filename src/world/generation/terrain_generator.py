@@ -44,7 +44,7 @@ WATER_THRESHOLDS: Dict[Biome, float] = {
 
 @dataclass
 class NoiseParams:
-    """ Parameters passed into noise.pnoise2(...) """
+    """ Parameters passed into noise.snoise2(...) """
     octaves: int 
     persistence: float
     lacunarity: float
@@ -125,7 +125,7 @@ class TerrainGenerator:
         - Perlin noise (controls local variation)
         - A cosine "latitude" heat map (controls global north/south climate)
         """
-        noise_value = noise.pnoise2(x / 200, y / 200, **asdict(self.biome_noise))
+        noise_value = noise.snoise2(x / 200, y / 200, **asdict(self.biome_noise))
         return noise_value + 0.4 * math.cos(y / 200)
     
 
@@ -170,7 +170,7 @@ class TerrainGenerator:
         - If above cutoff, create a water tile with id influenced by biome weights
         """
 
-        lake_noise = noise.pnoise2(
+        lake_noise = noise.snoise2(
             x / self.water_level_modifier,
             y / self.water_level_modifier,
             **asdict(self.lake_noise),
@@ -246,7 +246,7 @@ class TerrainGenerator:
 
         if biome == Biome.DESERT: return
         
-        noise_value = noise.pnoise2(
+        noise_value = noise.snoise2(
             x / self.forest_size_modifier,
             y / self.forest_size_modifier,
             **asdict(self.forest_noise),
